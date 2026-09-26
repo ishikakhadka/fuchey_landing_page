@@ -6,7 +6,7 @@ import Hero from "./components/Hero.jsx";
 import EditionSwitcher from "./components/EditionSwitcher.jsx";
 // import Editions from "./components/Editions.jsx";
 import Features from "./components/Features.jsx";
-// import Waitlist from "./components/Waitlist.jsx";
+import Waitlist from "./components/Waitlist.jsx";
 import Footer from "./components/Footer.jsx";
 
 function App() {
@@ -27,7 +27,7 @@ function App() {
 
         <Features edition={currentEdition} />
 
-        {/* <Waitlist edition={currentEdition} /> */}
+        <Waitlist edition={currentEdition} />
       </main>
 
       <Footer />

@@ -1,5 +1,11 @@
-import "../index.css";
 import { editions } from "../data/editions";
+
+import { Bot, Smile } from "lucide-react";
+
+const editionIcons = {
+  dev: Bot,
+  companion: Smile,
+};
 
 function EditionSwitcher({ edition, setEdition }) {
   return (
@@ -10,16 +16,22 @@ function EditionSwitcher({ edition, setEdition }) {
         </p>
 
         <div className="edition-buttons">
-          {Object.values(editions).map((item) => (
-            <button
-              key={item.id}
-              className={edition === item.id ? "selected" : ""}
-              onClick={() => setEdition(item.id)}>
-              <span className="edition-icon">{item.icon}</span>
+          {Object.values(editions).map((item) => {
+            const Icon = editionIcons[item.id];
 
-              <span>{item.label}</span>
-            </button>
-          ))}
+            return (
+              <button
+                key={item.id}
+                className={edition === item.id ? "selected" : ""}
+                onClick={() => setEdition(item.id)}>
+                <span className="edition-icon">
+                  <Icon size={18} strokeWidth={1.8} />
+                </span>
+
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </section>

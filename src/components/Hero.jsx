@@ -18,14 +18,14 @@ function Hero({ edition }) {
             <span>→</span>
           </a>
 
-          {isDev ? (
+          {/* {isDev ? (
             <div className="terminal-status">
               <span className="status-dot" />
               {edition.status}
             </div>
           ) : (
             <div className="pet-status">🐾 {edition.status}</div>
-          )}
+          )} */}
         </div>
 
         <div className="hero-device">
@@ -49,7 +49,7 @@ function Hero({ edition }) {
 
                   <strong>HI HUMAN!</strong>
 
-                  <small>You received something ✨</small>
+                  <small>You received something </small>
                 </div>
               )}
             </div>

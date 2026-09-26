@@ -1,8 +1,14 @@
+import { Bot, Smile } from "lucide-react";
+
+const editionIcons = {
+  dev: Bot,
+  companion: Smile,
+};
 export const editions = {
   dev: {
     id: "dev",
     label: "Dev Edition",
-    icon: "🛠️",
+    icon: Bot,
 
     eyebrow: "FUCHEY // DEV",
 
@@ -27,7 +33,7 @@ export const editions = {
   companion: {
     id: "companion",
     label: "Companion Edition",
-    icon: "🐾",
+    icon: Smile,
 
     eyebrow: "MEET FUCHEY",
 
@@ -46,6 +52,6 @@ export const editions = {
       "Pet Evolution",
     ],
 
-    status: "FUCHEY IS HAPPY",
+    // status: "FUCHEY IS HAPPY",
   },
 };
