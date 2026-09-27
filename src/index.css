@@ -23,6 +23,10 @@
   --primary: #346083;
   --primary-dark: #152d3e;
 
+  --accent: #5c86a2;
+  --muted-blue: #87acbb;
+  --light-blue: #b8ceda;
+
   --border: #87acbb;
 
   --shadow: 0 20px 60px rgba(1, 8, 22, 0.08);
@@ -1132,266 +1136,303 @@ a {
 ===================================================== */
 
 .theme-companion.app {
-  color: #010816;
-
+  color: var(--text);
   background:
-    radial-gradient(circle at 80% 10%, rgba(52, 96, 131, 0.1), transparent 30%),
-    #f6f8f8;
+    radial-gradient(
+      circle at 80% 10%,
+      color-mix(in srgb, var(--accent) 13%, transparent),
+      transparent 30%
+    ),
+    var(--bg);
 }
 
 .theme-companion .navbar {
-  background: rgba(246, 248, 248, 0.9);
-  border-bottom-color: #87acbb;
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  border-bottom-color: var(--muted-blue);
 }
 
 .theme-companion .navbar nav {
-  color: #3e6971;
+  color: var(--text-soft);
 }
 
 .theme-companion .navbar nav a:hover {
-  color: #010816;
+  color: var(--text);
 }
 
 .theme-companion .edition-toggle {
-  background: #ffffff;
-  border-color: #87acbb;
+  background: var(--surface);
+  border-color: var(--muted-blue);
 }
 
 .theme-companion .edition-toggle button {
-  color: #3e6971;
+  color: var(--text-soft);
 }
 
 .theme-companion .edition-toggle button.active {
-  background: #346083;
-  color: #f6f8f8;
+  background: var(--primary);
+  color: var(--bg);
 }
 
 .theme-companion .hero {
   background: radial-gradient(
     circle at 70% 45%,
-    rgba(52, 96, 131, 0.08),
+    color-mix(in srgb, var(--accent) 10%, transparent),
     transparent 35%
   );
 }
 
 .theme-companion .eyebrow {
-  color: #346083;
+  color: var(--accent);
 }
 
 .theme-companion .hero h1 {
-  color: #010816;
+  color: var(--text);
 }
 
 .theme-companion .hero-description {
-  color: #3e6971;
+  color: var(--text-soft);
 }
 
 .theme-companion .primary-button {
-  background: #346083;
-  color: #f6f8f8;
-  border-color: #346083;
+  background: var(--primary);
+  color: var(--bg);
+  border-color: var(--primary);
   box-shadow: 0 10px 30px rgba(52, 96, 131, 0.18);
 }
 
 .theme-companion .primary-button:hover {
-  background: #152d3e;
-  border-color: #152d3e;
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
   box-shadow: 0 14px 35px rgba(21, 45, 62, 0.2);
 }
 
 .theme-companion .pet-status {
-  color: #3e6971;
+  color: var(--text-soft);
 }
 
 .theme-companion .status-dot {
-  background: #5c86a2;
+  background: var(--accent);
 }
 
 .theme-companion .device {
-  background: #ffffff;
-  border-color: #87acbb;
+  background: var(--surface);
+  border-color: var(--muted-blue);
   box-shadow: 0 30px 70px rgba(1, 8, 22, 0.12);
 }
 
 .theme-companion .device-screen {
-  background: #b8ceda;
+  background: var(--light-blue);
 }
 
 .theme-companion .companion-screen {
-  color: #010816;
+  color: var(--text);
+}
+
+.theme-companion .companion-screen strong {
+  color: var(--primary-dark);
 }
 
 .theme-companion .companion-screen small {
-  color: #3e6971;
+  color: var(--text-soft);
+}
+
+.theme-companion .pet-face {
+  color: var(--primary);
 }
 
 .theme-companion .edition-switcher {
-  background: #f6f8f8;
-  border-top: 1px solid #b8ceda;
-  border-bottom: 1px solid #b8ceda;
+  background: var(--bg);
+  border-top: 1px solid var(--light-blue);
+  border-bottom: 1px solid var(--light-blue);
 }
 
 .theme-companion .section-label {
-  color: #3e6971;
+  color: var(--text-soft);
 }
 
 .theme-companion .edition-buttons button {
-  background: #ffffff;
-  color: #010816;
-  border-color: #87acbb;
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--muted-blue);
 }
 
 .theme-companion .edition-buttons button:hover {
-  background: #b8ceda;
-  border-color: #346083;
+  background: var(--light-blue);
+  border-color: var(--primary);
 }
 
 .theme-companion .edition-buttons button.selected {
-  background: #ffffff;
-  border-color: #346083;
-  box-shadow: inset 0 0 0 1px rgba(52, 96, 131, 0.12);
+  background: var(--surface);
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+.theme-companion .edition-icon {
+  color: var(--accent);
 }
 
 .theme-companion .features-section {
-  background: #f6f8f8;
+  background: var(--bg);
 }
 
 .theme-companion .section-heading .eyebrow {
-  color: #346083;
+  color: var(--accent);
 }
 
 .theme-companion .section-heading h2 {
-  color: #010816;
+  color: var(--text);
 }
 
 .theme-companion .feature-grid {
-  border-color: #87acbb;
+  border-color: var(--muted-blue);
 }
 
 .theme-companion .feature-card {
-  background: #ffffff;
-  border-color: #87acbb;
-  color: #010816;
+  background: var(--surface);
+  border-color: var(--muted-blue);
+  color: var(--text);
+}
+
+.theme-companion .feature-card:nth-child(2n) {
+  background: color-mix(in srgb, var(--light-blue) 24%, var(--surface));
 }
 
 .theme-companion .feature-card:hover {
-  background: #b8ceda;
-  border-color: #346083;
+  background: var(--light-blue);
+  border-color: var(--primary);
   box-shadow: 0 20px 50px rgba(1, 8, 22, 0.1);
 }
 
 .theme-companion .feature-number {
-  color: #346083;
+  color: var(--accent);
 }
 
 .theme-companion .feature-icon {
-  color: #346083;
-  background: #f6f8f8;
-  border-color: #87acbb;
+  color: var(--primary);
+  background: var(--bg);
+  border-color: var(--muted-blue);
 }
 
 .theme-companion .feature-card:hover .feature-icon {
-  color: #f6f8f8;
-  border-color: #346083;
-  background: #346083;
+  color: var(--bg);
+  border-color: var(--primary);
+  background: var(--primary);
 }
 
 .theme-companion .feature-card h3 {
-  color: #010816;
+  color: var(--text);
 }
 
 .theme-companion .feature-glow {
-  background: #5c86a2;
+  background: var(--accent);
 }
 
 .theme-companion .waitlist-section {
   background:
     radial-gradient(
       circle at 50% 50%,
-      rgba(52, 96, 131, 0.08),
+      color-mix(in srgb, var(--accent) 9%, transparent),
       transparent 40%
     ),
-    #f6f8f8;
+    var(--bg);
 }
 
 .theme-companion .waitlist-card {
-  background: #ffffff;
-  border-color: #87acbb;
-  color: #010816;
+  background: var(--surface);
+  border-color: var(--muted-blue);
+  color: var(--text);
   box-shadow: 0 30px 80px rgba(1, 8, 22, 0.1);
 }
 
 .theme-companion .form-field label {
-  color: #3e6971;
+  color: var(--text-soft);
 }
 
 .theme-companion .form-field input {
-  background: #f6f8f8;
-  color: #010816;
-  border-color: #87acbb;
+  background: var(--bg);
+  color: var(--text);
+  border-color: var(--muted-blue);
 }
 
 .theme-companion .form-field input::placeholder {
-  color: #3e6971;
+  color: var(--text-soft);
+}
+
+.theme-companion .form-field input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 .theme-companion .waitlist-editions button {
-  background: #f6f8f8;
-  color: #010816;
-  border-color: #87acbb;
+  background: var(--bg);
+  color: var(--text);
+  border-color: var(--muted-blue);
 }
 
 .theme-companion .waitlist-editions button:hover,
 .theme-companion .waitlist-editions button.selected {
-  border-color: #346083;
-  background: #b8ceda;
+  border-color: var(--primary);
+  background: var(--light-blue);
+}
+
+.theme-companion .waitlist-editions button > span {
+  color: var(--accent);
 }
 
 .theme-companion .waitlist-success .success-icon {
-  background: #346083;
-  color: #f6f8f8;
+  background: var(--primary);
+  color: var(--bg);
 }
 
 .theme-companion .rank-box {
-  background: #f6f8f8;
-  border-color: #87acbb;
+  background: var(--bg);
+  border-color: var(--muted-blue);
 }
 
 .theme-companion .rank-box strong {
-  color: #346083;
+  color: var(--accent);
 }
 
 .theme-companion .footer {
-  background: #ffffff;
-  border-color: #87acbb;
-  color: #010816;
+  background: var(--primary-dark);
+  border-color: var(--muted-blue);
+  color: var(--bg);
 }
 
 .theme-companion .footer-logo {
-  color: #010816;
+  color: var(--bg);
 }
 
 .theme-companion .footer-logo span {
-  background: #346083;
-  color: #f6f8f8;
+  background: var(--light-blue);
+  color: var(--primary-dark);
+}
+
+.theme-companion .footer-brand > p {
+  color: var(--light-blue);
 }
 
 .theme-companion .footer-heading {
-  color: #346083;
+  color: var(--accent);
 }
 
 .theme-companion .footer-links a {
-  color: #3e6971;
+  color: var(--muted-blue);
 }
 
 .theme-companion .footer-links a:hover {
-  color: #010816;
+  color: var(--bg);
 }
 
 .theme-companion .footer-bottom {
-  border-color: #87acbb;
-  color: #3e6971;
+  border-color: var(--muted-blue);
+  color: var(--muted-blue);
 }
+
+/* =====================================================
+   DEV MODE — MONOCHROME OVERRIDES
+===================================================== */
 
 /* =====================================================
    DEV MODE — MONOCHROME OVERRIDES
