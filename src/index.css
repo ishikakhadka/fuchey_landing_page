@@ -812,6 +812,23 @@ a {
   gap: 10px;
 }
 
+.waitlist-message {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+  border-radius: 10px;
+}
+
+.waitlist-submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
 .waitlist-editions button {
   display: flex;
   align-items: center;
@@ -1038,14 +1055,16 @@ a {
 .footer-logo {
   display: inline-flex;
   align-items: center;
-
-  gap: 9px;
-
-  margin-bottom: 18px;
-
-  font-size: 22px;
+  text-decoration: none;
+  line-height: 0;
 }
 
+.footer-logo img {
+  width: 150px;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
 .footer-logo span {
   width: 32px;
   height: 32px;

@@ -6,8 +6,7 @@ function Footer() {
         <div className="footer-main">
           <div className="footer-brand">
             <a href="#" className="footer-logo">
-              <span>F</span>
-              <strong>fuchey</strong>
+              <img src="fuchey_logo.png" alt="Fuchey Logo" />
             </a>
 
             <p>Your Solana wallet, with a little personality.</p>
