@@ -318,28 +318,44 @@ section {
   gap: 24px;
 }
 
-/* The logo PNG has a lot of padding — crop it to the wordmark. */
 .logo {
-  display: block;
+  display: flex;
   flex-shrink: 0;
-  width: 140px;
-  height: 36px;
-  overflow: hidden;
+  border-radius: 8px;
 }
 
-.logo img,
-.footer-logo img {
-  width: 196px;
-  height: 36px;
-  max-width: none;
-  margin-left: -28px;
-  object-fit: cover;
-  transition: filter var(--transition);
+/* 3px per pixel unit keeps every block on whole device pixels. */
+.fuchey-logo {
+  display: block;
+  height: 33px;
+  width: auto;
+  overflow: visible;
 }
 
-.theme-dev .logo img,
-.theme-dev .footer-logo img {
-  filter: invert(1) brightness(1.15);
+.fuchey-logo-mark {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 450ms var(--ease-spring);
+}
+
+.fuchey-logo-mark rect {
+  fill: var(--brand);
+  transition: fill var(--transition);
+}
+
+.fuchey-logo-mark path {
+  fill: var(--surface);
+  transition: fill var(--transition);
+}
+
+.fuchey-logo-word {
+  fill: var(--ink);
+  transition: fill var(--transition);
+}
+
+.logo:hover .fuchey-logo-mark,
+.footer-logo:hover .fuchey-logo-mark {
+  transform: rotate(-8deg) scale(1.06);
 }
 
 .navbar nav {
@@ -1560,10 +1576,8 @@ section {
 }
 
 .footer-logo {
-  display: block;
-  width: 140px;
-  height: 36px;
-  overflow: hidden;
+  display: inline-flex;
+  border-radius: 8px;
 }
 
 .footer-brand > p {
@@ -1736,14 +1750,8 @@ section {
     display: none;
   }
 
-  .logo {
-    width: 120px;
-  }
-
-  .logo img {
-    width: 168px;
-    height: 36px;
-    margin-left: -24px;
+  .logo .fuchey-logo {
+    height: 27px;
   }
 
   .hero-description {

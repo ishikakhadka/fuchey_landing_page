@@ -1,3 +1,5 @@
+import FucheyLogo from "./FucheyLogo";
+
 function Footer() {
   return (
     <footer className="footer">
@@ -5,7 +7,7 @@ function Footer() {
         <div className="footer-main">
           <div className="footer-brand">
             <a href="#top" className="footer-logo" aria-label="Fuchey home">
-              <img src="/fuchey_logo.png" alt="Fuchey" />
+              <FucheyLogo />
             </a>
 
             <p>Your Solana wallet, with a little personality.</p>

@@ -1,4 +1,5 @@
 import { editions } from "../data/editions";
+import FucheyLogo from "./FucheyLogo";
 
 function Navbar({ edition, setEdition }) {
   const items = Object.values(editions);
@@ -8,7 +9,7 @@ function Navbar({ edition, setEdition }) {
     <header className="navbar">
       <div className="container navbar-inner">
         <a href="#top" className="logo" aria-label="Fuchey home">
-          <img src="/fuchey_logo.png" alt="Fuchey" />
+          <FucheyLogo />
         </a>
 
         <nav aria-label="Primary">
