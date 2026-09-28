@@ -663,65 +663,176 @@ section {
   transform: none;
 }
 
+.fuchey-3d-layer {
+  position: absolute;
+  inset: 0;
+}
 
+.fuchey-3d {
+  container-type: inline-size;
+}
 
+/* ---------- tour callouts ---------- */
 
-.stage-chips {
+.fuchey-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.fuchey-lines g {
+  opacity: 0;
+}
+
+.fuchey-lines path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--ink) 50%, transparent);
+  stroke-width: 1.25;
+}
+
+.fuchey-lines .dot {
+  fill: var(--brand);
+}
+
+.fuchey-lines .halo {
+  fill: none;
+  stroke: var(--brand);
+  stroke-width: 1;
+  opacity: 0.45;
+}
+
+.fuchey-callouts {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-.stage-chip {
+.fuchey-callout {
   position: absolute;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 10px 16px;
-  border: 1px solid var(--line-strong);
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--surface) 78%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: var(--shadow);
-  animation:
-    chipIn 700ms var(--ease-spring) both,
-    float 5s ease-in-out infinite;
+  left: 0;
+  top: 0;
+  text-align: center;
+  opacity: 0;
+  will-change: transform, opacity;
 }
 
-.stage-chip small {
+.fuchey-callout b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.fuchey-callout span {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+/* ---------- tour bar ---------- */
+
+.tour-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: rise 700ms var(--ease-out) both;
+}
+
+.tour-play {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    border-color 200ms,
+    color 200ms;
+}
+
+.tour-play:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.tour-chapters {
+  display: flex;
+  gap: 2px;
+  min-width: 0;
+  padding: 3px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.tour-chapters::-webkit-scrollbar {
+  display: none;
+}
+
+.tour-chapters button {
+  flex: none;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition:
+    color 200ms,
+    background 200ms;
+}
+
+.tour-chapters button:hover {
+  color: var(--ink);
+}
+
+.tour-chapters button[aria-current="true"] {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--brand) 16%, transparent);
+}
+
+.tour-hint {
+  flex: none;
+  margin-left: auto;
   font-family: var(--font-mono);
   font-size: 10px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--ink-faint);
 }
 
-.stage-chip strong {
-  font-family: var(--font-mono);
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--good);
-}
-
-.chip-1 {
-  top: 14%;
-  right: 2%;
-  animation-delay: 500ms, 0s;
-}
-
-.chip-2 {
-  bottom: 22%;
-  left: 0;
-  animation-delay: 700ms, -2.5s;
-}
-
-.chip-2 strong {
-  color: var(--pop);
-}
-
-.theme-dev .chip-2 strong {
-  color: var(--brand);
+@container (max-width: 680px) {
+  .tour-hint {
+    display: none;
+  }
 }
 
 @keyframes chipIn {
@@ -733,33 +844,6 @@ section {
     opacity: 1;
     scale: 1;
   }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    translate: 0 0;
-  }
-  50% {
-    translate: 0 -12px;
-  }
-}
-
-.stage-hint {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transform: translateX(-50%);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: var(--ink-faint);
-  pointer-events: none;
 }
 
 /* =====================================================
@@ -1674,12 +1758,8 @@ section {
     min-height: 380px;
   }
 
-  .stage-chip {
-    padding: 8px 12px;
-  }
-
-  .stage-chip strong {
-    font-size: 13px;
+  .tour-hint {
+    display: none;
   }
 
   .feature-grid {

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { ArrowRight, MousePointer2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 // three.js is heavy — load it in its own chunk so the copy paints first.
 const Fuchey3D = lazy(() => import("./Fuchey3D.jsx"));
@@ -45,20 +45,6 @@ function Hero({ edition }) {
           <Suspense fallback={<div className="fuchey-3d is-loading" />}>
             <Fuchey3D edition={edition.id} />
           </Suspense>
-
-          <div className="stage-chips" key={edition.id} aria-hidden="true">
-            {edition.chips.map((chip, index) => (
-              <div className={`stage-chip chip-${index + 1}`} key={chip.label}>
-                <small>{chip.label}</small>
-                <strong>{chip.value}</strong>
-              </div>
-            ))}
-          </div>
-
-          <p className="stage-hint">
-            <MousePointer2 size={13} strokeWidth={2} />
-            Drag to spin · tap to hop
-          </p>
         </div>
       </div>
     </section>
