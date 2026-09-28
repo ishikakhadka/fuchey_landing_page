@@ -39,22 +39,6 @@ function tex(c) {
   return t;
 }
 
-function drawPaw(ctx, cx, cy, s, color) {
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.ellipse(cx, cy + s * 0.18, s * 0.34, s * 0.28, 0, 0, TAU);
-  ctx.fill();
-  [
-    [-0.34, -0.2, 0.13],
-    [0, -0.36, 0.14],
-    [0.34, -0.2, 0.13],
-  ].forEach(([x, y, r]) => {
-    ctx.beginPath();
-    ctx.ellipse(cx + x * s, cy + y * s, r * s, r * s * 1.2, x * 1.2, 0, TAU);
-    ctx.fill();
-  });
-}
-
 function wordmarkTex(color, w = 1024, h = 160) {
   const c = mkCanvas(w, h);
   const x = c.getContext("2d");
@@ -71,10 +55,19 @@ function wordmarkTex(color, w = 1024, h = 160) {
   return tex(c);
 }
 
-function emblemTex(fg) {
-  const c = mkCanvas(256, 256);
-  drawPaw(c.getContext("2d"), 128, 134, 150, fg);
-  return tex(c);
+// The yeti sprite as a crisp pixel-art decal (back emblem, lanyard charm).
+function yetiTex(glow) {
+  const c = mkCanvas(384, 384);
+  const x = c.getContext("2d");
+  x.imageSmoothingEnabled = false;
+  if (glow) {
+    x.shadowColor = glow;
+    x.shadowBlur = 18;
+  }
+  if (yeti.complete && yeti.naturalWidth) x.drawImage(yeti, 12, 12, 360, 360);
+  const t = tex(c);
+  t.magFilter = THREE.NearestFilter;
+  return t;
 }
 
 function iconTex(kind, color) {
@@ -818,21 +811,20 @@ function screenPainters() {
       const glow = 0.6 + 0.4 * Math.sin(at * 2);
       x.shadowColor = COL.cyan;
       x.shadowBlur = 24 * glow;
-      drawPaw(x, 240, 150, 104, COL.cyan);
+      drawMascot(x, 240, 290 + Math.sin(at * 2.4) * 4, 230);
       x.shadowBlur = 0;
       const full = "Solana";
       const n = Math.min(full.length, Math.floor(l / 0.16));
       x.fillStyle = COL.ink;
       x.font = F.ui(600, 32);
       x.textAlign = "center";
-      x.fillText("Building on", 240, 262);
+      x.fillText("Building on", 240, 376);
       const typed = full.slice(0, n);
       x.fillStyle = COL.cyan;
       x.font = F.mono(500, 34);
       const w = x.measureText(typed).width;
-      x.fillText(typed, 240, 312);
-      if (Math.floor(at * 2.2) % 2 === 0) x.fillRect(240 + w / 2 + 4, 288, 16, 28);
-      drawMascot(x, 240, 508 + Math.sin(at * 2.4) * 3, 150);
+      x.fillText(typed, 240, 426);
+      if (Math.floor(at * 2.2) % 2 === 0) x.fillRect(240 + w / 2 + 4, 402, 16, 28);
     }
 
     sceneFade(x, u, LOOP.dev, "3,7,14");
@@ -1078,12 +1070,12 @@ function buildDevice(kind, shadowTex) {
     hatch.position.z = back - 0.001;
     hatch.rotation.y = Math.PI;
     body.add(hatch);
-    const em = decal(0.34, 0.34, emblemTex("#9FE3F2"));
+    const em = decal(0.4, 0.4, yetiTex("rgba(69,227,255,.55)"));
     em.position.set(0, 0.12, back - 0.003);
     em.rotation.y = Math.PI;
     body.add(em);
   } else {
-    const em = decal(0.32, 0.32, emblemTex("#2E5470"));
+    const em = decal(0.4, 0.4, yetiTex());
     em.position.set(0, 0.12, back);
     em.rotation.y = Math.PI;
     body.add(em);
@@ -1143,7 +1135,7 @@ function buildDevice(kind, shadowTex) {
   const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.035, 48), dev ? M.armor : M.shell);
   disc.rotation.x = Math.PI / 2;
   charm.add(disc);
-  const cf = decal(0.26, 0.26, emblemTex(dev ? "#7FE9FF" : "#EAF2F5"), { roughness: 0.4 });
+  const cf = decal(0.25, 0.25, yetiTex(dev ? "rgba(69,227,255,.55)" : null), { roughness: 0.4 });
   cf.position.z = 0.019;
   charm.add(cf);
   const cb = cf.clone();
