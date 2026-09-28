@@ -1,13 +1,11 @@
-import "../index.css";
-
 function Footer() {
   return (
     <footer className="footer">
       <div className="container">
         <div className="footer-main">
           <div className="footer-brand">
-            <a href="#" className="footer-logo">
-              <img src="/fuchey_logo.png" alt="Fuchey Logo" />
+            <a href="#top" className="footer-logo" aria-label="Fuchey home">
+              <img src="/fuchey_logo.png" alt="Fuchey" />
             </a>
 
             <p>Your Solana wallet, with a little personality.</p>
@@ -16,6 +14,7 @@ function Footer() {
           <div className="footer-links">
             <div>
               <p className="footer-heading">EXPLORE</p>
+              <a href="#how">How it works</a>
               <a href="#editions">Editions</a>
               <a href="#features">Features</a>
               <a href="#waitlist">Waitlist</a>

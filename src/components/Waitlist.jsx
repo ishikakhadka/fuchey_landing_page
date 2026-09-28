@@ -179,7 +179,7 @@ function Waitlist({ edition }) {
   return (
     <section id="waitlist" className="waitlist-section">
       <div className="container">
-        <div className="waitlist-card">
+        <div className="waitlist-card reveal">
           {/* ==========================
               SUCCESS STATE
           ========================== */}
