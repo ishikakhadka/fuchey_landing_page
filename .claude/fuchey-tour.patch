@@ -1,0 +1,1397 @@
+diff --git a/src/assets/fuchey-yeti.png b/src/assets/fuchey-yeti.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..d52140e49aff35ce4c4092cfb62a7b61f9de5a41
+GIT binary patch
+literal 17324
+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
+PgTvCo=2W>EEav|K6=PkB
+
+literal 0
+HcmV?d00001
+
+diff --git a/src/components/Fuchey3D.jsx b/src/components/Fuchey3D.jsx
+index 069add6..dc76464 100644
+--- a/src/components/Fuchey3D.jsx
++++ b/src/components/Fuchey3D.jsx
+@@ -1,34 +1,38 @@
+ import { useEffect, useRef, useState } from "react";
+-import { createFucheyScene } from "../three/fucheyScene.js";
++import { Pause, Play } from "lucide-react";
++import { CHAPTERS, createFucheyScene } from "../three/fucheyScene.js";
++
++const reducedMotion = () =>
++  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+ 
+ function Fuchey3D({ edition }) {
+   const wrapRef = useRef(null);
+   const sceneRef = useRef(null);
+   const initialEdition = useRef(edition);
+   const [status, setStatus] = useState("loading");
++  const [chapter, setChapter] = useState(0);
++  const [playing, setPlaying] = useState(() => !reducedMotion());
+ 
+   useEffect(() => {
+     const wrap = wrapRef.current;
+-    const reduced = window.matchMedia(
+-      "(prefers-reduced-motion: reduce)",
+-    ).matches;
+ 
+     // A fresh canvas per mount: StrictMode mounts twice in dev, and a canvas
+     // whose WebGL context was disposed can't be reused by a new renderer.
+     const canvas = document.createElement("canvas");
+     canvas.setAttribute(
+       "aria-label",
+-      "Interactive 3D model of the Fuchey device. Drag to turn it, tap to make it hop.",
++      "Interactive 3D tour of the Fuchey device. Drag to turn it.",
+     );
+-    wrap.appendChild(canvas);
++    wrap.prepend(canvas);
+ 
+     const ctrl = createFucheyScene({
+       canvas,
+       container: wrap,
+       edition: initialEdition.current,
+-      reduced,
++      reduced: reducedMotion(),
+       onReady: () => setStatus("ready"),
+       onError: () => setStatus("failed"),
++      onChapter: setChapter,
+     });
+ 
+     if (!ctrl) {
+@@ -50,9 +54,39 @@ function Fuchey3D({ edition }) {
+     sceneRef.current?.setEdition(edition);
+   }, [edition]);
+ 
++  useEffect(() => {
++    sceneRef.current?.setPlaying(playing);
++  }, [playing]);
++
++  const chapters = CHAPTERS[edition] ?? CHAPTERS.companion;
++
+   return (
+     <div ref={wrapRef} className={`fuchey-3d is-${status}`}>
+       {status === "loading" && <span className="fuchey-3d-loader" aria-hidden="true" />}
++
++      {status === "ready" && (
++        <div className="tour-bar">
++          <button
++            type="button"
++            className="tour-play"
++            aria-label={playing ? "Pause tour" : "Play tour"}
++            onClick={() => setPlaying((p) => !p)}>
++            {playing ? <Pause size={14} /> : <Play size={14} />}
++          </button>
++
++          <div className="tour-chapters" role="group" aria-label="Tour chapters">
++            {chapters.map(([t, label], i) => (
++              <button
++                key={label}
++                type="button"
++                aria-current={i === chapter}
++                onClick={() => sceneRef.current?.seek(t)}>
++                {label}
++              </button>
++            ))}
++          </div>
++        </div>
++      )}
+     </div>
+   );
+ }
+diff --git a/src/components/Hero.jsx b/src/components/Hero.jsx
+index bdbfd0c..4dcc8dc 100644
+--- a/src/components/Hero.jsx
++++ b/src/components/Hero.jsx
+@@ -1,5 +1,5 @@
+ import { lazy, Suspense } from "react";
+-import { ArrowRight, MousePointer2 } from "lucide-react";
++import { ArrowRight } from "lucide-react";
+ 
+ // three.js is heavy — load it in its own chunk so the copy paints first.
+ const Fuchey3D = lazy(() => import("./Fuchey3D.jsx"));
+@@ -45,20 +45,6 @@ function Hero({ edition }) {
+           <Suspense fallback={<div className="fuchey-3d is-loading" />}>
+             <Fuchey3D edition={edition.id} />
+           </Suspense>
+-
+-          <div className="stage-chips" key={edition.id} aria-hidden="true">
+-            {edition.chips.map((chip, index) => (
+-              <div className={`stage-chip chip-${index + 1}`} key={chip.label}>
+-                <small>{chip.label}</small>
+-                <strong>{chip.value}</strong>
+-              </div>
+-            ))}
+-          </div>
+-
+-          <p className="stage-hint">
+-            <MousePointer2 size={13} strokeWidth={2} />
+-            Drag to spin · tap to hop
+-          </p>
+         </div>
+       </div>
+     </section>
+diff --git a/src/data/editions.jsx b/src/data/editions.jsx
+index 75e2864..d5350d6 100644
+--- a/src/data/editions.jsx
++++ b/src/data/editions.jsx
+@@ -18,11 +18,6 @@ export const editions = {
+ 
+     highlights: ["Live on-chain logs", "Physical signing", "USB-C dev port"],
+ 
+-    // Floating chips around the 3D device
+-    chips: [
+-      { label: "slot", value: "291,847,112" },
+-      { label: "tx", value: "✓ confirmed" },
+-    ],
+ 
+     audience: "For builders & hackers",
+     pitch:
+@@ -88,10 +83,6 @@ export const editions = {
+ 
+     highlights: ["Reacts to transactions", "Moods & levels", "3 physical buttons"],
+ 
+-    chips: [
+-      { label: "received", value: "+0.50 SOL" },
+-      { label: "mood", value: "Happy ♥" },
+-    ],
+ 
+     audience: "For everyday Solana users",
+     pitch:
+diff --git a/src/index.css b/src/index.css
+index 4ebf751..f5c0f0e 100644
+--- a/src/index.css
++++ b/src/index.css
+@@ -666,100 +666,181 @@ section {
+ 
+ 
+ 
+-.stage-chips {
++/* guided-tour overlay: callouts with leader lines, chapter bar */
++.fuchey-lines {
+   position: absolute;
+   inset: 0;
++  width: 100%;
++  height: 100%;
++  overflow: visible;
+   pointer-events: none;
+ }
+ 
+-.stage-chip {
++.fuchey-lines g {
++  opacity: 0;
++}
++
++.fuchey-lines path {
++  fill: none;
++  stroke: var(--line-strong);
++  stroke-width: 1.25;
++}
++
++.fuchey-lines .dot {
++  fill: var(--brand);
++}
++
++.fuchey-lines .halo {
++  fill: none;
++  stroke: var(--brand);
++  stroke-width: 1;
++  opacity: 0.45;
++}
++
++.fuchey-callouts {
+   position: absolute;
+-  display: flex;
+-  flex-direction: column;
+-  gap: 3px;
+-  padding: 10px 16px;
++  inset: 0;
++  pointer-events: none;
++}
++
++.fuchey-callout {
++  position: absolute;
++  width: min(250px, 46%);
++  padding: 12px 16px;
+   border: 1px solid var(--line-strong);
+   border-radius: 16px;
+-  background: color-mix(in srgb, var(--surface) 78%, transparent);
++  background: color-mix(in srgb, var(--surface) 80%, transparent);
+   backdrop-filter: blur(12px);
+   -webkit-backdrop-filter: blur(12px);
+   box-shadow: var(--shadow);
+-  animation:
+-    chipIn 700ms var(--ease-spring) both,
+-    float 5s ease-in-out infinite;
+-}
+-
+-.stage-chip small {
+-  font-family: var(--font-mono);
+-  font-size: 10px;
+-  letter-spacing: 0.18em;
+-  text-transform: uppercase;
+-  color: var(--ink-faint);
++  opacity: 0;
++  visibility: hidden;
+ }
+ 
+-.stage-chip strong {
+-  font-family: var(--font-mono);
+-  font-size: 15px;
+-  font-weight: 500;
+-  color: var(--good);
++.fuchey-callout.is-on {
++  visibility: visible;
+ }
+ 
+-.chip-1 {
+-  top: 14%;
+-  right: 2%;
+-  animation-delay: 500ms, 0s;
++.fuchey-callout b {
++  display: block;
++  font: 400 12px/1.35 var(--font-display);
++  letter-spacing: 0.06em;
++  text-transform: uppercase;
++  color: var(--ink);
+ }
+ 
+-.chip-2 {
+-  bottom: 22%;
+-  left: 0;
+-  animation-delay: 700ms, -2.5s;
++.fuchey-callout span {
++  display: block;
++  margin-top: 6px;
++  font: 400 13px/1.45 var(--font-main);
++  color: var(--ink-soft);
+ }
+ 
+-.chip-2 strong {
+-  color: var(--pop);
++.dock-top-left,
++.dock-top-right {
++  top: 4px;
+ }
+ 
+-.theme-dev .chip-2 strong {
+-  color: var(--brand);
++.dock-bottom-left,
++.dock-bottom-right {
++  bottom: 60px;
+ }
+ 
+-@keyframes chipIn {
+-  from {
+-    opacity: 0;
+-    scale: 0.7;
+-  }
+-  to {
+-    opacity: 1;
+-    scale: 1;
+-  }
++.dock-top-left,
++.dock-bottom-left {
++  left: 0;
+ }
+ 
+-@keyframes float {
+-  0%,
+-  100% {
+-    translate: 0 0;
+-  }
+-  50% {
+-    translate: 0 -12px;
+-  }
++.dock-top-right,
++.dock-bottom-right {
++  right: 0;
+ }
+ 
+-.stage-hint {
++.tour-bar {
+   position: absolute;
+   left: 50%;
+   bottom: 0;
+   display: flex;
+   align-items: center;
+   gap: 8px;
++  max-width: 100%;
+   transform: translateX(-50%);
+-  font-family: var(--font-mono);
+-  font-size: 11px;
+-  letter-spacing: 0.14em;
++}
++
++.tour-play,
++.tour-chapters {
++  border: 1px solid var(--line-strong);
++  background: color-mix(in srgb, var(--surface) 70%, transparent);
++  backdrop-filter: blur(10px);
++  -webkit-backdrop-filter: blur(10px);
++}
++
++.tour-play {
++  flex: none;
++  display: grid;
++  place-items: center;
++  width: 38px;
++  height: 38px;
++  border-radius: 50%;
++  color: var(--ink);
++  cursor: pointer;
++}
++
++.tour-chapters {
++  display: flex;
++  gap: 2px;
++  min-width: 0;
++  padding: 4px;
++  border-radius: 999px;
++  overflow-x: auto;
++  scrollbar-width: none;
++}
++
++.tour-chapters::-webkit-scrollbar {
++  display: none;
++}
++
++.tour-chapters button {
++  flex: none;
++  padding: 8px 12px;
++  border: 0;
++  border-radius: 999px;
++  background: none;
++  font: 500 11px/1 var(--font-mono);
++  letter-spacing: 0.08em;
+   text-transform: uppercase;
+   white-space: nowrap;
+   color: var(--ink-faint);
+-  pointer-events: none;
++  cursor: pointer;
++  transition:
++    color 200ms,
++    background 200ms;
++}
++
++.tour-chapters button:hover {
++  color: var(--ink);
++}
++
++.tour-chapters button[aria-current="true"] {
++  color: var(--on-brand);
++  background: var(--brand);
++}
++
++.tour-play:focus-visible,
++.tour-chapters button:focus-visible {
++  outline: 2px solid var(--brand);
++  outline-offset: 2px;
++}
++
++@keyframes chipIn {
++  from {
++    opacity: 0;
++    scale: 0.7;
++  }
++  to {
++    opacity: 1;
++    scale: 1;
++  }
+ }
+ 
+ /* =====================================================
+@@ -1674,12 +1755,13 @@ section {
+     min-height: 380px;
+   }
+ 
+-  .stage-chip {
+-    padding: 8px 12px;
++  .fuchey-callout {
++    width: min(220px, 58%);
++    padding: 10px 12px;
+   }
+ 
+-  .stage-chip strong {
+-    font-size: 13px;
++  .tour-chapters button {
++    padding: 8px 10px;
+   }
+ 
+   .feature-grid {
+diff --git a/src/three/fucheyScene.js b/src/three/fucheyScene.js
+index ec392a3..c72e015 100644
+--- a/src/three/fucheyScene.js
++++ b/src/three/fucheyScene.js
+@@ -1,10 +1,11 @@
+-// Fuchey 3D device — ported from public/fuchey_animation.jsx (the 3D showcase)
+-// and trimmed down for the landing page hero: one device at a time, idle float,
+-// drag to turn, tap to hop, and a spin transition when the edition changes.
++// Fuchey 3D device tour — ported from public/fuchey_animation.html (the 3D
++// showcase). One edition at a time: a guided camera tour with feature callouts,
++// chapters, drag to turn, and a spin swap when the edition changes.
+ 
+ import * as THREE from "three";
+ import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
++import yetiUrl from "../assets/fuchey-yeti.png";
+ 
+ /* ---------- math helpers ---------- */
+ const TAU = Math.PI * 2;
+@@ -14,6 +15,7 @@ const ease = (x) => {
+   return x * x * x * (x * (x * 6 - 15) + 10);
+ };
+ const lerp = (a, b, f) => a + (b - a) * f;
++const lerp3 = (a, b, f) => [lerp(a[0], b[0], f), lerp(a[1], b[1], f), lerp(a[2], b[2], f)];
+ const rnd = (i) => {
+   const s = Math.sin(i * 12.9898 + 78.233) * 43758.5453;
+   return s - Math.floor(s);
+@@ -137,8 +139,8 @@ function makeShadowTex() {
+ const SW = 480;
+ const SH = 520;
+ 
+-// One loop of on-screen scenes per edition (seconds).
+-const LOOP = { companion: 13, dev: 14 };
++// Length of one guided tour (seconds); screen scenes and camera share this clock.
++const TOUR = 16;
+ const SCENE_CUTS = [3.3, 5.8, 8.3, 12];
+ // Button presses that line up with the on-screen UI: [time, buttonIndex].
+ const PRESSES = {
+@@ -204,7 +206,7 @@ function logLine(i) {
+   }
+ }
+ 
+-function screenPainters() {
++function screenPainters(yeti) {
+   function screenBg(x, dev) {
+     const g = x.createLinearGradient(0, 0, 0, SH);
+     g.addColorStop(0, dev ? "#0B1526" : "#0E1B2D");
+@@ -257,27 +259,28 @@ function screenPainters() {
+     x.fillRect(408, 33, 26, 12);
+   }
+ 
+-  // Fuchey's paw emblem stands in for the character on screen.
++  // Fuchey the pixel yeti, with an optional scarf from the wardrobe.
+   function drawMascot(x, cx, bottom, size, o = {}) {
++    if (!yeti.complete || !yeti.naturalWidth) return;
+     const sq = o.squash || 0;
+-    const s = size * 0.62;
+-    const cy = bottom - size * 0.5;
+-    x.save();
+-    x.translate(cx, cy);
+-    x.scale(1 + sq * 0.05, 1 - sq * 0.05);
+-    x.shadowColor = "rgba(143,211,232,.55)";
+-    x.shadowBlur = size * 0.12;
+-    drawPaw(x, 0, 0, s, "#8FD3E8");
++    const w = size * (1 + sq * 0.06);
++    const h = size * (1 - sq * 0.06);
++    x.imageSmoothingEnabled = false;
++    x.drawImage(yeti, cx - w / 2, bottom - h, w, h);
+     if (o.scarf) {
+-      x.shadowBlur = 0;
++      const top = bottom - h;
+       x.fillStyle = COL.coral;
+       x.beginPath();
+-      x.roundRect(-s * 0.42, s * 0.36, s * 0.84, s * 0.12, s * 0.06);
++      x.roundRect(cx - w * 0.23, top + h * 0.37, w * 0.46, h * 0.07, h * 0.03);
+       x.fill();
+       x.fillStyle = "#D8704E";
+-      x.fillRect(s * 0.14, s * 0.44, s * 0.12, s * 0.22);
++      x.fillRect(cx + w * 0.08, top + h * 0.42, w * 0.08, h * 0.15);
++      x.fillStyle = "#FFD3BF";
++      for (let i = 0; i < 4; i++) {
++        x.fillRect(cx - w * 0.2 + i * w * 0.11, top + h * 0.385, w * 0.035, h * 0.025);
++      }
+     }
+-    x.restore();
++    x.imageSmoothingEnabled = true;
+   }
+ 
+   function heart(x, cx, cy, s, c) {
+@@ -596,7 +599,7 @@ function screenPainters() {
+       x.fillText("Fuchey looks cosy", 240, 480);
+     }
+ 
+-    sceneFade(x, u, LOOP.companion, "5,10,20");
++    sceneFade(x, u, TOUR, "5,10,20");
+   }
+ 
+   function drawDev(x, u, at) {
+@@ -829,7 +832,7 @@ function screenPainters() {
+       drawMascot(x, 240, 508 + Math.sin(at * 2.4) * 3, 150);
+     }
+ 
+-    sceneFade(x, u, LOOP.dev, "3,7,14");
++    sceneFade(x, u, TOUR, "3,7,14");
+   }
+ 
+   return { companion: drawCompanion, dev: drawDev };
+@@ -1167,10 +1170,12 @@ function buildDevice(kind, shadowTex) {
+   root.userData = {
+     body,
+     H,
++    front,
++    btnY: by,
+     buttons,
+     lanyard: pivot,
+     shadow,
+-    screen: { ctx: sctx, tex: stex },
++    screen: { ctx: sctx, tex: stex, w: sw, y: sy },
+   };
+   return root;
+ }
+@@ -1189,8 +1194,117 @@ function disposeObject(root) {
+   });
+ }
+ 
++/* ---------- choreography ---------- */
++// Chapters of each edition's tour: [start time, label].
++export const CHAPTERS = {
++  companion: [
++    [0, "Meet Fuchey"],
++    [3.4, "Reactions"],
++    [5.9, "Moods"],
++    [9.1, "Wardrobe"],
++    [12.6, "Shell"],
++    [14.3, "USB-C"],
++  ],
++  dev: [
++    [0, "Overview"],
++    [3.4, "Live logs"],
++    [5.9, "Dev tools"],
++    [9.1, "Signing"],
++    [12.6, "Armor"],
++    [14.3, "USB-C"],
++  ],
++};
++
++// Feature callouts. `dock` is where the label card sits in the stage.
++const CALLOUTS = [
++  { ed: "companion", a: 3.6, b: 5.8, p: "screen", dock: "top-right", t: "Reacts to your wallet", d: "Incoming SOL makes Fuchey jump for joy." },
++  { ed: "companion", a: 6.1, b: 8.3, p: "yeti", dock: "top-left", t: "Moods & progression", d: "Fuchey levels up and changes mood as you use your wallet." },
++  { ed: "companion", a: 9.3, b: 11.9, p: "btnR", dock: "bottom-right", t: "Three physical buttons", d: "Browse activity and dress Fuchey up in collectible wearables." },
++  { ed: "companion", a: 12.6, b: 13.6, p: "back", dock: "top-left", t: "Soft-touch shell", d: "Pocket-sized, with a lanyard charm to take Fuchey along." },
++  { ed: "companion", a: 14.3, b: 15.3, p: "usb", dock: "bottom-right", t: "USB-C", d: "Charge and connect from the bottom edge." },
++  { ed: "dev", a: 3.6, b: 5.8, p: "screen", dock: "top-right", t: "Live on-chain logs", d: "Slots, transactions and compute units stream by in real time." },
++  { ed: "dev", a: 6.1, b: 8.3, p: "screen", dock: "top-right", t: "Developer tools", d: "Transactions, programs, a dApp browser and logs on the device." },
++  { ed: "dev", a: 9.3, b: 11.9, p: "btnC", dock: "bottom-left", t: "Physical signing", d: "Approve a signature request with a real button press." },
++  { ed: "dev", a: 12.6, b: 13.6, p: "back", dock: "top-left", t: "Armored shell", d: "Reinforced corners and glowing LED status strips." },
++  { ed: "dev", a: 14.3, b: 15.3, p: "usb", dock: "bottom-right", t: "USB-C dev port", d: "Plug into your machine for live debugging." },
++];
++
++// Camera framings, tuned for the hero stage (roughly square). Narrow frames pull back.
++function views(aspect) {
++  const k = Math.max(1, 0.95 / aspect);
++  return {
++    hero: { cam: [0, 0.12, 5.3 * k], tgt: [-0.08, -0.06, 0] },
++    close: { cam: [0.1, 0.3, 3.9 * k], tgt: [0.04, 0.1, 0] },
++    btn: { cam: [0.05, 0.05, 3.8 * k], tgt: [0.06, -0.1, 0] },
++    back: { cam: [0, 0.1, 4.3 * k], tgt: [0, 0, 0] },
++    bottom: { cam: [0, -0.8, 3.7 * k], tgt: [0, -0.35, 0] },
++  };
++}
++
++function buildKeys(aspect) {
++  const V = views(aspect);
++  const P = Math.PI;
++  return [
++    [0, "hero", -0.55, 0.06],
++    [2.7, "hero", 0.22, 0.06],
++    [3.4, "close", 0, 0],
++    [5.9, "close", -0.1, 0],
++    [8.3, "close", 0.08, 0],
++    [9.1, "btn", -0.18, 0.1],
++    [11.9, "btn", -0.05, 0.1],
++    [12.6, "back", P + 0.32, 0.05],
++    [13.6, "back", P + 0.14, 0.05],
++    [14.3, "bottom", TAU - 0.35, -0.8],
++    [15.3, "bottom", TAU - 0.45, -0.8],
++    [16, "hero", TAU - 0.55, 0.06],
++  ].map(([t, v, ry, rx]) => ({ t, ry, rx, cam: V[v].cam, tgt: V[v].tgt }));
++}
++
++function seqPose(keys, u) {
++  u = clamp(u, 0, TOUR);
++  let i = 0;
++  while (i < keys.length - 2 && u >= keys[i + 1].t) i++;
++  const a = keys[i];
++  const b = keys[i + 1];
++  const f = ease((u - a.t) / (b.t - a.t));
++  return {
++    ry: lerp(a.ry, b.ry, f),
++    rx: lerp(a.rx, b.rx, f),
++    cam: lerp3(a.cam, b.cam, f),
++    tgt: lerp3(a.tgt, b.tgt, f),
++  };
++}
++
++function anchorFor(d, p) {
++  const { front: f, screen: s, H, btnY: by } = d.userData;
++  switch (p) {
++    case "screen":
++      return [s.w / 2 - 0.02, s.y + 0.1, f + 0.02];
++    case "yeti":
++      return [0.02, s.y + 0.08, f + 0.02];
++    case "btnR":
++      return [0.28, by, f + 0.05];
++    case "btnC":
++      return [0, by, f + 0.05];
++    case "back":
++      return [0, 0.12, -0.2];
++    default:
++      return [0.06, -H / 2 - 0.01, 0.02];
++  }
++}
++
++const SWAP = 1.1;
++
+ /* ---------- scene ---------- */
+-export function createFucheyScene({ canvas, container, edition, reduced, onReady, onError }) {
++export function createFucheyScene({
++  canvas,
++  container,
++  edition,
++  reduced,
++  onReady,
++  onError,
++  onChapter,
++}) {
+   let renderer;
+   try {
+     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+@@ -1219,22 +1333,67 @@ export function createFucheyScene({ canvas, container, edition, reduced, onReady
+   rim.position.set(-2, 2, -5);
+   scene.add(key, fill, rim);
+ 
++  const yeti = new Image();
++  yeti.src = yetiUrl;
+   const shadowTex = makeShadowTex();
+-  const painters = screenPainters();
++  const painters = screenPainters(yeti);
+   const devices = {};
+ 
++  /* callout overlay */
++  const SVG_NS = "http://www.w3.org/2000/svg";
++  const svg = document.createElementNS(SVG_NS, "svg");
++  svg.setAttribute("class", "fuchey-lines");
++  svg.setAttribute("aria-hidden", "true");
++  const layer = document.createElement("div");
++  layer.className = "fuchey-callouts";
++  layer.setAttribute("aria-live", "polite");
++  container.append(svg, layer);
++
++  const callouts = CALLOUTS.map((c) => {
++    const el = document.createElement("div");
++    el.className = `fuchey-callout dock-${c.dock}`;
++    const b = document.createElement("b");
++    b.textContent = c.t;
++    const span = document.createElement("span");
++    span.textContent = c.d;
++    el.append(b, span);
++    layer.appendChild(el);
++    const g = document.createElementNS(SVG_NS, "g");
++    g.innerHTML = '<path/><circle class="halo" r="9"/><circle class="dot" r="3.5"/>';
++    svg.appendChild(g);
++    return {
++      ...c,
++      el,
++      g,
++      path: g.querySelector("path"),
++      halo: g.querySelector(".halo"),
++      dot: g.querySelector(".dot"),
++      shown: false,
++    };
++  });
++
+   /* state */
+   let disposed = false;
+   let ready = false;
+   let visible = true;
+   let raf = 0;
+   let last = performance.now();
+-  let time = 0;
++  let clock = 0;
++
++  let W = 1;
++  let Hh = 1;
++  let keys = buildKeys(1);
+ 
+   let current = edition;
++  let u = 0;
++  let playing = !reduced;
++  let chapter = -1;
++
++  // Edition swap: the old device spins out from wherever its tour was, the new one spins in.
+   let previous = null;
+-  let swapStart = 0;
+-  const screenStart = { companion: 0, dev: 0 };
++  let swapStart = -10;
++  let swapFrom = null;
++
+   let bgMix = edition === "dev" ? 1 : 0;
+ 
+   let dragging = false;
+@@ -1242,33 +1401,25 @@ export function createFucheyScene({ canvas, container, edition, reduced, onReady
+   let dragPitch = 0;
+   let lastX = 0;
+   let lastY = 0;
+-  let travel = 0;
+-  let hopStart = -10;
+-  let tiltX = 0;
+-  let tiltY = 0;
+-  let tiltTX = 0;
+-  let tiltTY = 0;
++
++  const v3 = new THREE.Vector3();
+ 
+   /* sizing */
+   function resize() {
+     const r = container.getBoundingClientRect();
+-    const w = Math.max(1, r.width);
+-    const h = Math.max(1, r.height);
+-    renderer.setSize(w, h, false);
+-    const aspect = w / h;
+-    camera.aspect = aspect;
+-    // Pull back on narrow frames so the device + lanyard always fit.
+-    const z = Math.max(4.9, 3.55 / aspect);
+-    camera.position.set(0, 0.12, z);
+-    camera.lookAt(-0.08, -0.12, 0);
++    W = Math.max(1, r.width);
++    Hh = Math.max(1, r.height);
++    renderer.setSize(W, Hh, false);
++    camera.aspect = W / Hh;
+     camera.updateProjectionMatrix();
++    svg.setAttribute("viewBox", `0 0 ${W} ${Hh}`);
++    keys = buildKeys(W / Hh);
+     if (ready && !raf) frame(0);
+   }
+ 
+   /* input */
+   function onPointerDown(e) {
+     dragging = true;
+-    travel = 0;
+     lastX = e.clientX;
+     lastY = e.clientY;
+     canvas.setPointerCapture?.(e.pointerId);
+@@ -1276,115 +1427,103 @@ export function createFucheyScene({ canvas, container, edition, reduced, onReady
+ 
+   function onPointerMove(e) {
+     if (!dragging) return;
+-    const dx = e.clientX - lastX;
+-    const dy = e.clientY - lastY;
+-    travel += Math.abs(dx) + Math.abs(dy);
+-    dragYaw += dx * 0.012;
+-    dragPitch = clamp(dragPitch + dy * 0.006, -0.7, 0.7);
++    dragYaw += (e.clientX - lastX) * 0.012;
++    dragPitch = clamp(dragPitch + (e.clientY - lastY) * 0.006, -0.7, 0.7);
+     lastX = e.clientX;
+     lastY = e.clientY;
+   }
+ 
+   function onPointerUp() {
+-    if (dragging && travel < 6) hop();
+     dragging = false;
+   }
+ 
+-  function onPointerCancel() {
+-    dragging = false;
+-  }
++  canvas.addEventListener("pointerdown", onPointerDown);
++  canvas.addEventListener("pointermove", onPointerMove);
++  canvas.addEventListener("pointerup", onPointerUp);
++  canvas.addEventListener("pointercancel", onPointerUp);
+ 
+-  function onWindowPointer(e) {
+-    if (e.pointerType !== "mouse") return;
+-    tiltTX = clamp((e.clientX / window.innerWidth) * 2 - 1, -1, 1);
+-    tiltTY = clamp((e.clientY / window.innerHeight) * 2 - 1, -1, 1);
++  function pressesFor(ed, t) {
++    const pr = [0, 0, 0];
++    PRESSES[ed].forEach(([pt, bi]) => {
++      const q = (t - pt) / 0.28;
++      if (q > 0 && q < 1) pr[bi] = Math.sin(q * Math.PI);
++    });
++    return pr;
+   }
+ 
+-  function hop() {
+-    if (reduced) return;
+-    if (time - hopStart > 0.9) hopStart = time;
++  function placeDevice(d, i, scale, ry, rx, screenT) {
++    d.visible = scale > 0.002;
++    if (!d.visible) return;
++    const m = reduced ? 0 : 1;
++    const float = Math.sin(clock * 1.2 + i * 1.7) * 0.02 * m;
++    d.scale.setScalar(Math.max(0.0001, scale));
++    d.position.set(0, float, 0);
++    d.rotation.set(rx + dragPitch, ry + dragYaw, 0, "YXZ");
++
++    const ud = d.userData;
++    ud.lanyard.rotation.z = (Math.sin(clock * 1.3 + i) * 0.05 + Math.sin(clock * 0.7) * 0.02) * m;
++    ud.lanyard.rotation.x = Math.sin(clock * 1.1 + i) * 0.04 * m;
++    ud.shadow.material.opacity = lerp(0.28, 0.5, bgMix) * scale;
++    ud.shadow.position.y = -ud.H / 2 - 0.36 - float;
++
++    const ed = d === devices.dev ? "dev" : "companion";
++    const pr = pressesFor(ed, screenT);
++    ud.buttons.forEach((b, bi) => {
++      b.position.z = -0.022 * pr[bi];
++    });
++    painters[ed](ud.screen.ctx, screenT, reduced ? 0 : clock);
++    ud.screen.tex.needsUpdate = true;
+   }
+ 
+-  canvas.addEventListener("pointerdown", onPointerDown);
+-  canvas.addEventListener("pointermove", onPointerMove);
+-  canvas.addEventListener("pointerup", onPointerUp);
+-  canvas.addEventListener("pointercancel", onPointerCancel);
+-  window.addEventListener("pointermove", onWindowPointer, { passive: true });
+-
+   /* frame */
+   function frame(dt) {
+-    time += dt;
+-    const m = reduced ? 0 : 1;
++    clock += dt;
+ 
+-    // 0 → 1 over a swap: first half spins the old device out, second half spins the new one in.
+-    const s = reduced ? 1 : clamp((time - swapStart) / 1.1);
+-    const out = ease(s / 0.5);
+-    const inn = ease((s - 0.5) / 0.5);
+-    if (previous && s >= 1) previous = null;
++    const s = clamp((clock - swapStart) / SWAP);
++    const swapping = previous && s < 1;
++    if (previous && !swapping) previous = null;
+ 
+-    bgMix = lerp(bgMix, current === "dev" ? 1 : 0, 1 - Math.exp(-dt * 3));
++    if (!swapping && playing && !dragging) {
++      u += dt;
++      if (u >= TOUR) u -= TOUR;
++    }
+ 
++    bgMix = lerp(bgMix, current === "dev" ? 1 : 0, 1 - Math.exp(-dt * 3));
+     if (!dragging) {
+       const k = Math.exp(-dt * 2.2);
+       dragYaw *= k;
+       dragPitch *= k;
+     }
+-    const tk = 1 - Math.exp(-dt * 3);
+-    tiltX += (tiltTX * m - tiltX) * tk;
+-    tiltY += (tiltTY * m - tiltY) * tk;
+-
+-    const hp = clamp((time - hopStart) / 0.9);
+-    const hopping = hp > 0 && hp < 1;
+-    const hopY = hopping ? Math.sin(hp * Math.PI) * 0.2 : 0;
+-    const hopSpin = hopping ? ease(hp) * TAU : 0;
+-
+-    const idleYaw = -0.4 + Math.sin(time * 0.45) * 0.3 * m;
+-    const idlePitch = 0.05 + Math.sin(time * 0.7) * 0.03 * m;
+-    const float = Math.sin(time * 1.2) * 0.035 * m;
+-
+-    ["companion", "dev"].forEach((ed, i) => {
+-      const d = devices[ed];
+-      if (!d) return;
+-      let scale = 0;
+-      let spin = 0;
+-      if (ed === current) {
+-        scale = reduced ? 1 : inn;
+-        spin = reduced ? 0 : -(1 - inn) * 2.2;
+-      } else if (ed === previous && !reduced) {
+-        scale = 1 - out;
+-        spin = out * 2.2;
+-      }
+-      d.visible = scale > 0.002;
+-      if (!d.visible) return;
+-
+-      d.scale.setScalar(Math.max(0.0001, scale));
+-      d.position.y = float + hopY;
+-      d.rotation.set(
+-        idlePitch + dragPitch + tiltY * 0.12,
+-        idleYaw + spin + dragYaw + tiltX * 0.35 + hopSpin,
+-        0,
+-        "YXZ",
+-      );
+ 
+-      const ud = d.userData;
+-      ud.lanyard.rotation.z = (Math.sin(time * 1.3 + i) * 0.05 + Math.sin(time * 0.7) * 0.02) * m;
+-      ud.lanyard.rotation.x = Math.sin(time * 1.1 + i) * 0.04 * m;
+-      ud.shadow.material.opacity = lerp(0.28, 0.5, bgMix) * scale * (1 - hopY * 1.6);
+-      ud.shadow.position.y = -ud.H / 2 - 0.36 - float - hopY;
+-
+-      const u = reduced ? 1.5 : Math.max(0, time - screenStart[ed]) % LOOP[ed];
+-      const pr = [0, 0, 0];
+-      PRESSES[ed].forEach(([pt, bi]) => {
+-        const q = (u - pt) / 0.28;
+-        if (q > 0 && q < 1) pr[bi] = Math.sin(q * Math.PI);
+-      });
+-      ud.buttons.forEach((b, bi) => {
+-        b.position.z = -0.022 * pr[bi];
+-      });
++    let cam;
++    let tgt;
++    if (swapping) {
++      const home = seqPose(keys, 0);
++      const out = ease(s / 0.5);
++      const inn = ease((s - 0.5) / 0.5);
++      cam = lerp3(swapFrom.pose.cam, home.cam, out);
++      tgt = lerp3(swapFrom.pose.tgt, home.tgt, out);
++      placeDevice(
++        devices[previous],
++        previous === "dev" ? 1 : 0,
++        1 - out,
++        lerp(swapFrom.pose.ry, home.ry, out) + out * 2.2,
++        lerp(swapFrom.pose.rx, home.rx, out),
++        swapFrom.u,
++      );
++      placeDevice(devices[current], current === "dev" ? 1 : 0, inn, home.ry - (1 - inn) * 2.2, home.rx, 0);
++    } else {
++      const p = seqPose(keys, u);
++      cam = p.cam;
++      tgt = p.tgt;
++      const other = current === "dev" ? "companion" : "dev";
++      devices[other].visible = false;
++      placeDevice(devices[current], current === "dev" ? 1 : 0, 1, p.ry, p.rx, u);
++    }
+ 
+-      painters[ed](ud.screen.ctx, u, reduced ? 0 : time);
+-      ud.screen.tex.needsUpdate = true;
+-    });
++    camera.position.set(cam[0], cam[1], cam[2]);
++    camera.lookAt(tgt[0], tgt[1], tgt[2]);
++    camera.updateMatrixWorld();
+ 
+     rim.color.setRGB(lerp(1, 0.35, bgMix), lerp(1, 0.85, bgMix), 1);
+     rim.intensity = lerp(1.2, 2.6, bgMix);
+@@ -1392,6 +1531,61 @@ export function createFucheyScene({ canvas, container, edition, reduced, onReady
+     scene.environmentIntensity = lerp(0.95, 0.55, bgMix);
+ 
+     renderer.render(scene, camera);
++    drawCallouts(swapping);
++
++    let ch = 0;
++    CHAPTERS[current].forEach(([t], i) => {
++      if (u >= t - 0.01) ch = i;
++    });
++    if (ch !== chapter) {
++      chapter = ch;
++      onChapter?.(ch);
++    }
++  }
++
++  function drawCallouts(swapping) {
++    const d = devices[current];
++    callouts.forEach((c) => {
++      const o = !swapping && c.ed === current ? clamp(Math.min((u - c.a) / 0.35, (c.b - u) / 0.35)) : 0;
++      if (o <= 0) {
++        if (c.shown) {
++          c.shown = false;
++          c.el.style.opacity = "0";
++          c.el.classList.remove("is-on");
++          c.g.style.opacity = "0";
++        }
++        return;
++      }
++      c.shown = true;
++      c.el.classList.add("is-on");
++
++      v3.set(...anchorFor(d, c.p));
++      d.localToWorld(v3);
++      v3.project(camera);
++      const ax = ((v3.x + 1) / 2) * W;
++      const ay = ((1 - v3.y) / 2) * Hh;
++
++      const { offsetLeft: lx, offsetTop: ly, offsetWidth: lw, offsetHeight: lh } = c.el;
++      const top = c.dock.startsWith("top");
++      const right = c.dock.endsWith("right");
++      // Leader runs from the anchor to the card's inner corner.
++      const ex = right ? lx + 14 : lx + lw - 14;
++      const ey = top ? ly + lh + 8 : ly - 8;
++      const kx = lerp(ax, ex, 0.5);
++      const drawP = ease(o * 1.2);
++      c.path.setAttribute(
++        "d",
++        `M${ax},${ay} L${lerp(ax, kx, drawP)},${lerp(ay, ey, drawP)} L${lerp(ax, ex, drawP)},${lerp(ay, ey, drawP)}`,
++      );
++      c.dot.setAttribute("cx", ax);
++      c.dot.setAttribute("cy", ay);
++      c.halo.setAttribute("cx", ax);
++      c.halo.setAttribute("cy", ay);
++      c.halo.setAttribute("r", 8 + Math.sin(clock * 4) * 2);
++      c.g.style.opacity = o;
++      c.el.style.opacity = o;
++      c.el.style.translate = `0 ${(1 - o) * (top ? -8 : 8)}px`;
++    });
+   }
+ 
+   function loop(now) {
+@@ -1428,29 +1622,32 @@ export function createFucheyScene({ canvas, container, edition, reduced, onReady
+   ro.observe(container);
+   resize();
+ 
+-  /* boot: wait for the fonts used by the canvas textures */
++  /* boot: wait for the fonts and sprite used by the canvas textures */
+   const fontsReady = Promise.race([
+     Promise.all(
+       [
+-        '400 20px Michroma',
+-        '600 20px Sora',
+-        '400 20px Sora',
++        "400 20px Michroma",
++        "600 20px Sora",
++        "400 20px Sora",
+         '500 20px "JetBrains Mono"',
+         '400 20px "JetBrains Mono"',
+       ].map((f) => document.fonts.load(f)),
+     ).catch(() => {}),
+     new Promise((r) => setTimeout(r, 2500)),
+   ]);
+-  fontsReady.then(() => {
++  const yetiReady = yeti.decode().catch(() => {});
++
++  Promise.all([fontsReady, yetiReady]).then(() => {
+     if (disposed) return;
+     try {
+       devices.companion = buildDevice("companion", shadowTex);
+       devices.dev = buildDevice("dev", shadowTex);
+       scene.add(devices.companion, devices.dev);
+       ready = true;
+-      // Start halfway through a swap so the first device spins straight in.
+-      time = 0;
+-      swapStart = -0.55;
++      // Open with the current edition spinning in.
++      previous = current === "dev" ? "companion" : "dev";
++      swapStart = -SWAP * 0.5;
++      swapFrom = { pose: seqPose(keys, 0), u: 0 };
+       frame(0);
+       schedule();
+       onReady?.();
+@@ -1463,11 +1660,23 @@ export function createFucheyScene({ canvas, container, edition, reduced, onReady
+   return {
+     setEdition(next) {
+       if (next === current) return;
+-      previous = current;
++      if (ready) {
++        // Mid-swap re-toggle: restart from the device currently on its way in.
++        swapFrom = { pose: seqPose(keys, u), u };
++        previous = current;
++        swapStart = clock;
++      }
+       current = next;
+-      swapStart = time;
+-      screenStart[next] = time + 0.55;
+-      if (!raf) frame(0);
++      u = 0;
++      chapter = -1;
++      if (ready && !raf) frame(0);
++    },
++    seek(t) {
++      u = clamp(t + 0.01, 0, TOUR - 0.01);
++      if (ready && !raf) frame(0);
++    },
++    setPlaying(on) {
++      playing = on;
+     },
+     dispose() {
+       disposed = true;
+@@ -1478,8 +1687,9 @@ export function createFucheyScene({ canvas, container, edition, reduced, onReady
+       canvas.removeEventListener("pointerdown", onPointerDown);
+       canvas.removeEventListener("pointermove", onPointerMove);
+       canvas.removeEventListener("pointerup", onPointerUp);
+-      canvas.removeEventListener("pointercancel", onPointerCancel);
+-      window.removeEventListener("pointermove", onWindowPointer);
++      canvas.removeEventListener("pointercancel", onPointerUp);
++      svg.remove();
++      layer.remove();
+       Object.values(devices).forEach(disposeObject);
+       shadowTex.dispose();
+       envTex.dispose();
