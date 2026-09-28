@@ -5,6 +5,7 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import yetiUrl from "../assets/yeti.png";
 
 /* ---------- math helpers ---------- */
 const TAU = Math.PI * 2;
@@ -205,6 +206,9 @@ function logLine(i) {
 }
 
 function screenPainters() {
+  const yeti = new Image();
+  yeti.src = yetiUrl;
+
   function screenBg(x, dev) {
     const g = x.createLinearGradient(0, 0, 0, SH);
     g.addColorStop(0, dev ? "#0B1526" : "#0E1B2D");
@@ -257,8 +261,32 @@ function screenPainters() {
     x.fillRect(408, 33, 26, 12);
   }
 
-  // Fuchey's paw emblem stands in for the character on screen.
+  // The pixel-art yeti from the showcase; scarf is drawn over it when worn.
+  function drawYeti(x, cx, bottom, size, o = {}) {
+    const sq = o.squash || 0;
+    const w = size * (1 + sq * 0.06);
+    const h = size * (1 - sq * 0.06);
+    const top = bottom - h;
+    x.imageSmoothingEnabled = false;
+    x.drawImage(yeti, cx - w / 2, top, w, h);
+    x.imageSmoothingEnabled = true;
+    if (o.scarf) {
+      x.fillStyle = COL.coral;
+      x.beginPath();
+      x.roundRect(cx - w * 0.23, top + h * 0.37, w * 0.46, h * 0.07, h * 0.03);
+      x.fill();
+      x.fillStyle = "#D8704E";
+      x.fillRect(cx + w * 0.08, top + h * 0.42, w * 0.08, h * 0.15);
+      x.fillStyle = "#FFD3BF";
+      for (let i = 0; i < 4; i++) {
+        x.fillRect(cx - w * 0.2 + i * w * 0.11, top + h * 0.385, w * 0.035, h * 0.025);
+      }
+    }
+  }
+
   function drawMascot(x, cx, bottom, size, o = {}) {
+    if (yeti.complete && yeti.naturalWidth) return drawYeti(x, cx, bottom, size, o);
+    // Paw emblem until the yeti image has loaded.
     const sq = o.squash || 0;
     const s = size * 0.62;
     const cy = bottom - size * 0.5;
