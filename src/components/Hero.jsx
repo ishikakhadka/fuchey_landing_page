@@ -1,59 +1,64 @@
-import "../index.css";
+import { lazy, Suspense } from "react";
+import { ArrowRight, MousePointer2 } from "lucide-react";
+
+// three.js is heavy — load it in its own chunk so the copy paints first.
+const Fuchey3D = lazy(() => import("./Fuchey3D.jsx"));
 
 function Hero({ edition }) {
-  const isDev = edition.id === "dev";
-
   return (
-    <section className="hero">
+    <section className="hero" id="top">
       <div className="container hero-grid">
-        <div className="hero-content">
-          <p className="eyebrow">{edition.eyebrow}</p>
+        <div className="hero-content" key={edition.id}>
+          <p className="pill">
+            <span className="pulse" aria-hidden="true" />
+            {edition.eyebrow}
+          </p>
 
-          <h1>{edition.title}</h1>
+          <h1>
+            {edition.title} <span className="accent">{edition.accent}</span>
+          </h1>
 
           <p className="hero-description">{edition.description}</p>
 
-          <a href="#waitlist" className="primary-button">
-            {edition.cta}
-            <span>→</span>
-          </a>
+          <div className="hero-actions">
+            <a href="#waitlist" className="primary-button">
+              {edition.cta}
+              <ArrowRight size={18} strokeWidth={2.2} />
+            </a>
 
-          {/* {isDev ? (
-            <div className="terminal-status">
-              <span className="status-dot" />
-              {edition.status}
-            </div>
-          ) : (
-            <div className="pet-status">🐾 {edition.status}</div>
-          )} */}
+            <a href="#how" className="ghost-button">
+              How it works
+            </a>
+          </div>
+
+          <ul className="hero-highlights">
+            {edition.highlights.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
         </div>
 
-        <div className="hero-device">
-          <div className="device">
-            <div className="device-screen">
-              {isDev ? (
-                <div className="dev-screen">
-                  <small>FUCHEY // DEV</small>
+        <div className="hero-stage">
+          <div className="stage-orb" aria-hidden="true" />
+          <div className="stage-ring" aria-hidden="true" />
 
-                  <strong>TX DETECTED</strong>
+          <Suspense fallback={<div className="fuchey-3d is-loading" />}>
+            <Fuchey3D edition={edition.id} />
+          </Suspense>
 
-                  <span>0x8f2...91ac</span>
-
-                  <span>PROGRAM INTERACTION</span>
-
-                  <span>STATUS: CONFIRMED</span>
-                </div>
-              ) : (
-                <div className="companion-screen">
-                  <div className="pet-face">◡̈</div>
-
-                  <strong>HI HUMAN!</strong>
-
-                  <small>You received something </small>
-                </div>
-              )}
-            </div>
+          <div className="stage-chips" key={edition.id} aria-hidden="true">
+            {edition.chips.map((chip, index) => (
+              <div className={`stage-chip chip-${index + 1}`} key={chip.label}>
+                <small>{chip.label}</small>
+                <strong>{chip.value}</strong>
+              </div>
+            ))}
           </div>
+
+          <p className="stage-hint">
+            <MousePointer2 size={13} strokeWidth={2} />
+            Drag to rotate · tap to hop
+          </p>
         </div>
       </div>
     </section>

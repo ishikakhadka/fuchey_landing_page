@@ -1,34 +1,52 @@
+import { Check } from "lucide-react";
 import { editions } from "../data/editions";
-
-import { Bot, Smile } from "lucide-react";
-
-const editionIcons = {
-  dev: Bot,
-  companion: Smile,
-};
 
 function EditionSwitcher({ edition, setEdition }) {
   return (
-    <section className="edition-switcher">
+    <section id="editions" className="editions-section">
       <div className="container">
-        <p className="section-label">
-          ONE FUCHEY. TWO WAYS TO EXPERIENCE SOLANA.
-        </p>
+        <div className="section-heading reveal">
+          <p className="eyebrow">TWO EDITIONS</p>
+          <h2>One Fuchey. Two ways to experience Solana.</h2>
+        </div>
 
-        <div className="edition-buttons">
+        <div className="edition-cards">
           {Object.values(editions).map((item) => {
-            const Icon = editionIcons[item.id];
+            const Icon = item.icon;
+            const selected = edition === item.id;
 
             return (
               <button
                 key={item.id}
-                className={edition === item.id ? "selected" : ""}
+                type="button"
+                className={`edition-card edition-card-${item.id} reveal ${selected ? "selected" : ""}`}
+                aria-pressed={selected}
                 onClick={() => setEdition(item.id)}>
-                <span className="edition-icon">
-                  <Icon size={18} strokeWidth={1.8} />
+                <span className="edition-card-top">
+                  <span className="edition-icon">
+                    <Icon size={22} strokeWidth={1.8} />
+                  </span>
+
+                  <span className="edition-state">
+                    {selected ? (
+                      <>
+                        <Check size={13} strokeWidth={2.6} /> Viewing
+                      </>
+                    ) : (
+                      "Switch"
+                    )}
+                  </span>
                 </span>
 
-                <span>{item.label}</span>
+                <span className="edition-audience">{item.audience}</span>
+                <strong className="edition-name">{item.label}</strong>
+                <span className="edition-pitch">{item.pitch}</span>
+
+                <span className="edition-specs">
+                  {item.specs.map((spec) => (
+                    <span key={spec}>{spec}</span>
+                  ))}
+                </span>
               </button>
             );
           })}
