@@ -10,7 +10,7 @@ import Waitlist from "./components/Waitlist.jsx";
 import Footer from "./components/Footer.jsx";
 
 function App() {
-  const [edition, setEdition] = useState("companion");
+  const [edition, setEdition] = useState("dev");
 
   const currentEdition = editions[edition];
 

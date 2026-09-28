@@ -1,4 +1,5 @@
 import "../index.css";
+
 function Footer() {
   return (
     <footer className="footer">
@@ -6,7 +7,7 @@ function Footer() {
         <div className="footer-main">
           <div className="footer-brand">
             <a href="#" className="footer-logo">
-              <img src="fuchey_logo.png" alt="Fuchey Logo" />
+              <img src="/fuchey_logo.png" alt="Fuchey Logo" />
             </a>
 
             <p>Your Solana wallet, with a little personality.</p>
@@ -15,11 +16,8 @@ function Footer() {
           <div className="footer-links">
             <div>
               <p className="footer-heading">EXPLORE</p>
-
               <a href="#editions">Editions</a>
-
               <a href="#features">Features</a>
-
               <a href="#waitlist">Waitlist</a>
             </div>
 
@@ -44,7 +42,6 @@ function Footer() {
 
         <div className="footer-bottom">
           <span>© {new Date().getFullYear()} Fuchey</span>
-
           <span>Built for Solana.</span>
         </div>
       </div>
