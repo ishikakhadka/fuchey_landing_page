@@ -18,12 +18,6 @@ export const editions = {
 
     highlights: ["Live on-chain logs", "Physical signing", "USB-C dev port"],
 
-    // Floating chips around the 3D device
-    chips: [
-      { label: "slot", value: "291,847,112" },
-      { label: "tx", value: "✓ confirmed" },
-    ],
-
     audience: "For builders & hackers",
     pitch:
       "A physical tool for interacting with and understanding the Solana ecosystem — right on your desk.",
@@ -87,11 +81,6 @@ export const editions = {
     cta: "Join Companion Waitlist",
 
     highlights: ["Reacts to transactions", "Moods & levels", "3 physical buttons"],
-
-    chips: [
-      { label: "received", value: "+0.50 SOL" },
-      { label: "mood", value: "Happy ♥" },
-    ],
 
     audience: "For everyday Solana users",
     pitch:

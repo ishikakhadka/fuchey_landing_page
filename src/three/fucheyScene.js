@@ -1,8 +1,10 @@
-// Fuchey 3D device — ported from public/fuchey_animation.jsx (the 3D showcase)
-// and trimmed down for the landing page hero: one device at a time, idle float,
-// drag to turn, tap to hop, and a spin transition when the edition changes.
+// Fuchey 3D device — styled after public/animation.html (yeti screen, callouts
+// with leader lines, chapter bar) and trimmed down for the landing page hero:
+// one device at a time, idle float, drag to turn, tap to hop, and a spin
+// transition when the edition changes.
 
 import * as THREE from "three";
+import yetiUrl from "../assets/yeti.png";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
@@ -152,6 +154,69 @@ const PRESSES = {
   ],
 };
 
+// Feature callouts, pinned to a point on the device while their screen plays.
+// [from, to] are screen-loop times; `p` picks the anchor (see anchorFor).
+const CALLOUTS = {
+  companion: [
+    { a: 3.6, b: 5.8, p: "screen", t: "Reacts to your wallet", d: "Incoming SOL makes Fuchey jump for joy." },
+    { a: 6.1, b: 8.3, p: "yeti", t: "Moods & progression", d: "Fuchey levels up and changes mood as you use your wallet." },
+    { a: 9.3, b: 11.9, p: "btnR", t: "Three physical buttons", d: "Browse activity and dress Fuchey up in collectible wearables." },
+  ],
+  dev: [
+    { a: 3.6, b: 5.8, p: "screen", t: "Live on-chain logs", d: "Slots, transactions and compute units stream by in real time." },
+    { a: 6.1, b: 8.3, p: "screen", t: "Developer tools", d: "Transactions, programs, a dApp browser and logs on the device." },
+    { a: 9.3, b: 11.9, p: "btnC", t: "Physical signing", d: "Approve a signature request with a real button press." },
+  ],
+};
+
+// Chapter pills under the stage: [screen-loop time, label]. Past `wrap` the
+// loop is back on its home screen, so the first chapter lights up again.
+export const CHAPTERS = {
+  companion: {
+    wrap: 12,
+    list: [
+      [0, "Meet Fuchey"],
+      [3.3, "Reactions"],
+      [5.8, "Moods"],
+      [8.3, "Wardrobe"],
+    ],
+  },
+  dev: {
+    wrap: Infinity,
+    list: [
+      [0, "Overview"],
+      [3.3, "Live logs"],
+      [5.8, "Dev tools"],
+      [8.3, "Signing"],
+      [12, "Build"],
+    ],
+  },
+};
+
+function chapterAt(ed, u) {
+  const { wrap, list } = CHAPTERS[ed];
+  if (u >= wrap) return 0;
+  let cur = 0;
+  list.forEach(([t], i) => {
+    if (u >= t - 0.01) cur = i;
+  });
+  return cur;
+}
+
+function anchorFor(d, p) {
+  const { front: f, screen: s, btnY: by } = d.userData;
+  switch (p) {
+    case "screen":
+      return [s.w / 2 - 0.02, s.y + 0.1, f + 0.02];
+    case "yeti":
+      return [0.02, s.y + 0.08, f + 0.02];
+    case "btnR":
+      return [0.28, by, f + 0.05];
+    default:
+      return [0, by, f + 0.05];
+  }
+}
+
 const COL = {
   ink: "#EAF4FA",
   muted: "#7F97AC",
@@ -204,7 +269,7 @@ function logLine(i) {
   }
 }
 
-function screenPainters() {
+function screenPainters(yeti) {
   function screenBg(x, dev) {
     const g = x.createLinearGradient(0, 0, 0, SH);
     g.addColorStop(0, dev ? "#0B1526" : "#0E1B2D");
@@ -257,27 +322,27 @@ function screenPainters() {
     x.fillRect(408, 33, 26, 12);
   }
 
-  // Fuchey's paw emblem stands in for the character on screen.
-  function drawMascot(x, cx, bottom, size, o = {}) {
+  // Pixel-art yeti, drawn crisp; the scarf is painted on once it's equipped.
+  function drawYeti(x, cx, bottom, size, o = {}) {
+    if (!yeti.complete || !yeti.naturalWidth) return;
     const sq = o.squash || 0;
-    const s = size * 0.62;
-    const cy = bottom - size * 0.5;
-    x.save();
-    x.translate(cx, cy);
-    x.scale(1 + sq * 0.05, 1 - sq * 0.05);
-    x.shadowColor = "rgba(143,211,232,.55)";
-    x.shadowBlur = size * 0.12;
-    drawPaw(x, 0, 0, s, "#8FD3E8");
+    const w = size * (1 + sq * 0.06);
+    const h = size * (1 - sq * 0.06);
+    x.imageSmoothingEnabled = false;
+    x.drawImage(yeti, cx - w / 2, bottom - h, w, h);
     if (o.scarf) {
-      x.shadowBlur = 0;
+      const top = bottom - h;
       x.fillStyle = COL.coral;
       x.beginPath();
-      x.roundRect(-s * 0.42, s * 0.36, s * 0.84, s * 0.12, s * 0.06);
+      x.roundRect(cx - w * 0.23, top + h * 0.37, w * 0.46, h * 0.07, h * 0.03);
       x.fill();
       x.fillStyle = "#D8704E";
-      x.fillRect(s * 0.14, s * 0.44, s * 0.12, s * 0.22);
+      x.fillRect(cx + w * 0.08, top + h * 0.42, w * 0.08, h * 0.15);
+      x.fillStyle = "#FFD3BF";
+      for (let i = 0; i < 4; i++)
+        x.fillRect(cx - w * 0.2 + i * w * 0.11, top + h * 0.385, w * 0.035, h * 0.025);
     }
-    x.restore();
+    x.imageSmoothingEnabled = true;
   }
 
   function heart(x, cx, cy, s, c) {
@@ -339,7 +404,7 @@ function screenPainters() {
 
     if (u < 3.3 || u >= 12) {
       statusBar(x, false);
-      drawMascot(x, 240, 338 + bob, 212, { squash: breathe, scarf });
+      drawYeti(x, 240, 338 + bob, 212, { squash: breathe, scarf });
       const bal = 12.92 - (scarf ? 0 : 0.5);
       balance(x, 240, 408, bal);
       x.font = F.ui(400, 21);
@@ -383,7 +448,7 @@ function screenPainters() {
         }
         x.globalAlpha = 1;
       }
-      drawMascot(x, cx, 350 + bob - jump, 180, {
+      drawYeti(x, cx, 350 + bob - jump, 180, {
         squash: jump > 2 ? -0.6 : breathe,
       });
       const b = 12.42 + 0.5 * ease((l - 0.7) / 1.1);
@@ -435,7 +500,7 @@ function screenPainters() {
         heart(x, hx, hy, 14 + rnd(i + 2) * 12, COL.coral);
       }
       x.globalAlpha = 1;
-      drawMascot(x, 240, 330 + bob, 196, { squash: breathe });
+      drawYeti(x, 240, 330 + bob, 196, { squash: breathe });
       x.font = F.ui(600, 26);
       x.fillStyle = COL.ink;
       x.textAlign = "left";
@@ -471,7 +536,7 @@ function screenPainters() {
       x.font = F.ui(600, 24);
       x.textAlign = "left";
       x.fillText("Wallet", 36, 52);
-      drawMascot(x, 420, 72, 54);
+      drawYeti(x, 420, 72, 54);
       const rows = [
         ["Received", "+0.50 SOL", "12:34 PM", COL.good, "+"],
         ["Sent", "−0.20 SOL", "10:12 AM", COL.bad, "−"],
@@ -570,7 +635,7 @@ function screenPainters() {
         x.font = F.ui(400, 14);
         x.fillText(it[1], cx, py + 174);
       });
-      drawMascot(x, 240, 500, 170, { squash: breathe });
+      drawYeti(x, 240, 500, 170, { squash: breathe });
     } else {
       x.fillStyle = COL.ink;
       x.font = F.ui(600, 24);
@@ -586,7 +651,7 @@ function screenPainters() {
         x.fillRect(240 + Math.cos(a) * d, 260 + Math.sin(a) * d, 6, 6);
       }
       x.globalAlpha = 1;
-      drawMascot(x, 240, 392 + bob, 250 * pop, { scarf: true, squash: breathe });
+      drawYeti(x, 240, 392 + bob, 250 * pop, { scarf: true, squash: breathe });
       x.textAlign = "center";
       x.fillStyle = COL.ink;
       x.font = F.ui(600, 24);
@@ -667,7 +732,7 @@ function screenPainters() {
       x.fillStyle = COL.ink;
       x.font = F.ui(600, 16);
       x.fillText("Focused", 58, 488);
-      drawMascot(x, 392, 512 + Math.sin(at * 2.4) * 3, 118);
+      drawYeti(x, 392, 512 + Math.sin(at * 2.4) * 3, 118);
     } else if (u < 5.8) {
       const l = u - 3.3;
       x.fillStyle = COL.cyan;
@@ -806,7 +871,7 @@ function screenPainters() {
       x.fillStyle = COL.muted;
       x.font = F.mono(400, 17);
       x.fillText("tx 5Kq2…8fWz · confirmed", 240, 368);
-      drawMascot(x, 240, 508 + Math.sin(at * 2.4) * 3, 112);
+      drawYeti(x, 240, 508 + Math.sin(at * 2.4) * 3, 112);
     } else {
       const l = u - 12;
       const glow = 0.6 + 0.4 * Math.sin(at * 2);
@@ -826,7 +891,7 @@ function screenPainters() {
       const w = x.measureText(typed).width;
       x.fillText(typed, 240, 312);
       if (Math.floor(at * 2.2) % 2 === 0) x.fillRect(240 + w / 2 + 4, 288, 16, 28);
-      drawMascot(x, 240, 508 + Math.sin(at * 2.4) * 3, 150);
+      drawYeti(x, 240, 508 + Math.sin(at * 2.4) * 3, 150);
     }
 
     sceneFade(x, u, LOOP.dev, "3,7,14");
@@ -1167,10 +1232,12 @@ function buildDevice(kind, shadowTex) {
   root.userData = {
     body,
     H,
+    front,
+    btnY: by,
     buttons,
     lanyard: pivot,
     shadow,
-    screen: { ctx: sctx, tex: stex },
+    screen: { ctx: sctx, tex: stex, w: sw, h: sh, y: sy },
   };
   return root;
 }
@@ -1190,7 +1257,16 @@ function disposeObject(root) {
 }
 
 /* ---------- scene ---------- */
-export function createFucheyScene({ canvas, container, edition, reduced, onReady, onError }) {
+export function createFucheyScene({
+  canvas,
+  container,
+  overlay,
+  edition,
+  reduced,
+  onReady,
+  onError,
+  onChapter,
+}) {
   let renderer;
   try {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -1220,7 +1296,48 @@ export function createFucheyScene({ canvas, container, edition, reduced, onReady
   scene.add(key, fill, rim);
 
   const shadowTex = makeShadowTex();
-  const painters = screenPainters();
+  const yeti = new Image();
+  yeti.src = yetiUrl;
+  const painters = screenPainters(yeti);
+
+  /* callouts: leader line + label, laid over the canvas */
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("class", "fuchey-lines");
+  svg.setAttribute("aria-hidden", "true");
+  const labels = document.createElement("div");
+  labels.className = "fuchey-callouts";
+  labels.setAttribute("aria-hidden", "true");
+  overlay?.append(svg, labels);
+  const callouts = Object.entries(CALLOUTS).flatMap(([ed, list]) =>
+    list.map((c) => {
+      const el = document.createElement("div");
+      el.className = "fuchey-callout";
+      const b = document.createElement("b");
+      b.textContent = c.t;
+      const span = document.createElement("span");
+      span.textContent = c.d;
+      el.append(b, span);
+      labels.appendChild(el);
+      const g = document.createElementNS(SVG_NS, "g");
+      g.innerHTML = '<path/><circle class="halo" r="9"/><circle class="dot" r="3.5"/>';
+      svg.appendChild(g);
+      el.style.opacity = "0";
+      g.style.opacity = "0";
+      return {
+        ...c,
+        ed,
+        el,
+        g,
+        path: g.querySelector("path"),
+        halo: g.querySelector(".halo"),
+        dot: g.querySelector(".dot"),
+      };
+    }),
+  );
+  const v3 = new THREE.Vector3();
+  const bb = new THREE.Vector3();
+  let chapter = -1;
   const devices = {};
 
   /* state */
@@ -1235,6 +1352,8 @@ export function createFucheyScene({ canvas, container, edition, reduced, onReady
   let previous = null;
   let swapStart = 0;
   const screenStart = { companion: 0, dev: 0 };
+  // With reduced motion the screens hold still; chapters jump between stills.
+  const stillU = { companion: 1.5, dev: 1.5 };
   let bgMix = edition === "dev" ? 1 : 0;
 
   let dragging = false;
@@ -1255,12 +1374,14 @@ export function createFucheyScene({ canvas, container, edition, reduced, onReady
     const w = Math.max(1, r.width);
     const h = Math.max(1, r.height);
     renderer.setSize(w, h, false);
+    svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
     const aspect = w / h;
     camera.aspect = aspect;
-    // Pull back on narrow frames so the device + lanyard always fit.
-    const z = Math.max(4.9, 3.55 / aspect);
-    camera.position.set(0, 0.12, z);
-    camera.lookAt(-0.08, -0.12, 0);
+    // Pull back on narrow frames so the device + lanyard always fit, and sit
+    // the device left of centre so callouts get a clear column on the right.
+    const z = Math.max(5.5, 4.2 / aspect);
+    camera.position.set(0.3, 0.12, z);
+    camera.lookAt(0.3, -0.12, 0);
     camera.updateProjectionMatrix();
     if (ready && !raf) frame(0);
   }
@@ -1372,7 +1493,7 @@ export function createFucheyScene({ canvas, container, edition, reduced, onReady
       ud.shadow.material.opacity = lerp(0.28, 0.5, bgMix) * scale * (1 - hopY * 1.6);
       ud.shadow.position.y = -ud.H / 2 - 0.36 - float - hopY;
 
-      const u = reduced ? 1.5 : Math.max(0, time - screenStart[ed]) % LOOP[ed];
+      const u = screenTime(ed);
       const pr = [0, 0, 0];
       PRESSES[ed].forEach(([pt, bi]) => {
         const q = (u - pt) / 0.28;
@@ -1392,6 +1513,84 @@ export function createFucheyScene({ canvas, container, edition, reduced, onReady
     scene.environmentIntensity = lerp(0.95, 0.55, bgMix);
 
     renderer.render(scene, camera);
+    updateCallouts(s);
+
+    const ch = chapterAt(current, screenTime(current));
+    if (ch !== chapter) {
+      chapter = ch;
+      onChapter?.(ch);
+    }
+  }
+
+  function screenTime(ed) {
+    return reduced ? stillU[ed] : Math.max(0, time - screenStart[ed]) % LOOP[ed];
+  }
+
+  // Pin each live callout to its anchor on the device and park the label
+  // beside the device's projected silhouette, on whichever side has room.
+  function updateCallouts(swap) {
+    const r = container.getBoundingClientRect();
+    const W = r.width;
+    const Hh = r.height;
+    camera.updateMatrixWorld();
+    callouts.forEach((c) => {
+      const d = devices[c.ed];
+      const u = screenTime(c.ed);
+      const o =
+        d && c.ed === current && swap >= 1
+          ? clamp(Math.min((u - c.a) / 0.35, (c.b - u) / 0.35))
+          : 0;
+      if (o <= 0) {
+        if (c.el.style.opacity !== "0") {
+          c.el.style.opacity = "0";
+          c.g.style.opacity = "0";
+        }
+        return;
+      }
+      d.updateMatrixWorld();
+      v3.set(...anchorFor(d, c.p));
+      d.localToWorld(v3);
+      v3.project(camera);
+      const ax = ((v3.x + 1) / 2) * W;
+      const ay = ((1 - v3.y) / 2) * Hh;
+      const lw = c.el.offsetWidth;
+      const lh = c.el.offsetHeight;
+      let minX = 1e9;
+      let maxX = -1e9;
+      const hh = d.userData.H / 2 + 0.12;
+      for (const sx of [-1, 1])
+        for (const sy of [-1, 1])
+          for (const sz of [-1, 1]) {
+            bb.set(sx * 0.56, sy * hh, sz * 0.24);
+            d.localToWorld(bb);
+            bb.project(camera);
+            const px = ((bb.x + 1) / 2) * W;
+            minX = Math.min(minX, px);
+            maxX = Math.max(maxX, px);
+          }
+      const roomR = W - maxX;
+      const roomL = minX;
+      const right = roomR >= lw + 40 || roomR >= roomL;
+      let lx = right ? Math.min(maxX + 36, W - 8 - lw) : Math.max(minX - 36 - lw, 8);
+      lx = Math.max(8, lx);
+      const ly = clamp(ay - lh / 2 - 24, 8, Hh - lh - 64);
+      const ex = right ? lx - 10 : lx + lw + 10;
+      const ey = ly + 10;
+      const p = ease(o * 1.2);
+      c.path.setAttribute(
+        "d",
+        `M${ax},${ay} L${lerp(ax, ex - (right ? 18 : -18), p)},${lerp(ay, ey, p)} L${lerp(ax, ex, p)},${lerp(ay, ey, p)}`,
+      );
+      c.dot.setAttribute("cx", ax);
+      c.dot.setAttribute("cy", ay);
+      c.halo.setAttribute("cx", ax);
+      c.halo.setAttribute("cy", ay);
+      c.halo.setAttribute("r", reduced ? 8 : 8 + Math.sin(time * 4) * 2);
+      c.g.style.opacity = o;
+      c.el.style.opacity = o;
+      c.el.style.transform = `translate(${lx}px,${ly + (1 - o) * 8}px)`;
+      c.el.style.textAlign = right ? "left" : "right";
+    });
   }
 
   function loop(now) {
@@ -1441,7 +1640,8 @@ export function createFucheyScene({ canvas, container, edition, reduced, onReady
     ).catch(() => {}),
     new Promise((r) => setTimeout(r, 2500)),
   ]);
-  fontsReady.then(() => {
+  const yetiReady = yeti.decode ? yeti.decode().catch(() => {}) : Promise.resolve();
+  Promise.all([fontsReady, yetiReady]).then(() => {
     if (disposed) return;
     try {
       devices.companion = buildDevice("companion", shadowTex);
@@ -1469,6 +1669,14 @@ export function createFucheyScene({ canvas, container, edition, reduced, onReady
       screenStart[next] = time + 0.55;
       if (!raf) frame(0);
     },
+    // Jump the current edition's screen loop to a chapter.
+    seek(index) {
+      const entry = CHAPTERS[current].list[index];
+      if (!entry) return;
+      if (reduced) stillU[current] = entry[0] + 1.3;
+      else screenStart[current] = time - entry[0] - 0.01;
+      if (!raf) frame(0);
+    },
     dispose() {
       disposed = true;
       if (raf) cancelAnimationFrame(raf);
@@ -1481,6 +1689,8 @@ export function createFucheyScene({ canvas, container, edition, reduced, onReady
       canvas.removeEventListener("pointercancel", onPointerCancel);
       window.removeEventListener("pointermove", onWindowPointer);
       Object.values(devices).forEach(disposeObject);
+      svg.remove();
+      labels.remove();
       shadowTex.dispose();
       envTex.dispose();
       pmrem.dispose();

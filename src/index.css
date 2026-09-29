@@ -576,31 +576,39 @@ section {
   width: 100%;
 }
 
-.stage-orb {
+/* frost panel from animation.html; cross-fades to night for the Dev edition */
+.stage-backdrop {
   position: absolute;
-  inset: 6% 4% 10%;
-  border-radius: 50%;
-  background: var(--orb);
-  filter: blur(10px);
-  animation: breathe 7s ease-in-out infinite;
-  transition: background var(--transition);
+  inset: 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--line);
 }
 
-@keyframes breathe {
-  0%,
-  100% {
-    transform: scale(0.94);
-    opacity: 0.85;
-  }
-  50% {
-    transform: scale(1.04);
-    opacity: 1;
-  }
+.stage-backdrop::before,
+.stage-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transition: opacity 900ms ease;
+}
+
+.stage-backdrop::before {
+  background: radial-gradient(120% 90% at 58% 42%, rgb(243 247 250) 0%, rgb(207 222 232) 100%);
+}
+
+.stage-backdrop::after {
+  background: radial-gradient(120% 90% at 58% 42%, rgb(22 34 56) 0%, rgb(6 10 19) 100%);
+  opacity: 0;
+}
+
+.theme-dev .stage-backdrop::after {
+  opacity: 1;
 }
 
 .stage-ring {
   position: absolute;
-  left: 50%;
+  left: 40%; /* under the device, which sits left of centre */
   bottom: 9%;
   width: 62%;
   aspect-ratio: 1;
@@ -666,62 +674,72 @@ section {
 
 
 
-.stage-chips {
+.fuchey-overlay,
+.fuchey-lines,
+.fuchey-callouts {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-.stage-chip {
+.fuchey-lines {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.fuchey-lines path {
+  fill: none;
+  stroke: rgba(28, 58, 82, 0.5);
+  stroke-width: 1.25;
+}
+
+.fuchey-lines circle.dot {
+  fill: #2f5673;
+}
+
+.fuchey-lines circle.halo {
+  fill: none;
+  stroke: #2f5673;
+  stroke-width: 1;
+  opacity: 0.45;
+}
+
+.theme-dev .fuchey-lines path {
+  stroke: rgba(120, 220, 240, 0.6);
+}
+
+.theme-dev .fuchey-lines circle.dot,
+.theme-dev .fuchey-lines circle.halo {
+  fill: #38d6ee;
+  stroke: #38d6ee;
+}
+
+.theme-dev .fuchey-lines circle.halo {
+  fill: none;
+}
+
+.fuchey-callout {
   position: absolute;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 10px 16px;
-  border: 1px solid var(--line-strong);
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--surface) 78%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: var(--shadow);
-  animation:
-    chipIn 700ms var(--ease-spring) both,
-    float 5s ease-in-out infinite;
-}
-
-.stage-chip small {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-}
-
-.stage-chip strong {
-  font-family: var(--font-mono);
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--good);
-}
-
-.chip-1 {
-  top: 14%;
-  right: 2%;
-  animation-delay: 500ms, 0s;
-}
-
-.chip-2 {
-  bottom: 22%;
   left: 0;
-  animation-delay: 700ms, -2.5s;
+  top: 0;
+  width: clamp(140px, 34%, 230px);
+  will-change: transform, opacity;
 }
 
-.chip-2 strong {
-  color: var(--pop);
+.fuchey-callout b {
+  display: block;
+  font: 400 12px/1.3 var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
 }
 
-.theme-dev .chip-2 strong {
-  color: var(--brand);
+.fuchey-callout span {
+  display: block;
+  margin-top: 6px;
+  font: 400 13px/1.45 var(--font-main);
+  color: var(--ink-soft);
 }
 
 @keyframes chipIn {
@@ -735,31 +753,78 @@ section {
   }
 }
 
-@keyframes float {
-  0%,
-  100% {
-    translate: 0 0;
-  }
-  50% {
-    translate: 0 -12px;
-  }
+/* chapter pills + hint, pinned to the bottom of the frost panel */
+.stage-bar {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.stage-chapters {
+  display: flex;
+  gap: 2px;
+  min-width: 0;
+  padding: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 62%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  pointer-events: auto;
+  animation: chipIn 600ms var(--ease-spring) both;
+}
+
+.stage-chapters::-webkit-scrollbar {
+  display: none;
+}
+
+.stage-chapters button {
+  flex: none;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  font: 500 11px/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    background 0.2s;
+}
+
+.stage-chapters button:hover,
+.stage-chapters button[aria-current="true"] {
+  color: var(--ink);
+}
+
+.stage-chapters button[aria-current="true"] {
+  background: rgba(127, 160, 185, 0.18);
 }
 
 .stage-hint {
   position: absolute;
-  left: 50%;
-  bottom: 0;
+  top: 18px;
+  right: 20px;
   display: flex;
   align-items: center;
   gap: 8px;
-  transform: translateX(-50%);
+  margin: 0;
+  pointer-events: none;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   white-space: nowrap;
   color: var(--ink-faint);
-  pointer-events: none;
 }
 
 /* =====================================================
@@ -1674,12 +1739,18 @@ section {
     min-height: 380px;
   }
 
-  .stage-chip {
-    padding: 8px 12px;
+  .stage-hint {
+    display: none;
   }
 
-  .stage-chip strong {
-    font-size: 13px;
+  .fuchey-callout span {
+    display: none;
+  }
+
+  .fuchey-callout b {
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--surface) 80%, transparent);
   }
 
   .feature-grid {
