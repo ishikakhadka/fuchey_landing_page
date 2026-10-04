@@ -1,12 +1,14 @@
+import { Link } from "react-router";
+
 function Footer() {
   return (
     <footer className="footer">
       <div className="container">
         <div className="footer-main">
           <div className="footer-brand">
-            <a href="#top" className="footer-logo" aria-label="Fuchey home">
+            <Link to="/" className="footer-logo" aria-label="Fuchey home">
               <img src="/fuchey_logo.png" alt="Fuchey" />
-            </a>
+            </Link>
 
             <p>Your Solana wallet, with a little personality.</p>
           </div>
@@ -14,10 +16,17 @@ function Footer() {
           <div className="footer-links">
             <div>
               <p className="footer-heading">EXPLORE</p>
-              <a href="#how">How it works</a>
-              <a href="#editions">Editions</a>
-              <a href="#features">Features</a>
-              <a href="#waitlist">Waitlist</a>
+              <Link to="/#how">How it works</Link>
+              <Link to="/#editions">Editions</Link>
+              <Link to="/#features">Features</Link>
+              <Link to="/#waitlist">Waitlist</Link>
+            </div>
+
+            <div>
+              <p className="footer-heading">MARKETPLACE</p>
+              <Link to="/characters">Characters</Link>
+              <Link to="/wardrobe">Wardrobe</Link>
+              <Link to="/collection">My Collection</Link>
             </div>
 
             <div>

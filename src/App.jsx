@@ -1,42 +1,39 @@
-import { useState } from "react";
-import { editions } from "./data/editions";
+import { useEffect } from "react";
+import { Outlet, ScrollRestoration, useLocation } from "react-router";
+import { useEdition } from "./context/EditionContext";
 
 import Navbar from "./components/Navbar.jsx";
-import Hero from "./components/Hero.jsx";
-import Marquee from "./components/Marquee.jsx";
-import HowItWorks from "./components/HowItWorks.jsx";
-import EditionSwitcher from "./components/EditionSwitcher.jsx";
-import Features from "./components/Features.jsx";
-import Ecosystem from "./components/Ecosystem.jsx";
-import Waitlist from "./components/Waitlist.jsx";
 import Footer from "./components/Footer.jsx";
+import WalletModal from "./components/wallet/WalletModal.jsx";
+import WalletToast from "./components/wallet/WalletToast.jsx";
+import PurchaseDialog from "./components/marketplace/PurchaseDialog.jsx";
 
+// Shared shell for every route: theme, navbar, footer.
 function App() {
-  const [edition, setEdition] = useState("companion");
+  const { edition, setEdition } = useEdition();
+  const { pathname, hash } = useLocation();
 
-  const currentEdition = editions[edition];
+  // Links like "/#waitlist" from other pages land at the top by default —
+  // scroll to the section once the home page has rendered.
+  useEffect(() => {
+    if (!hash) return;
+    document.getElementById(hash.slice(1))?.scrollIntoView();
+  }, [pathname, hash]);
 
   return (
     <div className={`app theme-${edition}`}>
       <Navbar edition={edition} setEdition={setEdition} />
 
       <main>
-        <Hero edition={currentEdition} />
-
-        <Marquee edition={currentEdition} />
-
-        <HowItWorks />
-
-        <EditionSwitcher edition={edition} setEdition={setEdition} />
-
-        <Features edition={currentEdition} />
-
-        <Ecosystem />
-
-        <Waitlist edition={currentEdition} />
+        <Outlet />
       </main>
 
       <Footer />
+
+      <WalletModal />
+      <WalletToast />
+      <PurchaseDialog />
+      <ScrollRestoration />
     </div>
   );
 }

@@ -1,0 +1,15 @@
+{
+  "name": "Fuchey Yeti",
+  "description": "Yeti is the basic companion character of Fuchey.",
+  "image": "https://gateway.pinata.cloud/ipfs/bafkreif3ke46uhlohqtsdxnhfmdms4d6llwjjhjujgm4qjrqfzjjsd5yjq",
+  "attributes": [
+    {
+      "trait_type": "Character",
+      "value": "Yeti"
+    },
+    {
+      "trait_type": "Edition",
+      "value": "Basic"
+    }
+  ]
+}
