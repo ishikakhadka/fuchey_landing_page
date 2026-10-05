@@ -15,6 +15,7 @@ export const WEARABLE_TYPES = [
   { id: "outfit", label: "Outfits" },
   { id: "accessory", label: "Accessories" },
   { id: "backpack", label: "Backpacks" },
+  { id: "held", label: "Held Items" },
   { id: "special", label: "Special Items" },
 ];
 

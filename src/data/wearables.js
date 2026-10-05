@@ -93,6 +93,16 @@ export const wearables = [
     listing: { status: "available", price: 0.25, supply: 1500 },
   },
   {
+    id: "snow-globe",
+    name: "Snow Globe",
+    type: "held",
+    rarity: "epic",
+    description: "A tiny winter in a jar. Give it a shake and watch the flakes settle.",
+    art: { kind: "wearable" },
+    compatibleCharacters: ["yeti", "cyber"],
+    listing: { status: "available", price: 0.75, supply: 500 },
+  },
+  {
     id: "genesis-halo",
     name: "Genesis Halo",
     type: "special",

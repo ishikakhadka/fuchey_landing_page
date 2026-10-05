@@ -58,59 +58,59 @@ const lum = ([r, g, b]) => r * 0.3 + g * 0.59 + b * 0.11;
 const opaque = (c) => c && c[3] >= 128;
 
 // --- Cyber Yeti --------------------------------------------------------------
-function cyberYeti(src) {
+// Dev-edition recolours of the original Yeti. Each style maps the original's
+// brightness bands (fur / light shading / mid shading / dark blue) to a new
+// palette, with a separate palette for the face mask, and glowing eyes.
+const CYBER_STYLES = {
+  dev: {
+    label: "Dev Yeti",
+    fur: ["#ffffff", "#d9f3f8", "#7fd6e6", "#2a9fb8"],
+    mask: ["#101a2e", "#1c2a45"],
+    eyes: ["#7ff3ff", "#38d6ee"],
+    ears: "#38d6ee",
+  },
+  midnight: {
+    label: "Midnight Yeti",
+    fur: ["#dfe3f7", "#bcc3ea", "#8b93c8", "#414889"],
+    mask: ["#232850", "#30366a"],
+    eyes: ["#a8f6ff", "#5ee2f5"],
+    ears: "#9b86ff",
+  },
+  robo: {
+    label: "Robo Yeti",
+    fur: ["#e6ebf0", "#c6cfd9", "#8f9bab", "#4b5a6a"],
+    mask: ["#0f1620", "#1c2633"],
+    eyes: ["#7ff3ff", "#38d6ee"],
+    ears: "#f08a64",
+  },
+};
+const CYBER_STYLE = process.env.CYBER_STYLE ?? "midnight";
+
+function cyberYeti(src, style = CYBER_STYLES[CYBER_STYLE]) {
   const isOutline = (x, y) => opaque(src[y]?.[x]) && lum(src[y][x]) < 50;
+  const inMask = (x, y) => y >= 7 && y <= 20 && x >= 31 && x <= 56;
+  const inEar = (x, y) => y >= 13 && y <= 18 && ((x >= 24 && x <= 25) || (x >= 63 && x <= 64));
+
   const out = src.map((row, y) =>
     row.map((c, x) => {
       if (!opaque(c)) return [0, 0, 0, 0];
       const L = lum(c);
-
-      // Chest harness (the dark V on the original) glows neon. The V sits
-      // between the arm seams, which stay as plain outline.
-      const vRight = y < 47 ? 55 : y < 51 ? 54 : 53;
-      const inV = y >= 35 && y <= 54 && x >= 29 && x <= vRight && L < 110;
-      if (inV) return [...hex(L < 50 ? (y < 45 ? "#ff3ea5" : "#c45cff") : "#7a1f63"), 255];
-
-      if (L < 50) return [...hex("#05060c"), 255];
-
-      // Mask around the eyes
-      if (y >= 7 && y <= 20 && x >= 31 && x <= 56 && L < 165) return [...hex("#0d1222"), 255];
-
-      if (L < 110) return [...hex("#151a2c"), 255];
-      if (L < 165) return [...hex("#1d2440"), 255];
-      if (L < 225) return [...hex("#2b3558"), 255];
-      return [...hex("#36426b"), 255];
+      if (L < 50) return [...hex("#0b0f1a"), 255];
+      if (inMask(x, y) && L < 165) return [...hex(L < 110 ? style.mask[0] : style.mask[1]), 255];
+      if (inEar(x, y) && L < 165) return [...hex(style.ears), 255];
+      const band = L < 110 ? 3 : L < 165 ? 2 : L < 225 ? 1 : 0;
+      return [...hex(style.fur[band]), 255];
     }),
   );
 
-  // Neon rim light: cyan on top/left edges, magenta on bottom/right edges.
-  for (let y = 0; y < N; y++) {
-    for (let x = 0; x < N; x++) {
-      if (!opaque(src[y][x]) || isOutline(x, y)) continue;
-      const inMask = y >= 7 && y <= 20 && x >= 31 && x <= 56;
-      if (inMask) continue;
-      if (isOutline(x - 1, y) || isOutline(x, y - 1)) out[y][x] = [...hex("#38d6ee"), 255];
-      else if (isOutline(x + 1, y) || isOutline(x, y + 1)) out[y][x] = [...hex("#9b3fd6"), 255];
-    }
-  }
-
-  // Glowing eyes
+  // Glowing eyes (the eye blocks are outline-dark on the original)
   const eye = (x0) => {
     for (let y = 12; y <= 15; y++)
-      for (let x = x0; x <= x0 + 4; x++) if (isOutline(x, y)) out[y][x] = [...hex(y === 12 ? "#7ff3ff" : "#38d6ee"), 255];
+      for (let x = x0; x <= x0 + 4; x++) if (isOutline(x, y)) out[y][x] = [...hex(y === 12 ? style.eyes[0] : style.eyes[1]), 255];
     out[13][x0 + 2] = [255, 255, 255, 255];
   };
   eye(35);
   eye(48);
-
-  // Circuit traces on the arms
-  for (let y = 44; y <= 54; y++) out[y][18] = [...hex("#38d6ee"), 255];
-  out[55][18] = [...hex("#e6fbff"), 255];
-  out[44][19] = [...hex("#38d6ee"), 255];
-  for (let y = 40; y <= 52; y++) out[y][66] = [...hex("#ff3ea5"), 255];
-  out[53][66] = [...hex("#ffd1ea"), 255];
-  out[40][65] = [...hex("#ff3ea5"), 255];
-
   return out;
 }
 
@@ -153,13 +153,23 @@ function icon(id, size = 48) {
 // --- run ------------------------------------------------------------------------
 const yeti = readGrid(path.join(ASSETS, "yeti.png"));
 const cyber = cyberYeti(yeti);
+
+// Side-by-side sheet of every Cyber style, for choosing a look.
+{
+  const styles = Object.values(CYBER_STYLES);
+  const sheet = blank((N + 8) * (styles.length + 1), N + 8).map((row) => row.map(() => [14, 27, 45, 255]));
+  [yeti, ...styles.map((st) => cyberYeti(yeti, st))].forEach((g, i) => {
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (g[y][x][3]) sheet[y + 4][i * (N + 8) + x + 4] = g[y][x];
+  });
+  writeGrid(sheet, path.join(here, "out/cyber-options.png"), 3);
+}
 writeGrid(cyber, path.join(ASSETS, "cyber-yeti.png"));
 fs.copyFileSync(path.join(ASSETS, "yeti.png"), path.join(OUT, "yeti.png"));
 fs.copyFileSync(path.join(ASSETS, "cyber-yeti.png"), path.join(OUT, "cyber.png"));
 
 const SLOTS = {
   "blue-beanie": "hat", "glacier-crown": "hat", "signal-headphones": "headwear", "dev-visor": "headwear",
-  "pixel-glasses": "accessory", "frost-scarf": "accessory", "explorer-jacket": "outfit",
+  "pixel-glasses": "accessory", "frost-scarf": "accessory", "snow-globe": "held", "explorer-jacket": "outfit",
   "circuit-hoodie": "outfit", "solana-backpack": "backpack", "genesis-halo": "special",
 };
 
@@ -176,6 +186,7 @@ const looks = [
   ["dev-visor", "circuit-hoodie", "solana-backpack"],
   ["glacier-crown", "pixel-glasses", "solana-backpack", "explorer-jacket"],
   ["signal-headphones", "pixel-glasses", "frost-scarf"],
+  ["blue-beanie", "frost-scarf", "snow-globe"],
 ];
 const cellW = N + 8;
 const cellH = N + 28;

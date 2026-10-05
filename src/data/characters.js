@@ -31,7 +31,7 @@ export const characters = [
       { trait_type: "Mood", value: "Friendly" },
       { trait_type: "Habitat", value: "Glacier" },
     ],
-    wardrobeSlots: ["hat", "headwear", "outfit", "accessory", "backpack", "special"],
+    wardrobeSlots: ["hat", "headwear", "outfit", "accessory", "backpack", "held", "special"],
     listing: {
       status: "available",
       price: 0,
@@ -49,7 +49,7 @@ export const characters = [
     rarity: "rare",
     quote: "Build with Fuchey.",
     description:
-      "A night-shift Yeti rewired for builders. Neon harness, glowing eyes, and a soft spot for green test suites — Cyber pings on every invoke.",
+      "A night-shift Yeti for builders. Glowing eyes, soft midnight fur, and a soft spot for green test suites — Cyber pings on every invoke.",
     art: { kind: "character", image: "cyber" },
     attributes: [
       { trait_type: "Character", value: "Cyber" },
@@ -57,7 +57,7 @@ export const characters = [
       { trait_type: "Mood", value: "Focused" },
       { trait_type: "Habitat", value: "Terminal" },
     ],
-    wardrobeSlots: ["hat", "headwear", "outfit", "accessory", "backpack", "special"],
+    wardrobeSlots: ["hat", "headwear", "outfit", "accessory", "backpack", "held", "special"],
     listing: {
       status: "available",
       price: 0.5,

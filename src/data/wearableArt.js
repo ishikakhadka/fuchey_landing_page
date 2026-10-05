@@ -234,25 +234,70 @@ function glasses() {
   return { front: p };
 }
 
+// Frost Scarf in the device animation's colours (public/fuchey_animation.html:
+// coral band, darker coral tail, light stripe blocks), wrapped around the neck
+// just under the beard instead of floating across the chest.
 function scarf() {
   const p = canvas();
-  const stripe = (x) => (Math.floor(x / 3) % 2 ? "#eef6fa" : "#8fbccb");
-  p.span(26, 29, 58, stripe);
-  for (let y = 27; y <= 30; y++) p.span(y, 26, 61, stripe);
-  p.span(31, 28, 59, stripe);
-  p.span(31, 28, 59, (x) => (Math.floor(x / 3) % 2 ? "#c9dde5" : "#6e9fb2"));
-  // Knot + tail
-  p.rect(50, 28, 56, 33, "#8fbccb");
-  p.span(28, 51, 55, "#b9d8e2");
-  const tail = (y) => (Math.floor(y / 3) % 2 ? "#eef6fa" : "#8fbccb");
-  for (let y = 34; y <= 46; y++) {
-    const shift = y > 40 ? 1 : 0;
-    p.span(y, 51 + shift, 55 + shift, () => tail(y));
+  const coral = "#f08a64";
+  const shade = "#d8704e";
+  const light = "#ffd3bf";
+
+  // Band hugging the neck, following the shoulder line
+  p.span(28, 28, 59, coral);
+  p.span(29, 26, 61, coral);
+  p.span(30, 26, 61, coral);
+  p.span(31, 26, 61, coral);
+  p.span(32, 28, 59, coral);
+  p.span(28, 30, 57, "#f7a585");
+  p.span(32, 28, 59, shade);
+  [30, 37, 44].forEach((x) => p.rect(x, 30, x + 2, 30, light));
+
+  // Knot on the right and a tail that hangs down the chest
+  p.rect(49, 29, 55, 34, shade);
+  p.span(29, 50, 54, coral);
+  for (let y = 35; y <= 47; y++) {
+    const sway = y > 41 ? 1 : 0;
+    p.span(y, 50 + sway, 55 + sway, y % 6 === 2 ? light : y >= 46 ? shade : coral);
+    p.set(55 + sway, y, shade);
   }
-  p.span(46, 52, 56, "#6e9fb2");
-  p.outline("#24485f");
+  p.outline("#7a3a24");
   // Fringe
-  [52, 54, 56].forEach((x) => p.set(x, 48, "#eef6fa"));
+  [51, 53, 55].forEach((x) => p.set(x, 49, light));
+  return { front: p };
+}
+
+// The Snow Globe from the device's wardrobe screen, set down beside the Yeti
+// like a little keepsake.
+function snowGlobe() {
+  const p = canvas();
+  const cx = 80;
+  const cy = 81;
+  const r = 8.4;
+  for (let y = cy - 9; y <= cy + 9; y++) {
+    for (let x = cx - 9; x <= cx + 9; x++) {
+      const d = Math.hypot(x - cx, y - cy);
+      if (d <= r && y <= cy + 6) p.set(x, y, d > r - 1.2 ? "#9cc8da" : "#d6ecf6");
+    }
+  }
+  // Snowy ground and a tiny pine inside the glass
+  p.span(cy + 5, cx - 6, cx + 6, "#ffffff");
+  p.span(cy + 6, cx - 5, cx + 5, "#eef6fa");
+  const pine = [[0, -5], [-1, -4], [0, -4], [1, -4], [-1, -3], [0, -3], [1, -3], [-2, -2], [-1, -2], [0, -2], [1, -2], [2, -2], [-2, -1], [-1, -1], [0, -1], [1, -1], [2, -1], [-3, 0], [-2, 0], [-1, 0], [0, 0], [1, 0], [2, 0], [3, 0], [-3, 1], [-2, 1], [-1, 1], [0, 1], [1, 1], [2, 1], [3, 1]];
+  pine.forEach(([dx, dy]) => p.set(cx + dx, cy + dy + 2, dx < 0 ? "#3f8f6b" : "#2f7556"));
+  p.set(cx, cy - 3, "#5fb88c");
+  p.rect(cx, cy + 4, cx, cy + 4, "#6e5a4a");
+  [[-5, -3], [4, -6], [5, -1], [-4, 2], [2, -4], [-2, -6]].forEach(([dx, dy]) => p.set(cx + dx, cy + dy, "#ffffff"));
+  // Glint
+  p.set(cx - 5, cy - 5, "#ffffff");
+  p.set(cx - 6, cy - 4, "#ffffff");
+  p.set(cx - 6, cy - 3, "#ffffff");
+  // Wooden base sitting on the ground line
+  p.span(cy + 7, cx - 7, cx + 7, "#8a6f58");
+  p.rect(cx - 8, cy + 8, cx + 8, cy + 10, "#6e5a4a");
+  p.span(cy + 11, cx - 7, cx + 7, "#4f4034");
+  p.rect(cx - 1, cy + 9, cx + 1, cy + 9, "#f2c14e");
+  p.outline("#2a3442");
   return { front: p };
 }
 
@@ -395,6 +440,7 @@ const DRAW = {
   "dev-visor": visor,
   "pixel-glasses": glasses,
   "frost-scarf": scarf,
+  "snow-globe": snowGlobe,
   "explorer-jacket": jacket,
   "circuit-hoodie": hoodie,
   "solana-backpack": backpack,
@@ -402,7 +448,7 @@ const DRAW = {
 };
 
 // Stacking order on the character, back to front.
-export const SLOT_ORDER = ["outfit", "backpack", "accessory", "headwear", "hat", "special"];
+export const SLOT_ORDER = ["outfit", "backpack", "accessory", "headwear", "hat", "held", "special"];
 
 function bounds(runs) {
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
