@@ -441,3 +441,131 @@
   opacity: 0.6;
   cursor: default;
 }
+
+/* --- NFT panel ----------------------------------------------------------- */
+
+.admin-chip.is-ok {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--brand) 16%, transparent);
+  color: var(--ink);
+}
+
+.admin-chip.is-bad {
+  border-color: transparent;
+  background: color-mix(in srgb, #d9534f 18%, transparent);
+  color: var(--ink);
+}
+
+.nft-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px 16px;
+  margin: 0;
+}
+
+.nft-facts dt {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.nft-facts dd {
+  margin: 2px 0 0;
+  min-width: 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.nft-facts code,
+.nft-addr code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.nft-addr a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--brand);
+}
+
+.nft-supply dd {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.nft-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.nft-checks li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.nft-checks li.is-ok {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--good) 16%, transparent);
+  color: var(--ink);
+}
+
+.nft-problems {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.nft-problems li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nft-sale label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.nft-sale input {
+  width: 140px;
+  padding: 8px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font: inherit;
+}
+
+.nft-busy {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nft-json {
+  max-height: 320px;
+  overflow: auto;
+  margin: 0;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

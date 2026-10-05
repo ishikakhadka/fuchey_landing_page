@@ -18,7 +18,7 @@ import { describeWalletError } from "../services/wallet/errors";
 //
 // The Solana wallet adapter owns the connection itself (and the user's keys
 // never leave their wallet). This layer adds what the UI needs on top: the
-// wallet picker's open state, friendly toasts, and Solflare-first ordering.
+// wallet picker's open state, friendly toasts, and wallet ordering.
 // Components read it through hooks/useWallet.js, never from here directly.
 
 const WalletUIContext = createContext(null);

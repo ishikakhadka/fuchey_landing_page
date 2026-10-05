@@ -12,9 +12,10 @@ const STEPS = [
   { id: "preparing", label: "Prepare" },
   { id: "signing", label: "Approve" },
   { id: "submitted", label: "Confirm" },
+  { id: "verifying", label: "Verify" },
 ];
-const ORDER = ["preparing", "signing", "submitted", "confirmed"];
-const IN_FLIGHT = ["preparing", "signing", "submitted"];
+const ORDER = ["preparing", "signing", "submitted", "verifying", "confirmed"];
+const IN_FLIGHT = ["preparing", "signing", "submitted", "verifying"];
 
 function StepBar({ stage }) {
   const current = ORDER.indexOf(stage);
@@ -81,13 +82,20 @@ function PurchaseDialog() {
           <p>Waiting for Solana to confirm it. This usually takes a few seconds.</p>
         </>
       );
+    } else if (stage === "verifying") {
+      body = (
+        <>
+          <h2>Confirmed — verifying ownership</h2>
+          <p>Checking on Solana that the new {item.name} is in your wallet.</p>
+        </>
+      );
     } else if (stage === "confirmed") {
       body = (
         <>
           <h2 className="tx-success">
             <Sparkles size={20} /> {item.name} added to your collection!
           </h2>
-          <p>Confirmed on Solana. It’s in your wallet now.</p>
+          <p>Confirmed on Solana and verified. It’s in your wallet now.</p>
         </>
       );
     } else if (stage === "error") {

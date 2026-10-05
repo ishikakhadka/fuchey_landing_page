@@ -46,7 +46,7 @@ export function clearSession(purpose, wallet) {
   }
 }
 
-// adapterWallet: the wallet-adapter context (needs publicKey + signMessage).
+// adapterWallet: the `signer` from hooks/useWallet.js (needs publicKey + signMessage).
 export async function getSession(purpose, adapterWallet) {
   const wallet = adapterWallet?.publicKey?.toBase58();
   if (!wallet) throw new Error("Connect a wallet first.");
@@ -54,7 +54,7 @@ export async function getSession(purpose, adapterWallet) {
   const cached = cachedSession(purpose, wallet);
   if (cached) return cached;
 
-  if (!adapterWallet.signMessage) throw new Error("This wallet can’t sign messages. Try Solflare or Phantom.");
+  if (!adapterWallet.signMessage) throw new Error("This wallet can’t sign messages — try another Solana wallet.");
 
   const issued = Date.now();
   const message = [

@@ -303,6 +303,7 @@ export function validateCharacter(input: unknown) {
     art,
     attributes,
     wardrobe_slots: slots,
+    image_url: c.url(input.image_url, "image_url"),
     ...listing(c, input),
     nft: nft(c, input.nft),
   };

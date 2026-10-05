@@ -5,7 +5,6 @@ import { AlertCircle, ArrowUpRight, Loader2, ShieldCheck, X } from "lucide-react
 import NetworkBadge from "./NetworkBadge";
 import { useWallet } from "../../hooks/useWallet";
 import { useWalletUI } from "../../context/WalletContext";
-import { PREFERRED_WALLET } from "../../services/wallet/adapters";
 
 const READY_LABEL = {
   [WalletReadyState.Installed]: "Detected",
@@ -71,9 +70,6 @@ function WalletModal() {
 
                   <span className="wallet-option-name">
                     {adapter.name}
-                    {adapter.name === PREFERRED_WALLET && (
-                      <span className="wallet-option-tag">Recommended</span>
-                    )}
                   </span>
 
                   <span className="wallet-option-state">

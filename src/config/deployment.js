@@ -6,10 +6,12 @@ import { NETWORK } from "./network";
 //
 //   { collection, candyMachine, candyGuard, treasury, metadataUri, imageUri, mintLimitId }
 
-// The item's deployment if it can be bought on this network, else null.
+// The item's on-chain deployment on this network (status "minted": its Core
+// collection + candy machine exist and were verified), else null. Whether it
+// can be bought *now* is the listing's call — see `item.sale`.
 export function deploymentOf(item) {
   const d = item?.nft?.[NETWORK.id];
-  return d?.collection && d?.candyMachine && d?.candyGuard ? d : null;
+  return d?.status === "minted" && d.collection && d.candyMachine && d.candyGuard ? d : null;
 }
 
 // { [itemId]: deployment } for every purchasable item.
@@ -22,7 +24,7 @@ export function deploymentsFor(items) {
 export function collectionIndex(items) {
   return Object.fromEntries(
     items
-      .map((item) => [item.nft?.[NETWORK.id]?.collection, item.id])
+      .map((item) => [deploymentOf(item)?.collection, item.id])
       .filter(([collection]) => collection),
   );
 }

@@ -858,15 +858,18 @@
   gap: 14px;
 }
 
+/* The character switch sits in its own band at the top; the character is
+   fitted into the space below it, so hats and halos are never covered. */
 .fitting-stage {
   aspect-ratio: 1;
+  padding: 58px 4% 4%;
   border-radius: 32px;
   box-shadow: var(--shadow);
 }
 
 .fitting-render {
-  width: 92%;
-  height: auto;
+  width: 100%;
+  height: 100%;
   animation: bob 4s ease-in-out infinite;
 }
 
@@ -2397,4 +2400,37 @@ a.asset-card:hover {
 
 .fitting-save-note.is-error {
   color: var(--pop);
+}
+
+/* --- Collection: owned Fuchey ------------------------------------------------ */
+
+.owned-fuchey {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.owned-fuchey-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  padding: 18px 16px 16px;
+  border-radius: var(--radius);
+}
+
+.owned-fuchey-card .character-render {
+  width: 160px;
+  height: 160px;
+}
+
+.owned-fuchey-card figcaption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--stage-ink, var(--ink));
 }

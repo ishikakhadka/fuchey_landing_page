@@ -8,7 +8,10 @@ import ItemArt from "../../components/marketplace/ItemArt";
 import WalletButton from "../../components/wallet/WalletButton";
 import NetworkBadge from "../../components/wallet/NetworkBadge";
 
+import CharacterRender from "../../components/characters/CharacterRender";
 import { useCollection } from "../../hooks/useCollection";
+import { useCatalog } from "../../context/CatalogContext";
+import { useMarketplace } from "../../context/MarketplaceContext";
 import { useCharacter } from "../../hooks/useCharacters";
 import { shortAddress } from "../../utils/format";
 
@@ -34,6 +37,49 @@ function CollectionSection({ title, assets, loading, empty }) {
       ) : (
         empty
       )}
+    </section>
+  );
+}
+
+// The wallet's Fuchey as the app sees it: each owned character wearing its
+// saved look, limited (by the backend) to owned wearables that fit it.
+function OwnedFuchey() {
+  const { inventory } = useMarketplace();
+  const { characters, wearables } = useCatalog();
+  if (!inventory?.characters.length) return null;
+
+  const seen = new Set();
+  const owned = inventory.characters.filter((c) => !seen.has(c.assetId) && seen.add(c.assetId));
+
+  return (
+    <section className="collection-section">
+      <h2 className="details-heading">Your Fuchey</h2>
+      <div className="owned-fuchey">
+        {owned.map((c) => {
+          const character = characters.find((x) => x.id === c.assetId);
+          if (character?.art.kind !== "character") return null;
+          const equipped = (inventory.loadouts[c.assetId]?.equipped ?? [])
+            .map((id) => wearables.find((w) => w.id === id))
+            .filter(Boolean);
+          return (
+            <figure key={c.assetId} className={`owned-fuchey-card character-stage stage-${character.edition}`}>
+              <CharacterRender
+                image={character.art.image}
+                characterId={character.id}
+                equipped={equipped}
+                alt={`${character.name} wearing ${equipped.map((w) => w.name).join(", ") || "nothing extra"}`}
+              />
+              <figcaption>
+                <strong>{character.name}</strong>
+                <span className="muted">{equipped.length ? equipped.map((w) => w.name).join(" · ") : "No saved look yet"}</span>
+                <Link to="/wardrobe" className="text-link">
+                  Dress up →
+                </Link>
+              </figcaption>
+            </figure>
+          );
+        })}
+      </div>
     </section>
   );
 }
@@ -83,6 +129,8 @@ function Collection() {
           </button>
         </p>
       )}
+
+      <OwnedFuchey />
 
       <CollectionSection
         title="Characters"

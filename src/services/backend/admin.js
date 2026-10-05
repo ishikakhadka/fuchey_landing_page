@@ -36,3 +36,8 @@ export async function adminUpload(session, folder, file) {
   new Uint8Array(buffer).forEach((b) => (bin += String.fromCharCode(b)));
   return callFunction("admin", { action: "upload", folder, contentType: file.type, data: btoa(bin) }, session);
 }
+
+// NFT lifecycle (supabase/functions/admin/nft.ts). `action` is one of
+// nftStatus, previewMetadata, generateMetadata, prepareMint, confirmMint,
+// prepareSale, confirmSale; payload carries { kind, id, network, … }.
+export const adminNft = (session, action, payload) => callFunction("admin", { action, ...payload }, session);

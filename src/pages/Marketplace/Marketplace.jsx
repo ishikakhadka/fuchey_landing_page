@@ -16,7 +16,7 @@ const STEPS = [
   {
     icon: Wallet,
     title: "Connect your wallet",
-    desc: "Solflare and other Solana wallets. Your keys never leave it.",
+    desc: "Any Solana wallet — Phantom, Solflare, Backpack and more. Your keys never leave it.",
   },
   {
     icon: PenLine,

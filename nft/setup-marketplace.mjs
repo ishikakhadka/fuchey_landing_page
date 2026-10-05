@@ -6,9 +6,11 @@
 //   supply         → itemsAvailable
 //   per-wallet cap → mintLimit guard
 //
+// Bulk alternative to the admin dashboard's Generate metadata → Mint → Open
+// sale flow, signing with a local keypair instead of the admin's wallet.
 // Items come from the Supabase catalogue (status "available"); the addresses
-// created here are written back to each row's `nft[<network>]`, which the
-// website reads. Listing an item in the admin dashboard never mints anything —
+// created here are written back to each row's `nft[<network>]` and an active
+// listing is created, which the website reads. Listing an item in the admin dashboard never mints anything —
 // this script is the explicit "create the NFT side" step. Re-running skips
 // items that already have a candy machine on this network, so it is safe to
 // resume.
@@ -241,14 +243,41 @@ async function deploy(item) {
   const candyGuard = findCandyGuardPda(umi, { base: candyMachine.publicKey })[0];
   console.log("  candy machine", candyMachine.publicKey.toString());
 
+  // Same record shape the admin dashboard writes (functions/admin/nft.ts).
   await saveNft(item, {
+    chain: "solana",
+    standard: "mpl-core",
+    status: "minted",
+    collectionGroup: item.kind === "character" ? "fuchey-characters" : "fuchey-wearables",
     collection: collection.publicKey.toString(),
     candyMachine: candyMachine.publicKey.toString(),
     candyGuard: candyGuard.toString(),
+    authority: umi.identity.publicKey.toString(),
     treasury: treasury.toString(),
     metadataUri,
+    metadataUrl: metadataUri,
     imageUri,
+    imageUrl: imageUri,
+    storage: "irys",
     mintLimitId,
+    deployedAt: new Date().toISOString(),
+  });
+
+  // These guards have no start date, so the sale is open immediately.
+  await rest("listings", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+    body: JSON.stringify({
+      asset_kind: item.kind,
+      asset_id: item.id,
+      network: NETWORK,
+      status: "active",
+      price,
+      quantity: supply,
+      limit_per_wallet: limitPerWallet ?? null,
+      seller_wallet: treasury.toString(),
+      candy_machine: candyMachine.publicKey.toString(),
+    }),
   });
 }
 
@@ -256,7 +285,7 @@ console.log(`Deploying ${items.length} item(s) to ${NETWORK} as ${umi.identity.p
 console.log(`Payments go to ${treasury}`);
 
 for (const item of items) {
-  if (item.nft[NETWORK]?.candyMachine) {
+  if (item.nft[NETWORK]?.status === "minted" || item.nft[NETWORK]?.candyMachine) {
     console.log(`\n${item.title}: already deployed, skipping`);
     continue;
   }

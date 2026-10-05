@@ -8,13 +8,16 @@
 //   saveCharacter { character }   → { character }
 //   deleteWearable / deleteCharacter { id }
 //   upload { folder, contentType, data (base64) } → { url, path }
+//   nftStatus / previewMetadata / generateMetadata / prepareMint / confirmMint /
+//   prepareSale / confirmSale { kind, id, network, … }   (see nft.ts)
 //
-// Listing an item here never mints anything: NFT addresses are references to
-// assets created separately (nft/setup-marketplace.mjs or another tool).
+// Saving an asset never touches its `nft` field: that only changes through the
+// NFT actions, after the chain has confirmed each step.
 
 import { handler, HttpError, json, serviceClient } from "../_shared/http.ts";
 import { verifySession } from "../_shared/session.ts";
 import { validateCharacter, validateWearable } from "../_shared/validate.ts";
+import { nftAction } from "./nft.ts";
 
 const BUCKET = "catalog-art";
 
@@ -41,6 +44,15 @@ Deno.serve(
       if (error) throw new HttpError(400, error.message);
     };
 
+    const NFT_ACTIONS = ["nftStatus", "previewMetadata", "generateMetadata", "prepareMint", "confirmMint", "prepareSale", "confirmSale"];
+    if (NFT_ACTIONS.includes(body.action)) return json(await nftAction(body.action, body, db, wallet));
+
+    // Deleting a deployed asset would orphan NFTs people own.
+    const deployed = async (table: string, id: string) => {
+      const { data } = await db.from(table).select("nft").eq("id", id).maybeSingle();
+      return Object.values(data?.nft ?? {}).some((e) => (e as { status?: string })?.status === "minted");
+    };
+
     switch (body.action) {
       case "session":
         return json({ wallet });
@@ -57,14 +69,14 @@ Deno.serve(
 
       case "saveWearable": {
         const { data: chars } = await db.from("characters").select("id");
-        const row = validateWearable(body.wearable, (chars ?? []).map((c) => c.id));
+        const { nft: _nft, ...row } = validateWearable(body.wearable, (chars ?? []).map((c) => c.id));
         const { data, error } = await db.from("wearables").upsert(row).select().single();
         fail(error);
         return json({ wearable: data });
       }
 
       case "saveCharacter": {
-        const row = validateCharacter(body.character);
+        const { nft: _nft, ...row } = validateCharacter(body.character);
         const { data, error } = await db.from("characters").upsert(row).select().single();
         fail(error);
         return json({ character: data });
@@ -73,6 +85,9 @@ Deno.serve(
       case "deleteWearable":
       case "deleteCharacter": {
         const table = body.action === "deleteWearable" ? "wearables" : "characters";
+        if (await deployed(table, String(body.id ?? ""))) {
+          throw new HttpError(409, "This item is deployed on-chain and people may own it. End its listing instead of deleting it.");
+        }
         const { error } = await db.from(table).delete().eq("id", String(body.id ?? ""));
         fail(error);
         return json({ ok: true });

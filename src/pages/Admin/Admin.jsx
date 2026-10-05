@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useWallet as useAdapterWallet } from "@solana/wallet-adapter-react";
 import { Pencil, Plus, ShieldCheck } from "lucide-react";
 
 import PageHeader from "../../components/marketplace/PageHeader";
@@ -25,8 +24,7 @@ import "./admin.css";
 // Access: a wallet on the admins allowlist signs a sign-in message; the
 // admin edge function checks both on every request.
 function Admin() {
-  const { connected, address } = useWallet();
-  const adapterWallet = useAdapterWallet();
+  const { connected, address, signer } = useWallet();
   const catalog = useCatalog();
 
   const [auth, setAuth] = useState({ wallet: null, session: null, status: "idle", error: null });
@@ -39,7 +37,7 @@ function Admin() {
   const signIn = async () => {
     setAuth({ wallet: address, session: null, status: "signing", error: null });
     try {
-      const token = await getSession("admin", adapterWallet);
+      const token = await getSession("admin", signer);
       await adminSession(token);
       setData(await adminList(token));
       setAuth({ wallet: address, session: token, status: "ready", error: null });

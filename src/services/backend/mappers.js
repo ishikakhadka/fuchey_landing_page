@@ -22,6 +22,21 @@ const listingTo = (listing = {}) => ({
   limit_per_wallet: listing.limitPerWallet ?? null,
 });
 
+// A listing (public.listings) → { status: draft|active|paused|ended, price, … }.
+export function rowToSale(r) {
+  return {
+    status: r.status,
+    price: n(r.price),
+    currency: r.currency,
+    quantity: n(r.quantity),
+    limitPerWallet: n(r.limit_per_wallet),
+    sellerWallet: r.seller_wallet,
+    candyMachine: r.candy_machine,
+    startsAt: r.starts_at,
+    endsAt: r.ends_at,
+  };
+}
+
 export function rowToCharacter(r) {
   return {
     id: r.id,
@@ -37,6 +52,7 @@ export function rowToCharacter(r) {
     attributes: r.attributes ?? [],
     wardrobeSlots: r.wardrobe_slots ?? [],
     listing: listingFrom(r),
+    imageUrl: r.image_url,
     nft: r.nft ?? {},
     published: r.published,
     sortOrder: r.sort_order,
@@ -57,6 +73,7 @@ export function characterToRow(c) {
     art: c.art,
     attributes: c.attributes ?? [],
     wardrobe_slots: c.wardrobeSlots ?? [],
+    image_url: c.imageUrl || null,
     ...listingTo(c.listing),
     nft: c.nft ?? {},
     published: Boolean(c.published),

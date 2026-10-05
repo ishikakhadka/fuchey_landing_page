@@ -70,6 +70,16 @@ function haystack(error) {
 }
 
 export function describePurchaseError(error) {
+  // Confirmed on-chain, but our backend couldn't verify it (yet). The NFT is
+  // probably in the wallet; we just won't claim success without the check.
+  if (error?.code === "unverified") {
+    return {
+      code: "unverified",
+      title: "Confirmed — verification pending",
+      message:
+        "Solana confirmed the transaction, but we couldn’t verify the new NFT yet. Check your wallet or refresh your collection in a minute.",
+    };
+  }
   if (error instanceof PurchaseError) {
     const rule = RULES.find((r) => r.code === error.code);
     if (rule) return { code: rule.code, title: rule.title, message: rule.message };

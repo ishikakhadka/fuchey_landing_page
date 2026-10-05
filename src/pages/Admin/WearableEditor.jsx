@@ -25,6 +25,9 @@ const drawable = (v) => v && (v.kind === "runs" ? v.front?.length : v.image && v
 function WearableEditor({ initial, characters, wearables, session, onSaved, onDeleted, onClose }) {
   const isNew = !initial.id;
   const [draft, setDraft] = useState(initial);
+  // Last saved version; the NFT panel works from the saved asset only.
+  const [saved, setSaved] = useState(initial);
+  const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
   const [errors, setErrors] = useState(null);
   const [status, setStatus] = useState({ busy: false, message: null, error: null });
 
@@ -84,10 +87,11 @@ function WearableEditor({ initial, characters, wearables, session, onSaved, onDe
     setStatus({ busy: true, message: null, error: null });
     setErrors(null);
     try {
-      const saved = await adminSaveWearable(session, { ...draft, published: publish ?? draft.published });
-      setDraft(saved);
-      setStatus({ busy: false, message: saved.published ? "Published — it’s live in the marketplace." : "Saved as draft.", error: null });
-      onSaved(saved);
+      const result = await adminSaveWearable(session, { ...draft, published: publish ?? draft.published });
+      setDraft(result);
+      setSaved(result);
+      setStatus({ busy: false, message: result.published ? "Published — it’s live in the marketplace." : "Saved as draft.", error: null });
+      onSaved(result);
     } catch (error) {
       setErrors(error.details ?? null);
       setStatus({ busy: false, message: null, error: error.message });
@@ -268,19 +272,19 @@ function WearableEditor({ initial, characters, wearables, session, onSaved, onDe
             )}
           </Section>
 
-          <Section title="Marketplace image">
+          <Section title="NFT artwork">
             <ImageUpload
-              label="NFT / listing image (optional)"
+              label="Artwork for the NFT"
               value={draft.imageUrl}
               folder={draft.id ? `wearables/${draft.id}` : null}
               session={session}
               onUploaded={(url) => set({ imageUrl: url })}
               onClear={() => set({ imageUrl: null })}
-              hint="The artwork for the NFT itself. Cards and the character preview use the layers above."
+              hint="The image wallets and marketplaces show for this NFT (uploaded to IPFS when metadata is generated). Required before minting. Cards and the character preview use the layers above."
             />
           </Section>
 
-          <NftFields nft={draft.nft} onChange={(nft) => set({ nft })} errors={errors} />
+          <NftFields kind="wearable" id={saved.id} isNew={!saved.id} dirty={dirty} session={session} />
         </div>
 
         <aside className="admin-preview" aria-label="Preview">

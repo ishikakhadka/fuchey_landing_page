@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router";
-import { useWallet as useAdapterWallet } from "@solana/wallet-adapter-react";
 
 import PageHeader from "../../components/marketplace/PageHeader";
 import CategoryTabs from "../../components/marketplace/CategoryTabs";
@@ -14,6 +13,7 @@ import { useCharacters } from "../../hooks/useCharacters";
 import { useWearables } from "../../hooks/useWearables";
 import { useCollection } from "../../hooks/useCollection";
 import { useAsync } from "../../hooks/useAsync";
+import { useWallet } from "../../hooks/useWallet";
 import { fitsCharacter, getWearableTypes } from "../../services/marketplace/catalog";
 import { fetchLoadout, saveLoadout } from "../../services/backend/loadouts";
 import { getSession } from "../../services/backend/session";
@@ -27,7 +27,7 @@ function Wardrobe() {
   const { characters } = useCharacters();
   const { wearables, loading, error } = useWearables();
   const { connected, address, ownsWearable, countOwned } = useCollection();
-  const adapterWallet = useAdapterWallet();
+  const { signer } = useWallet();
 
   const types = getWearableTypes();
   const type = types.some((t) => t.id === params.get("type")) ? params.get("type") : null;
@@ -105,7 +105,7 @@ function Wardrobe() {
     const key = loadoutKey;
     setSaveState({ key, status: "saving" });
     try {
-      const session = await getSession("loadout", adapterWallet);
+      const session = await getSession("loadout", signer);
       const slotsSaved = await saveLoadout({ characterId: character.id, slots: currentSlots, session });
       setSaveState({ key, status: "saved", slots: slotsSaved });
     } catch (error) {

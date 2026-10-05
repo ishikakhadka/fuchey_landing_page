@@ -26,6 +26,9 @@ const EDITION_OPTIONS = Object.values(editions).map((e) => ({ id: e.id, label: e
 function CharacterEditor({ initial, wearables, session, onSaved, onDeleted, onClose }) {
   const isNew = !initial.id;
   const [draft, setDraft] = useState(initial);
+  // Last saved version; the NFT panel works from the saved asset only.
+  const [saved, setSaved] = useState(initial);
+  const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
   const [errors, setErrors] = useState(null);
   const [status, setStatus] = useState({ busy: false, message: null, error: null });
   const [spriteText, setSpriteText] = useState(() =>
@@ -45,10 +48,11 @@ function CharacterEditor({ initial, wearables, session, onSaved, onDeleted, onCl
     setStatus({ busy: true, message: null, error: null });
     setErrors(null);
     try {
-      const saved = await adminSaveCharacter(session, { ...draft, published: publish });
-      setDraft(saved);
-      setStatus({ busy: false, message: saved.published ? "Published." : "Saved as draft.", error: null });
-      onSaved(saved);
+      const result = await adminSaveCharacter(session, { ...draft, published: publish });
+      setDraft(result);
+      setSaved(result);
+      setStatus({ busy: false, message: result.published ? "Published." : "Saved as draft.", error: null });
+      onSaved(result);
     } catch (error) {
       setErrors(error.details ?? null);
       setStatus({ busy: false, message: null, error: error.message });
@@ -161,6 +165,18 @@ function CharacterEditor({ initial, wearables, session, onSaved, onDeleted, onCl
             )}
           </Section>
 
+          <Section title="NFT artwork">
+            <ImageUpload
+              label="Artwork for the NFT"
+              value={draft.imageUrl}
+              folder={draft.id ? `characters/${draft.id}` : null}
+              session={session}
+              onUploaded={(url) => set({ imageUrl: url })}
+              onClear={() => set({ imageUrl: null })}
+              hint="The image wallets and marketplaces show for this NFT (uploaded to IPFS when metadata is generated). The base art above is what Fuchey renders."
+            />
+          </Section>
+
           <Section title="Wardrobe">
             <Checks
               label="Slots this character can wear"
@@ -201,7 +217,7 @@ function CharacterEditor({ initial, wearables, session, onSaved, onDeleted, onCl
             <NumberInput label="Sort order" value={draft.sortOrder} onChange={(v) => set({ sortOrder: v ?? 0 })} step="1" errors={errors} path="sort_order" />
           </Section>
 
-          <NftFields nft={draft.nft} onChange={(nft) => set({ nft })} errors={errors} />
+          <NftFields kind="character" id={saved.id} isNew={!saved.id} dirty={dirty} session={session} />
         </div>
 
         <aside className="admin-preview" aria-label="Preview">

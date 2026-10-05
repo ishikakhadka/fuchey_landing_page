@@ -23,7 +23,7 @@ function PurchaseButton({ item, size = "md" }) {
   const Icon = ICONS[state.kind] ?? ArrowRight;
   const hintId = `purchase-hint-${item.id}`;
   const busy =
-    purchase?.item.id === item.id && ["preparing", "signing", "submitted"].includes(purchase.stage);
+    purchase?.item.id === item.id && ["preparing", "signing", "submitted", "verifying"].includes(purchase.stage);
 
   const onClick = () => {
     if (state.needsWallet) wallet.openModal();

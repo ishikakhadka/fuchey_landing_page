@@ -3,6 +3,7 @@ import { getSolBalance } from "../solana/balance";
 import { getWalletUmi } from "../solana/umi";
 import { fetchLiveSupply, fetchMintCounts } from "./listings";
 import { PurchaseError } from "./errors";
+import { verifyPurchase } from "./purchases";
 
 // Network fee + rent for the new asset account, with headroom.
 const FEE_BUFFER_SOL = 0.01;
@@ -13,14 +14,19 @@ const FEE_BUFFER_SOL = 0.01;
 // here only exist to give a clear message before asking the wallet to sign.
 // Nothing is reported as purchased until Solana confirms the transaction.
 //
+// Works with any wallet: `wallet` is the generic signer from hooks/useWallet.js.
+//
 // onStage(stage, details) is called with:
-//   "preparing" → "signing" → "submitted" { signature } → "confirmed" { signature, asset }
+//   "preparing" → "signing" → "submitted" { signature } → "verifying"
+//   → "confirmed" { signature, asset }   (only after the backend verified it on-chain)
 //
 // The price shown and checked here is the catalogue's; the amount actually
 // charged is whatever the candy guard on-chain says.
 export async function purchaseItem({ item, wallet, connection, onStage = () => {} }) {
   const deployment = deploymentOf(item);
-  if (!deployment) throw new PurchaseError("not-deployed", "This item isn’t on sale on this network yet.");
+  if (!deployment || item.sale?.status !== "active") {
+    throw new PurchaseError("not-deployed", "This item isn’t on sale on this network yet.");
+  }
   if (!wallet?.publicKey) throw new PurchaseError("wallet-disconnected");
 
   onStage("preparing");
@@ -36,7 +42,7 @@ export async function purchaseItem({ item, wallet, connection, onStage = () => {
   if (item.listing.limitPerWallet && (counts[item.id] ?? 0) >= item.listing.limitPerWallet) {
     throw new PurchaseError("limit-reached");
   }
-  const price = item.listing.price ?? 0;
+  const price = item.sale.price ?? 0;
   if (balance < price + FEE_BUFFER_SOL) throw new PurchaseError("insufficient-sol");
 
   const umi = await getWalletUmi(wallet);
@@ -54,8 +60,9 @@ export async function purchaseItem({ item, wallet, connection, onStage = () => {
 
   const mintArgs = {};
   if (price > 0) {
-    if (!deployment.treasury) throw new PurchaseError("not-deployed", "This item’s payment address isn’t set up yet.");
-    mintArgs.solPayment = some({ destination: publicKey(deployment.treasury) });
+    const treasury = item.sale.sellerWallet ?? deployment.treasury;
+    if (!treasury) throw new PurchaseError("not-deployed", "This item’s payment address isn’t set up yet.");
+    mintArgs.solPayment = some({ destination: publicKey(treasury) });
   }
   if (deployment.mintLimitId) mintArgs.mintLimit = some({ id: deployment.mintLimitId });
 
@@ -87,7 +94,13 @@ export async function purchaseItem({ item, wallet, connection, onStage = () => {
     throw Object.assign(new Error(JSON.stringify(result.value.err)), { signature });
   }
 
+  // Confirmed on-chain; now the backend checks it independently before we
+  // call it a purchase.
   const details = { signature, asset: asset.publicKey.toString() };
+  onStage("verifying", details);
+  await verifyPurchase({ ...details, wallet: owner }).catch((error) => {
+    throw Object.assign(error, { signature, code: "unverified" });
+  });
   onStage("confirmed", details);
   return details;
 }

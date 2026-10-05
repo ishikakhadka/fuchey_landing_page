@@ -1,11 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { useConnection, useWallet as useAdapterWallet } from "@solana/wallet-adapter-react";
+import { useConnection } from "@solana/wallet-adapter-react";
 
 import { FEATURES } from "../config/features";
 import { collectionIndex, deploymentsFor } from "../config/deployment";
 import { useCatalog } from "./CatalogContext";
+import { useWallet } from "../hooks/useWallet";
 import { fetchLiveSupply, fetchMintCounts } from "../services/marketplace/listings";
-import { fetchOwnedFucheyAssets } from "../services/nft/assets";
+import { fetchInventory, ownedAssets } from "../services/nft/ownership";
 import { purchaseItem } from "../services/marketplace/mint";
 import { describePurchaseError } from "../services/marketplace/errors";
 
@@ -45,8 +46,7 @@ function useChainQuery(load, key, enabled = true) {
 
 export function MarketplaceProvider({ children }) {
   const { connection } = useConnection();
-  const adapterWallet = useAdapterWallet();
-  const address = adapterWallet.publicKey?.toBase58() ?? null;
+  const { address, signer } = useWallet();
   const [nonce, setNonce] = useState(0);
   const refresh = useCallback(() => setNonce((n) => n + 1), []);
 
@@ -65,8 +65,9 @@ export function MarketplaceProvider({ children }) {
   const hasDeployments = Object.keys(deployments).length > 0;
 
   const supply = useChainQuery(() => fetchLiveSupply(deployments), `supply:${chainKey}:${nonce}`, hasDeployments);
+  // Ownership: resolved by the backend from the chain (any wallet app).
   const owned = useChainQuery(
-    () => fetchOwnedFucheyAssets(address, index),
+    () => fetchInventory(address),
     `owned:${address}:${chainKey}:${nonce}`,
     Boolean(address) && FEATURES.readOwnedAssets,
   );
@@ -89,7 +90,7 @@ export function MarketplaceProvider({ children }) {
 
       purchaseItem({
         item,
-        wallet: adapterWallet,
+        wallet: signer,
         connection,
         onStage: (stage, details = {}) => update({ stage, ...details }),
       })
@@ -101,20 +102,20 @@ export function MarketplaceProvider({ children }) {
           refresh();
         });
     },
-    [adapterWallet, connection, refresh],
+    [signer, connection, refresh],
   );
 
   const closePurchase = useCallback(() => {
-    setPurchase((p) => (p && ["preparing", "signing", "submitted"].includes(p.stage) ? p : null));
+    setPurchase((p) => (p && ["preparing", "signing", "submitted", "verifying"].includes(p.stage) ? p : null));
   }, []);
 
   const value = useMemo(() => {
-    const ownedAssets = owned.data ?? [];
     return {
       address,
       supply: supply.data ?? {},
       supplyLoading: supply.loading,
-      owned: ownedAssets,
+      owned: ownedAssets(owned.data),
+      inventory: owned.data ?? null,
       ownedLoading: owned.loading,
       ownedError: owned.error,
       mintCounts: counts.data ?? {},
