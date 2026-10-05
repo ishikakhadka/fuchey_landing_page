@@ -2,7 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { useConnection, useWallet as useAdapterWallet } from "@solana/wallet-adapter-react";
 
 import { FEATURES } from "../config/features";
-import { DEPLOYMENT, isDeployed } from "../config/deployment";
+import { collectionIndex, deploymentsFor } from "../config/deployment";
+import { useCatalog } from "./CatalogContext";
 import { fetchLiveSupply, fetchMintCounts } from "../services/marketplace/listings";
 import { fetchOwnedFucheyAssets } from "../services/nft/assets";
 import { purchaseItem } from "../services/marketplace/mint";
@@ -17,8 +18,6 @@ import { describePurchaseError } from "../services/marketplace/errors";
 // it by triggering a re-read after Solana confirms.
 
 const MarketplaceContext = createContext(null);
-
-const hasDeployments = Object.keys(DEPLOYMENT.items).length > 0;
 
 // Keeps the last good result while a refresh is in flight (no flicker).
 function useChainQuery(load, key, enabled = true) {
@@ -51,15 +50,29 @@ export function MarketplaceProvider({ children }) {
   const [nonce, setNonce] = useState(0);
   const refresh = useCallback(() => setNonce((n) => n + 1), []);
 
-  const supply = useChainQuery(fetchLiveSupply, `supply:${nonce}`, hasDeployments);
+  // On-chain references come from the catalogue (item.nft[network]).
+  const { characters, wearables } = useCatalog();
+  const { deployments, index, chainKey } = useMemo(() => {
+    const items = [...characters, ...wearables];
+    const deployments = deploymentsFor(items);
+    const index = collectionIndex(items);
+    return {
+      deployments,
+      index,
+      chainKey: JSON.stringify([Object.values(deployments).map((d) => d.candyMachine), Object.keys(index)]),
+    };
+  }, [characters, wearables]);
+  const hasDeployments = Object.keys(deployments).length > 0;
+
+  const supply = useChainQuery(() => fetchLiveSupply(deployments), `supply:${chainKey}:${nonce}`, hasDeployments);
   const owned = useChainQuery(
-    () => fetchOwnedFucheyAssets(address),
-    `owned:${address}:${nonce}`,
+    () => fetchOwnedFucheyAssets(address, index),
+    `owned:${address}:${chainKey}:${nonce}`,
     Boolean(address) && FEATURES.readOwnedAssets,
   );
   const counts = useChainQuery(
-    () => fetchMintCounts(address),
-    `counts:${address}:${nonce}`,
+    () => fetchMintCounts(address, deployments),
+    `counts:${address}:${chainKey}:${nonce}`,
     Boolean(address) && hasDeployments,
   );
 
@@ -106,12 +119,13 @@ export function MarketplaceProvider({ children }) {
       ownedError: owned.error,
       mintCounts: counts.data ?? {},
       refresh,
-      isDeployed,
+      collectionIndex: index,
+      isDeployed: (id) => Boolean(deployments[id]),
       purchase,
       startPurchase,
       closePurchase,
     };
-  }, [address, supply, owned, counts, refresh, purchase, startPurchase, closePurchase]);
+  }, [address, supply, owned, counts, refresh, index, deployments, purchase, startPurchase, closePurchase]);
 
   return <MarketplaceContext.Provider value={value}>{children}</MarketplaceContext.Provider>;
 }

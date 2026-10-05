@@ -10,8 +10,9 @@
 // the same layers cropped to their bounding box, unless the wearable has its
 // own `icon` layer (outfits: shown whole, without the gap the beard covers).
 //
-// Plain data + functions, no imports: the NFT tooling in nft/ imports this
-// file too, to render the PNGs that go on-chain.
+// Plain data + functions, no imports. Source art only: build-seed.mjs stores
+// the generated layers in the database (wearables.visual), and nft/make-art.mjs
+// renders the NFT PNGs from it. The site draws from the database, not this file.
 
 const OUTLINE = "#0b0f17";
 

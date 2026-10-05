@@ -2,11 +2,12 @@ import { Link } from "react-router";
 import { Check } from "lucide-react";
 import ItemArt from "../marketplace/ItemArt";
 import RarityBadge from "../marketplace/RarityBadge";
-import { findItem } from "../../services/marketplace/catalog";
+import { useCatalog } from "../../context/CatalogContext";
 import { shortAddress } from "../../utils/format";
 
 // One owned on-chain asset: { address, name, itemId } from services/nft/assets.
 function AssetCard({ asset }) {
+  const { findItem } = useCatalog();
   const item = findItem(asset.itemId);
   if (!item) return null;
 

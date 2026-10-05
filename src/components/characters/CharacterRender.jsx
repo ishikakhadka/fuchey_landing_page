@@ -1,46 +1,39 @@
 import { useMemo } from "react";
 import yetiUrl from "../../assets/yeti.png";
 import cyberUrl from "../../assets/cyber-yeti.png";
-import { SLOT_ORDER, wearableArt } from "../../data/wearableArt";
-import { PixelRuns } from "../wardrobe/WearableIcon";
+import { CHARACTER_VIEW, stackLayers } from "../../render/visual";
+import WearableLayer from "./WearableLayer";
 
-const CHARACTER_IMAGES = { yeti: yetiUrl, cyber: cyberUrl };
+// Base art bundled with the site; any other value is an uploaded image URL.
+const BUILT_IN = { yeti: yetiUrl, cyber: cyberUrl };
 
-// Base characters are 96×96 pixel art; wearables are drawn on that same grid
-// (see data/wearableArt.js). The view box adds headroom for hats and halos.
-const VIEW = "-14 -19 116 116";
-
-// Renders a character with equipped wearables layered pixel-perfectly.
-// Purely visual: what's equipped is app state, never written into the NFT.
-function CharacterRender({ image, equipped = [], alt, className = "" }) {
-  const layers = useMemo(
-    () =>
-      [...equipped]
-        .filter((w) => wearableArt[w.id])
-        .sort((a, b) => SLOT_ORDER.indexOf(a.type) - SLOT_ORDER.indexOf(b.type)),
-    [equipped],
-  );
+// Renders a character with equipped wearables layered pixel-perfectly:
+// every wearable's back layer, then the base art, then every front layer,
+// each stacked by wardrobe layer. Purely visual: what's equipped is app
+// state, never written into the NFT.
+function CharacterRender({ image, characterId, equipped = [], alt, className = "" }) {
+  const layers = useMemo(() => stackLayers(equipped, characterId), [equipped, characterId]);
 
   return (
     <svg
       className={`character-render ${className}`}
-      viewBox={VIEW}
+      viewBox={CHARACTER_VIEW}
       role="img"
       aria-label={alt}
       shapeRendering="crispEdges">
-      {layers.map((w) =>
-        wearableArt[w.id].back ? <PixelRuns key={`b-${w.id}`} runs={wearableArt[w.id].back} /> : null,
-      )}
+      {layers.map(({ wearable, visual }) => (
+        <WearableLayer key={`b-${wearable.id}`} visual={visual} side="back" />
+      ))}
       <image
-        href={CHARACTER_IMAGES[image]}
+        href={BUILT_IN[image] ?? image}
         x="0"
         y="0"
         width="96"
         height="96"
         style={{ imageRendering: "pixelated" }}
       />
-      {layers.map((w) => (
-        <PixelRuns key={w.id} runs={wearableArt[w.id].front} className="wear-layer" />
+      {layers.map(({ wearable, visual }) => (
+        <WearableLayer key={wearable.id} visual={visual} side="front" className="wear-layer" />
       ))}
     </svg>
   );

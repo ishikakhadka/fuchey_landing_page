@@ -1,27 +1,20 @@
-import { characters } from "../../data/characters";
-import { wearables } from "../../data/wearables";
 import { RARITIES, WEARABLE_TYPES } from "../../data/taxonomy";
+import { select } from "../backend/client";
+import { rowToCharacter, rowToWearable } from "../backend/mappers";
 
-// Read access to the marketplace catalogue.
-//
-// Everything is async on purpose: today it reads the static files in data/,
-// later (Phase 6) it will call the marketplace backend for listings, live
-// supply and claim limits. Components and hooks never import data/ directly.
+// Read access to the marketplace catalogue, from the Supabase database
+// (published rows only — drafts are visible in the admin dashboard alone).
+// Components get it through CatalogContext, never by calling this directly.
 
-export async function getCharacters() {
-  return characters;
-}
-
-export async function getCharacter(id) {
-  return characters.find((item) => item.id === id) ?? null;
-}
-
-export async function getWearables({ type } = {}) {
-  return type ? wearables.filter((item) => item.type === type) : wearables;
-}
-
-export async function getWearablesFor(characterId) {
-  return wearables.filter((item) => item.compatibleCharacters.includes(characterId));
+export async function fetchCatalog() {
+  const [characters, wearables] = await Promise.all([
+    select("characters", { order: "sort_order.asc,id.asc" }),
+    select("wearables", { order: "sort_order.asc,id.asc" }),
+  ]);
+  return {
+    characters: characters.map(rowToCharacter),
+    wearables: wearables.map(rowToWearable),
+  };
 }
 
 export function getWearableTypes() {
@@ -32,14 +25,7 @@ export function getRarity(id) {
   return RARITIES[id] ?? RARITIES.common;
 }
 
-export function getCharacterName(id) {
-  return characters.find((item) => item.id === id)?.name ?? id;
-}
-
-// Synchronous lookup of any catalogue item (character or wearable) by id.
-export function findItem(id) {
-  const character = characters.find((item) => item.id === id);
-  if (character) return { ...character, kind: "character" };
-  const wearable = wearables.find((item) => item.id === id);
-  return wearable ? { ...wearable, kind: "wearable" } : null;
+// Whether a wearable can be equipped on a character.
+export function fitsCharacter(wearable, characterId) {
+  return Boolean(characterId && wearable?.compatibleCharacters?.includes(characterId));
 }

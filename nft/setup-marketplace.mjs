@@ -6,11 +6,22 @@
 //   supply         → itemsAvailable
 //   per-wallet cap → mintLimit guard
 //
-// Results go to src/data/deployments/<network>.json, which the website reads.
-// Re-running skips items that are already deployed, so it is safe to resume.
+// Items come from the Supabase catalogue (status "available"); the addresses
+// created here are written back to each row's `nft[<network>]`, which the
+// website reads. Listing an item in the admin dashboard never mints anything —
+// this script is the explicit "create the NFT side" step. Re-running skips
+// items that already have a candy machine on this network, so it is safe to
+// resume.
 //
-// Usage (run `node make-art.mjs` first):
-//   FUCHEY_KEYPAIR=/path/to/devnet-keypair.json node setup-marketplace.mjs
+// Usage (run `node make-art.mjs` first for the built-in art):
+//   FUCHEY_KEYPAIR=/path/to/devnet-keypair.json
+//   SUPABASE_URL=https://<project>.supabase.co
+//   SUPABASE_SERVICE_ROLE_KEY=<service role key>
+//   node setup-marketplace.mjs
+//
+// NFT images: nft/out/images/<id>.png if it exists, otherwise the item's
+// uploaded image (wearables: image_url; characters: an uploaded base image).
+// The service-role key is only read from the environment and never printed.
 //
 // Optional env:
 //   TREASURY=<address>       where payments go (default: the keypair's address)
@@ -43,9 +54,6 @@ import {
 } from "@metaplex-foundation/mpl-core-candy-machine";
 import { irysUploader } from "@metaplex-foundation/umi-uploader-irys";
 
-import { characters } from "../src/data/characters.js";
-import { wearables } from "../src/data/wearables.js";
-
 const here = path.dirname(fileURLToPath(import.meta.url));
 const NETWORK = process.env.SOLANA_NETWORK ?? "devnet";
 const RPC = {
@@ -77,22 +85,87 @@ const secret = new Uint8Array(JSON.parse(fs.readFileSync(keypairPath, "utf8")));
 umi.use(keypairIdentity(umi.eddsa.createKeypairFromSecretKey(secret)));
 
 const treasury = publicKey(process.env.TREASURY ?? umi.identity.publicKey);
-const outFile = path.join(here, `../src/data/deployments/${NETWORK}.json`);
-fs.mkdirSync(path.dirname(outFile), { recursive: true });
+// --- catalogue (Supabase, service role) -------------------------------------
+const SUPABASE_URL = process.env.SUPABASE_URL?.replace(/\/$/, "");
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!SUPABASE_URL || !SERVICE_KEY) {
+  console.error("Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to read and update the catalogue.");
+  process.exit(1);
+}
 
-const deployment = fs.existsSync(outFile)
-  ? JSON.parse(fs.readFileSync(outFile, "utf8"))
-  : { network: NETWORK, items: {} };
-deployment.network = NETWORK;
-deployment.authority = umi.identity.publicKey.toString();
-deployment.treasury = treasury.toString();
-const save = () => fs.writeFileSync(outFile, JSON.stringify(deployment, null, 2) + "\n");
+async function rest(pathAndQuery, init = {}) {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/${pathAndQuery}`, {
+    ...init,
+    headers: {
+      apikey: SERVICE_KEY,
+      Authorization: `Bearer ${SERVICE_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+      ...init.headers,
+    },
+  });
+  if (!response.ok) throw new Error(`Supabase ${response.status}: ${await response.text()}`);
+  return response.json();
+}
+
+const [characterRows, wearableRows] = await Promise.all([
+  rest("characters?select=*&status=eq.available"),
+  rest("wearables?select=*&status=eq.available"),
+]);
+
+const listingOf = (r) => ({
+  price: r.price == null ? null : Number(r.price),
+  supply: r.supply,
+  limitPerWallet: r.limit_per_wallet,
+});
 
 const only = process.env.ONLY?.split(",").map((s) => s.trim());
 const items = [
-  ...characters.map((c) => ({ ...c, kind: "character" })),
-  ...wearables.map((w) => ({ ...w, kind: "wearable", title: `Fuchey ${w.name}` })),
-].filter((item) => item.listing.status === "available" && (!only || only.includes(item.id)));
+  ...characterRows.map((r) => ({
+    kind: "character",
+    table: "characters",
+    id: r.id,
+    name: r.name,
+    title: r.title,
+    description: r.description,
+    rarity: r.rarity,
+    attributes: r.attributes,
+    imageUrl: r.art?.kind === "character" && /^https?:/.test(r.art.image) ? r.art.image : null,
+    listing: listingOf(r),
+    nft: r.nft ?? {},
+  })),
+  ...wearableRows.map((r) => ({
+    kind: "wearable",
+    table: "wearables",
+    id: r.id,
+    name: r.name,
+    title: `Fuchey ${r.name}`,
+    description: r.description,
+    rarity: r.rarity,
+    type: r.type,
+    imageUrl: r.image_url,
+    listing: listingOf(r),
+    nft: r.nft ?? {},
+  })),
+].filter((item) => !only || only.includes(item.id));
+
+async function saveNft(item, entry) {
+  item.nft = { ...item.nft, [NETWORK]: entry };
+  await rest(`${item.table}?id=eq.${encodeURIComponent(item.id)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ nft: item.nft }),
+  });
+}
+
+async function imageBytes(item) {
+  const local = path.join(here, "out/images", `${item.id}.png`);
+  if (fs.existsSync(local)) return fs.readFileSync(local);
+  if (item.imageUrl) {
+    const response = await fetch(item.imageUrl);
+    if (response.ok) return Buffer.from(await response.arrayBuffer());
+  }
+  throw new Error(`No image for ${item.id}: add nft/out/images/${item.id}.png or upload one in the admin dashboard.`);
+}
 
 function metadataFor(item, imageUri, { collection = false } = {}) {
   const attributes = [
@@ -117,12 +190,14 @@ function metadataFor(item, imageUri, { collection = false } = {}) {
 }
 
 async function deploy(item) {
-  const imagePath = path.join(here, "out/images", `${item.id}.png`);
-  if (!fs.existsSync(imagePath)) throw new Error(`Missing ${imagePath} — run make-art.mjs first.`);
+  if (item.listing.supply == null || item.listing.price == null) {
+    throw new Error(`${item.id}: set a price and supply before deploying.`);
+  }
+  const bytes = await imageBytes(item);
 
   console.log(`\n${item.title}`);
 
-  const file = createGenericFile(fs.readFileSync(imagePath), `${item.id}.png`, {
+  const file = createGenericFile(bytes, `${item.id}.png`, {
     contentType: "image/png",
   });
   const [imageUri] = await umi.uploader.upload([file]);
@@ -166,29 +241,26 @@ async function deploy(item) {
   const candyGuard = findCandyGuardPda(umi, { base: candyMachine.publicKey })[0];
   console.log("  candy machine", candyMachine.publicKey.toString());
 
-  deployment.items[item.id] = {
+  await saveNft(item, {
     collection: collection.publicKey.toString(),
     candyMachine: candyMachine.publicKey.toString(),
     candyGuard: candyGuard.toString(),
+    treasury: treasury.toString(),
     metadataUri,
     imageUri,
-    price,
-    supply,
     mintLimitId,
-  };
-  save();
+  });
 }
 
 console.log(`Deploying ${items.length} item(s) to ${NETWORK} as ${umi.identity.publicKey}`);
 console.log(`Payments go to ${treasury}`);
 
 for (const item of items) {
-  if (deployment.items[item.id]) {
+  if (item.nft[NETWORK]?.candyMachine) {
     console.log(`\n${item.title}: already deployed, skipping`);
     continue;
   }
   await deploy(item);
 }
 
-save();
-console.log(`\nDone. Wrote ${path.relative(process.cwd(), outFile)}`);
+console.log(`\nDone. Addresses saved to the catalogue (nft.${NETWORK}).`);

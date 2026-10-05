@@ -2,9 +2,7 @@ import { useMemo } from "react";
 import { FEATURES } from "../config/features";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { useWallet } from "./useWallet";
-import { characters } from "../data/characters";
-
-const CHARACTER_IDS = new Set(characters.map((c) => c.id));
+import { useCatalog } from "../context/CatalogContext";
 
 // The connected wallet's Fuchey assets, read from the chain.
 // Ownership is never inferred from UI state — only confirmed on-chain assets
@@ -12,8 +10,10 @@ const CHARACTER_IDS = new Set(characters.map((c) => c.id));
 export function useCollection() {
   const { address, connected } = useWallet();
   const market = useMarketplace();
+  const { characters } = useCatalog();
 
   return useMemo(() => {
+    const CHARACTER_IDS = new Set(characters.map((c) => c.id));
     const owned = connected ? market.owned : [];
     const ownedIds = new Set(owned.map((a) => a.itemId));
 
@@ -31,5 +31,5 @@ export function useCollection() {
       ownsWearable: (id) => ownedIds.has(id),
       countOwned: (id) => owned.filter((a) => a.itemId === id).length,
     };
-  }, [address, connected, market]);
+  }, [address, connected, market, characters]);
 }

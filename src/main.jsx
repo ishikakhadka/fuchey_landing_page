@@ -7,14 +7,17 @@ import { router } from './router.jsx'
 import { EditionProvider } from './context/EditionContext.jsx'
 import { SolanaWalletProvider } from './context/WalletContext.jsx'
 import { MarketplaceProvider } from './context/MarketplaceContext.jsx'
+import { CatalogProvider } from './context/CatalogContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <EditionProvider>
       <SolanaWalletProvider>
-        <MarketplaceProvider>
-          <RouterProvider router={router} />
-        </MarketplaceProvider>
+        <CatalogProvider>
+          <MarketplaceProvider>
+            <RouterProvider router={router} />
+          </MarketplaceProvider>
+        </CatalogProvider>
       </SolanaWalletProvider>
     </EditionProvider>
   </StrictMode>,

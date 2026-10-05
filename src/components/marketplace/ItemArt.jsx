@@ -6,14 +6,16 @@ import WearableIcon from "../wardrobe/WearableIcon";
 //   character → base art + optional `equipped` wearables, layered on one grid
 //   wearable  → the wearable's own pixel art
 //   sprite    → placeholder art (e.g. locked, unreleased characters)
-function ItemArt({ art, alt, itemId, equipped = [], size = "md" }) {
+// `item` lets callers draw an item that isn't in the published catalogue yet
+// (admin preview); normally it's looked up by `itemId`.
+function ItemArt({ art, alt, itemId, item, equipped = [], size = "md" }) {
   const locked = Boolean(art.locked);
 
   let content;
   if (art.kind === "character") {
-    content = <CharacterRender image={art.image} equipped={equipped} alt={alt} />;
+    content = <CharacterRender image={art.image} characterId={itemId} equipped={equipped} alt={alt} />;
   } else if (art.kind === "wearable") {
-    content = <WearableIcon id={itemId} alt={alt} />;
+    content = <WearableIcon id={itemId} wearable={item} alt={alt} />;
   } else {
     content = (
       <PixelSprite

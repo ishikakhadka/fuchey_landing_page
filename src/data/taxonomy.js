@@ -25,3 +25,8 @@ export const LISTING_STATUS = {
   COMING_SOON: "coming-soon",
   SOLD_OUT: "sold-out",
 };
+
+// Stacking order of wardrobe layers on a character, back to front. A
+// wearable's `visual.layer` (default: its type) picks its place here and
+// `visual.z` nudges it within that layer.
+export const SLOT_ORDER = ["outfit", "backpack", "accessory", "headwear", "hat", "held", "special"];

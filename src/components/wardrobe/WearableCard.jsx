@@ -5,18 +5,21 @@ import RarityBadge from "../marketplace/RarityBadge";
 import PriceTag from "../marketplace/PriceTag";
 
 // Compact, art-first wearable tile. Either selectable (fitting room) via
-// `onSelect`, or a link into the wardrobe.
-function WearableCard({ wearable, owned = false, selected = false, onSelect }) {
+// `onSelect`, or a link into the wardrobe. `incompatible` names the current
+// character when this wearable doesn't fit it (still selectable, to see its
+// details, but it won't be put on).
+function WearableCard({ wearable, owned = false, selected = false, incompatible = null, onSelect }) {
   const inner = (
     <>
       <span className="wearable-tile">
-        <ItemArt art={wearable.art} alt={wearable.name} itemId={wearable.id} size="sm" />
+        <ItemArt art={wearable.art} alt={wearable.name} itemId={wearable.id} item={wearable} size="sm" />
         {owned && (
           <span className="flag is-owned">
             <Check size={11} strokeWidth={3} /> Owned
           </span>
         )}
         {selected && <span className="wearing-badge">Wearing</span>}
+        {incompatible && <span className="wearing-badge is-incompatible">Doesn’t fit {incompatible}</span>}
       </span>
 
       <span className="wearable-meta">
@@ -29,7 +32,7 @@ function WearableCard({ wearable, owned = false, selected = false, onSelect }) {
     </>
   );
 
-  const className = `wearable-card rarity-edge-${wearable.rarity} ${selected ? "is-selected" : ""}`;
+  const className = `wearable-card rarity-edge-${wearable.rarity} ${selected ? "is-selected" : ""} ${incompatible ? "is-incompatible" : ""}`;
 
   if (onSelect) {
     return (

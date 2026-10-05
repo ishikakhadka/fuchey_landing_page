@@ -1,22 +1,28 @@
 import { NETWORK } from "./network";
-import devnet from "../data/deployments/devnet.json";
-import mainnet from "../data/deployments/mainnet-beta.json";
 
-// On-chain addresses for the current network, written by nft/setup-marketplace.mjs.
-// Only public addresses live here.
-const DEPLOYMENTS = { devnet, "mainnet-beta": mainnet };
+// On-chain references for the current network, stored per catalogue item in
+// `item.nft[network]` (set by nft/setup-marketplace.mjs or the admin
+// dashboard). Only public addresses live there.
+//
+//   { collection, candyMachine, candyGuard, treasury, metadataUri, imageUri, mintLimitId }
 
-export const DEPLOYMENT = DEPLOYMENTS[NETWORK.id] ?? { items: {} };
-
-export function getDeployment(itemId) {
-  return DEPLOYMENT.items[itemId] ?? null;
+// The item's deployment if it can be bought on this network, else null.
+export function deploymentOf(item) {
+  const d = item?.nft?.[NETWORK.id];
+  return d?.collection && d?.candyMachine && d?.candyGuard ? d : null;
 }
 
-export function isDeployed(itemId) {
-  return Boolean(DEPLOYMENT.items[itemId]);
+// { [itemId]: deployment } for every purchasable item.
+export function deploymentsFor(items) {
+  return Object.fromEntries(items.map((item) => [item.id, deploymentOf(item)]).filter(([, d]) => d));
 }
 
 // collection address → item id, to recognise Fuchey assets in a wallet.
-export const COLLECTION_INDEX = Object.fromEntries(
-  Object.entries(DEPLOYMENT.items).map(([id, d]) => [d.collection, id]),
-);
+// Any item with a collection counts, even if it isn't on sale any more.
+export function collectionIndex(items) {
+  return Object.fromEntries(
+    items
+      .map((item) => [item.nft?.[NETWORK.id]?.collection, item.id])
+      .filter(([collection]) => collection),
+  );
+}

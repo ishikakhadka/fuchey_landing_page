@@ -9,7 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import pngjs from "pngjs";
-import { wearableArt, SLOT_ORDER } from "../src/data/wearableArt.js";
+import { wearableArt, SLOT_ORDER } from "../supabase/seed/wearableArt.js";
 
 const { PNG } = pngjs;
 const here = path.dirname(fileURLToPath(import.meta.url));

@@ -1,5 +1,6 @@
-// Wearable catalogue. Same identity / listing split as characters.js.
-// Artwork lives in wearableArt.js, drawn on the Yeti's pixel grid.
+// Original wearable catalogue — SEED DATA ONLY (see characters.js).
+// Artwork lives in wearableArt.js, drawn on the Yeti's pixel grid; the seed
+// stores its generated pixel layers in each row's `visual`.
 
 export const wearables = [
   {

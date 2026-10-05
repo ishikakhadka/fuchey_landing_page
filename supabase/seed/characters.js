@@ -1,16 +1,11 @@
 import { sprites } from "./sprites.js";
 
-// Character catalogue.
+// Original character catalogue — SEED DATA ONLY.
 //
-// Each entry has three parts that are kept deliberately separate:
-//   - identity  (name, art, attributes)  → what ends up in the NFT metadata
-//   - listing   (price, supply, limits)  → marketplace config, never written into the NFT
-//
-// On-chain addresses (collection, candy machine) live in deployments/<network>.json,
-// written by nft/setup-marketplace.mjs. Live remaining supply is read from the
-// candy machine, never stored here.
-//
-// No asset imports, so nft/ tooling can import this file directly.
+// The live catalogue is the Supabase `characters` table, edited in the admin
+// dashboard (/admin). This file only feeds supabase/seed/build-seed.mjs,
+// which generates supabase/seed.sql for a fresh database. The site never
+// imports it.
 
 export const characters = [
   {

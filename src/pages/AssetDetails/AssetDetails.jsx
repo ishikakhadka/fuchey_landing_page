@@ -10,12 +10,13 @@ import NetworkBadge from "../../components/wallet/NetworkBadge";
 import { useAsync } from "../../hooks/useAsync";
 import { useWallet } from "../../hooks/useWallet";
 import { fetchFucheyAsset, fetchMetadata } from "../../services/nft/assets";
-import { findItem } from "../../services/marketplace/catalog";
+import { useCatalog } from "../../context/CatalogContext";
+import { useMarketplace } from "../../context/MarketplaceContext";
 import { explorerAddressUrl } from "../../config/network";
 import { shortAddress } from "../../utils/format";
 
-async function loadAsset(address) {
-  const asset = await fetchFucheyAsset(address);
+async function loadAsset(address, index) {
+  const asset = await fetchFucheyAsset(address, index);
   if (!asset) return null;
   const metadata = await fetchMetadata(asset.uri).catch(() => null);
   return { ...asset, metadata };
@@ -25,7 +26,14 @@ async function loadAsset(address) {
 function AssetDetails() {
   const { address } = useParams();
   const { address: me } = useWallet();
-  const { data: asset, loading, error } = useAsync(() => loadAsset(address), address);
+  const { findItem, loading: catalogLoading } = useCatalog();
+  const { collectionIndex } = useMarketplace();
+  const indexKey = Object.keys(collectionIndex).join(",");
+  const { data: asset, loading: assetLoading, error } = useAsync(
+    () => loadAsset(address, collectionIndex),
+    `${address}:${indexKey}`,
+  );
+  const loading = assetLoading || catalogLoading;
 
   const back = (
     <Link to="/collection" className="back-link">

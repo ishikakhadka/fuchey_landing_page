@@ -1,4 +1,4 @@
-import { getDeployment, DEPLOYMENT } from "../../config/deployment";
+import { deploymentOf } from "../../config/deployment";
 import { getSolBalance } from "../solana/balance";
 import { getWalletUmi } from "../solana/umi";
 import { fetchLiveSupply, fetchMintCounts } from "./listings";
@@ -15,8 +15,11 @@ const FEE_BUFFER_SOL = 0.01;
 //
 // onStage(stage, details) is called with:
 //   "preparing" → "signing" → "submitted" { signature } → "confirmed" { signature, asset }
+//
+// The price shown and checked here is the catalogue's; the amount actually
+// charged is whatever the candy guard on-chain says.
 export async function purchaseItem({ item, wallet, connection, onStage = () => {} }) {
-  const deployment = getDeployment(item.id);
+  const deployment = deploymentOf(item);
   if (!deployment) throw new PurchaseError("not-deployed", "This item isn’t on sale on this network yet.");
   if (!wallet?.publicKey) throw new PurchaseError("wallet-disconnected");
 
@@ -24,8 +27,8 @@ export async function purchaseItem({ item, wallet, connection, onStage = () => {
 
   const owner = wallet.publicKey.toBase58();
   const [supply, counts, balance] = await Promise.all([
-    fetchLiveSupply(),
-    deployment.mintLimitId ? fetchMintCounts(owner) : {},
+    fetchLiveSupply({ [item.id]: deployment }),
+    deployment.mintLimitId ? fetchMintCounts(owner, { [item.id]: deployment }) : {},
     getSolBalance(connection, wallet.publicKey),
   ]);
 
@@ -33,7 +36,8 @@ export async function purchaseItem({ item, wallet, connection, onStage = () => {
   if (item.listing.limitPerWallet && (counts[item.id] ?? 0) >= item.listing.limitPerWallet) {
     throw new PurchaseError("limit-reached");
   }
-  if (balance < (deployment.price ?? 0) + FEE_BUFFER_SOL) throw new PurchaseError("insufficient-sol");
+  const price = item.listing.price ?? 0;
+  if (balance < price + FEE_BUFFER_SOL) throw new PurchaseError("insufficient-sol");
 
   const umi = await getWalletUmi(wallet);
   const [{ generateSigner, publicKey, some, transactionBuilder }, { mintV1 }, { setComputeUnitLimit }, { base58 }] =
@@ -49,7 +53,10 @@ export async function purchaseItem({ item, wallet, connection, onStage = () => {
   const asset = generateSigner(umi);
 
   const mintArgs = {};
-  if (deployment.price > 0) mintArgs.solPayment = some({ destination: publicKey(DEPLOYMENT.treasury) });
+  if (price > 0) {
+    if (!deployment.treasury) throw new PurchaseError("not-deployed", "This item’s payment address isn’t set up yet.");
+    mintArgs.solPayment = some({ destination: publicKey(deployment.treasury) });
+  }
   if (deployment.mintLimitId) mintArgs.mintLimit = some({ id: deployment.mintLimitId });
 
   const latest = await umi.rpc.getLatestBlockhash({ commitment: "confirmed" });

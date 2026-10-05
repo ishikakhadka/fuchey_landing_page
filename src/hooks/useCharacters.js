@@ -1,12 +1,11 @@
-import { getCharacter, getCharacters } from "../services/marketplace/catalog";
-import { useAsync } from "./useAsync";
+import { useCatalog } from "../context/CatalogContext";
 
 export function useCharacters() {
-  const { data, loading, error } = useAsync(() => getCharacters(), "all");
-  return { characters: data ?? [], loading, error };
+  const { characters, loading, error } = useCatalog();
+  return { characters, loading, error };
 }
 
 export function useCharacter(id) {
-  const { data, loading, error } = useAsync(() => getCharacter(id), id);
-  return { character: data ?? null, loading, error };
+  const { characters, loading, error } = useCatalog();
+  return { character: characters.find((c) => c.id === id) ?? null, loading, error };
 }

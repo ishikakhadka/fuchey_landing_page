@@ -1,12 +1,15 @@
-import { getWearables, getWearablesFor } from "../services/marketplace/catalog";
-import { useAsync } from "./useAsync";
+import { useMemo } from "react";
+import { useCatalog } from "../context/CatalogContext";
+import { fitsCharacter } from "../services/marketplace/catalog";
 
 export function useWearables(type = null) {
-  const { data, loading, error } = useAsync(() => getWearables({ type }), type ?? "all");
-  return { wearables: data ?? [], loading, error };
+  const { wearables, loading, error } = useCatalog();
+  const list = useMemo(() => (type ? wearables.filter((w) => w.type === type) : wearables), [wearables, type]);
+  return { wearables: list, loading, error };
 }
 
 export function useCompatibleWearables(characterId) {
-  const { data, loading, error } = useAsync(() => getWearablesFor(characterId), characterId);
-  return { wearables: data ?? [], loading, error };
+  const { wearables, loading, error } = useCatalog();
+  const list = useMemo(() => wearables.filter((w) => fitsCharacter(w, characterId)), [wearables, characterId]);
+  return { wearables: list, loading, error };
 }

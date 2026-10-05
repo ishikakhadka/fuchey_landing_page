@@ -1,11 +1,11 @@
-import { DEPLOYMENT } from "../../config/deployment";
 import { getReadUmi } from "../solana/umi";
 
 // Live listing state read straight from the candy machines.
 
+// deployments: { [itemId]: deployment } (config/deployment.js)
 // → { [itemId]: { supply, redeemed, remaining } }
-export async function fetchLiveSupply() {
-  const entries = Object.entries(DEPLOYMENT.items);
+export async function fetchLiveSupply(deployments) {
+  const entries = Object.entries(deployments);
   if (!entries.length) return {};
 
   const umi = await getReadUmi();
@@ -33,8 +33,8 @@ export async function fetchLiveSupply() {
 // How many times `owner` has minted each per-wallet-limited item.
 // Read from the mintLimit guard's counter accounts, so it can't be gamed by
 // transferring the NFT away. → { [itemId]: count }
-export async function fetchMintCounts(owner) {
-  const limited = Object.entries(DEPLOYMENT.items).filter(([, d]) => d.mintLimitId);
+export async function fetchMintCounts(owner, deployments) {
+  const limited = Object.entries(deployments).filter(([, d]) => d.mintLimitId);
   if (!limited.length || !owner) return {};
 
   const umi = await getReadUmi();

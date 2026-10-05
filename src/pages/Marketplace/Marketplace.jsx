@@ -49,7 +49,7 @@ const HERO = {
 
 function Marketplace() {
   const { edition } = useEdition();
-  const { characters } = useCharacters();
+  const { characters, error } = useCharacters();
   const { wearables } = useWearables();
   const { ownsCharacter, ownsWearable } = useCollection();
 
@@ -61,6 +61,11 @@ function Marketplace() {
 
   return (
     <div className="market-page market-home">
+      {error && (
+        <div className="container">
+          <p className="market-error">Couldn’t load the marketplace catalogue. Try refreshing in a moment.</p>
+        </div>
+      )}
       <section className="container market-hero">
         <div className="market-hero-copy" key={edition}>
           <p className="pill">

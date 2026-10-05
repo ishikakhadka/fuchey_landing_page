@@ -1,23 +1,17 @@
-import { wearableArt } from "../../data/wearableArt";
-
-// Horizontal pixel runs from data/wearableArt.js as SVG rects.
-export function PixelRuns({ runs, className }) {
-  return (
-    <g className={className}>
-      {runs.map((r) => (
-        <rect key={`${r.x},${r.y}`} x={r.x} y={r.y} width={r.w} height={1} fill={r.c} />
-      ))}
-    </g>
-  );
-}
+import { useCatalog } from "../../context/CatalogContext";
+import { visualBounds } from "../../render/visual";
+import WearableLayer from "../characters/WearableLayer";
 
 // A wearable on its own: its icon layer, or its on-character layers, cropped
-// to their bounds.
-function WearableIcon({ id, alt, className = "" }) {
-  const art = wearableArt[id];
-  if (!art) return null;
+// to their bounds. Pass `wearable` to draw one that isn't in the published
+// catalogue (the admin preview); otherwise it's looked up by `id`.
+function WearableIcon({ id, wearable, alt, className = "" }) {
+  const { wearables } = useCatalog();
+  const item = wearable ?? wearables.find((w) => w.id === id);
+  const visual = item?.visual;
+  if (!visual) return null;
 
-  const { x, y, w, h } = art.bounds;
+  const { x, y, w, h } = visualBounds(visual);
   const side = Math.max(w, h) + 4;
   const vx = x - (side - w) / 2;
   const vy = y - (side - h) / 2;
@@ -30,12 +24,12 @@ function WearableIcon({ id, alt, className = "" }) {
       role={alt ? "img" : undefined}
       aria-label={alt}
       aria-hidden={alt ? undefined : true}>
-      {art.icon ? (
-        <PixelRuns runs={art.icon} />
+      {visual.icon ? (
+        <WearableLayer visual={visual} side="icon" />
       ) : (
         <>
-          {art.back && <PixelRuns runs={art.back} />}
-          <PixelRuns runs={art.front} />
+          <WearableLayer visual={visual} side="back" />
+          <WearableLayer visual={visual} side="front" />
         </>
       )}
     </svg>

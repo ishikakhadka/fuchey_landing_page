@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { Check, Save, X } from "lucide-react";
 
 import CharacterRender from "../characters/CharacterRender";
 import RarityBadge from "../marketplace/RarityBadge";
@@ -9,7 +9,10 @@ import { getWearableTypes } from "../../services/marketplace/catalog";
 // Live try-on: the chosen character wearing whatever is selected, plus the
 // focused item's details and Buy / Claim button. Trying things on is purely
 // visual — it doesn't need, or change, any NFT.
-function FittingRoom({ characters, character, onCharacter, worn, onRemove, focused, ownedCount }) {
+//
+// `loadout` (when a wallet is connected): { onSave, dirty, status, message }
+// saves what's worn as the wallet's look for this character.
+function FittingRoom({ characters, character, onCharacter, worn, onRemove, focused, ownedCount, loadout }) {
   const types = getWearableTypes();
   const typeLabel = (id) => types.find((t) => t.id === id)?.label ?? id;
 
@@ -30,6 +33,7 @@ function FittingRoom({ characters, character, onCharacter, worn, onRemove, focus
 
         <CharacterRender
           image={character.art.image}
+          characterId={character.id}
           equipped={worn}
           alt={`${character.name} wearing ${worn.map((w) => w.name).join(", ") || "nothing extra"}`}
           className="fitting-render"
@@ -48,6 +52,28 @@ function FittingRoom({ characters, character, onCharacter, worn, onRemove, focus
           </li>
         ))}
       </ul>
+
+      {loadout && (
+        <div className="fitting-save">
+          <button
+            type="button"
+            className="ghost-button"
+            disabled={!loadout.dirty || loadout.status === "saving"}
+            onClick={loadout.onSave}>
+            {loadout.status === "saved" && !loadout.dirty ? <Check size={15} /> : <Save size={15} />}
+            {loadout.status === "saving"
+              ? "Saving…"
+              : loadout.status === "saved" && !loadout.dirty
+                ? "Look saved"
+                : `Save ${character.name}’s look`}
+          </button>
+          <p className={`fitting-save-note ${loadout.status === "error" ? "is-error" : ""}`}>
+            {loadout.status === "error"
+              ? loadout.message
+              : "Your wallet signs a message once (no transaction). Your NFTs stay where they are."}
+          </p>
+        </div>
+      )}
 
       {focused && (
         <div className="fitting-detail" key={focused.id}>
