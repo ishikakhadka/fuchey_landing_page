@@ -109,7 +109,7 @@ export const wearables = [
     rarity: "legendary",
     description: "Reserved for the earliest Fuchey friends.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber", "robot"],
+    compatibleCharacters: ["yeti", "cyber", "rhino"],
     listing: { status: "coming-soon", price: null, supply: 100 },
   },
 ];

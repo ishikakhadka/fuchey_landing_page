@@ -11,7 +11,8 @@ export function PixelRuns({ runs, className }) {
   );
 }
 
-// A wearable on its own: its on-character layers cropped to their bounds.
+// A wearable on its own: its icon layer, or its on-character layers, cropped
+// to their bounds.
 function WearableIcon({ id, alt, className = "" }) {
   const art = wearableArt[id];
   if (!art) return null;
@@ -29,8 +30,14 @@ function WearableIcon({ id, alt, className = "" }) {
       role={alt ? "img" : undefined}
       aria-label={alt}
       aria-hidden={alt ? undefined : true}>
-      {art.back && <PixelRuns runs={art.back} />}
-      <PixelRuns runs={art.front} />
+      {art.icon ? (
+        <PixelRuns runs={art.icon} />
+      ) : (
+        <>
+          {art.back && <PixelRuns runs={art.back} />}
+          <PixelRuns runs={art.front} />
+        </>
+      )}
     </svg>
   );
 }

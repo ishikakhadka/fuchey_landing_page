@@ -1,33 +1,32 @@
 // Placeholder pixel art for unreleased characters, drawn to match the
 // Yeti's pixel style. Each sprite is a 16×16 grid: one string per
-// row, one character per pixel, "." for transparent. `m()` mirrors an 8-pixel
-// half-row so symmetric shapes only need their left side drawn.
+// row, one character per pixel, "." for transparent.
+//
+// Locked characters render as a silhouette of every non-"." pixel, so leg
+// gaps and the horn are kept clear of outline to stay readable that way.
 //
 // Wearables have their own art in wearableArt.js.
 
-const m = (half) => half + [...half].reverse().join("");
-const empty = "................";
-
 export const sprites = {
-  robot: {
-    palette: { o: "#1b2430", g: "#8a9aab", c: "#38d6ee", m: "#4b5a6a" },
+  rhino: {
+    palette: { o: "#1b2430", g: "#8f9aa6", l: "#b9c3cc", d: "#5d6877", h: "#e8dcc4", c: "#38d6ee" },
     rows: [
-      empty,
-      m(".......o"),
-      m("......oo"),
-      m("...ooooo"),
-      m("..oggggg"),
-      m("..ogcogg"),
-      m("..oggggg"),
-      m("..oggmmm"),
-      m("...ooooo"),
-      m(".ooggggg"),
-      m("oggggggg"),
-      m("ogoggggg"),
-      m("ogoggggg"),
-      m("...ggogg"),
-      m("...oo..o"),
-      m("..ooo..o"),
+      "..o.............",
+      ".oho............",
+      ".ohho...o.......",
+      "..ohho.ogo......",
+      "..ohhooggooooo..",
+      "..ohhhggggggggo.",
+      "..olhggggggggggo",
+      ".ollggggggggggdo",
+      ".ollcgggggggggdo",
+      ".ollggggggggggdo",
+      "..olgggggggggddo",
+      "...oggdggdggdggo",
+      "...ogd.gd.gd.gdo",
+      "...ogd.gd.gd.gdo",
+      "....oo.oo.oo.oo.",
+      "................",
     ],
   },
 };

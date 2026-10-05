@@ -7,24 +7,107 @@
 //
 // Each wearable has a `front` layer (drawn over the character) and optionally
 // a `back` layer (drawn behind it, e.g. the backpack's bag). Card icons are
-// the same layers cropped to their bounding box.
+// the same layers cropped to their bounding box, unless the wearable has its
+// own `icon` layer (outfits: shown whole, without the gap the beard covers).
 //
 // Plain data + functions, no imports: the NFT tooling in nft/ imports this
 // file too, to render the PNGs that go on-chain.
 
 const OUTLINE = "#0b0f17";
 
-// Interior of the torso between the arm seams, per row (from yeti.png).
-const TORSO = {};
-[
-  [27, 28, 59], [28, 28, 59], [29, 28, 58], [30, 28, 58], [31, 28, 58],
-  [32, 28, 57], [33, 28, 56], [34, 28, 56], [35, 28, 55], [36, 28, 55],
-  [37, 28, 54], [38, 28, 56], [39, 27, 56], [40, 27, 56], [41, 27, 56],
-  [42, 26, 56], [43, 26, 56], [44, 26, 56], [45, 26, 56], [46, 25, 56],
-  [47, 25, 55], [48, 25, 54], [49, 24, 54], [50, 24, 54], [51, 24, 54],
-  [52, 24, 54], [53, 24, 54], [54, 24, 54], [55, 24, 53], [56, 24, 53],
-  [57, 25, 53], [58, 25, 53], [59, 25, 53], [60, 25, 53],
-].forEach(([y, l, r]) => (TORSO[y] = [l, r]));
+// yeti.png rows 20–80 as brightness bands: '#' outline, 'o' dark, '+' mid,
+// '.' light shade, '_' white fur, ' ' empty. Outfits are fitted to this map:
+// they cover the torso and arms the way the fur does, inherit its shading
+// (folds, arm creases), and stop at the beard, which hangs over them.
+const BODY_TOP = 20;
+const BODY = [
+  "                         ##.._#oooo##______##__#####ooo##___..####",
+  "                         ##.__###o##_______#.+__...###o#____._#",
+  "                          #_____###______####+__.....##____.__#",
+  "                          #_____#__._____##+#+____....#____._##",
+  "                          #_____#_..____+#.+###___....#__._._##",
+  "                        ###_.___#...___##..+++##___...#__.___#_##",
+  "                       #oo##..__#...___#....+++#____..#__.___#__###",
+  "                     ###oo##..__#....##.......++#__...#__.._##___###",
+  "                     ##++o##..__#####...___.....#######__.__#__+...+#",
+  "                    #__++oo#_.______________.........____._##__.+.++#",
+  "                    #__++oo#_._______________..........__._#___....+##",
+  "                   ##__++oo#____________________......__.+_#_+......_#",
+  "                   ##___+oo##___________________________++##_+....____#",
+  "                   ##___+.o###________________________..+##__+________#",
+  "                   #___.++o###_______________________...+#_+++________##",
+  "                  ##___..+o#o##______________________..+##..++_________#",
+  "                  #____.+oo#o###____________________..++##+++__________#",
+  "                  #___...oo#o###___________________..++###++___________#",
+  "                 ##___..+.o#oo###_________________..++####++___________#",
+  "                 #____..++##ooo###______________...++#####______________#",
+  "                 #___..+++#_#oo####____________..+.++#####______________#",
+  "                ##___..+.+#_#oo#####__________.+++++####.#______________#",
+  "                #____...+##_#ooo#####________..++..#####.#______________#",
+  "                #___..++.#__#oo+#####_______..++++#####..#_______________#",
+  "                #___..++.#__#oo++#####______....+.#####..#____________+__#",
+  "               #____.+..##___#oo++#####_____...++###+##..#____________.__#",
+  "               #____..++#____##oo++#####____..+####o.#_..#____________+._#",
+  "              ##____.++.#_____##o+++#####___..####o+##..##____________.._##",
+  "              #_____++.+#______##o+++############o+##_.##_____________+.__#",
+  "              #____.+++##_______##o+++#########o++##_..#______________..__# _",
+  "              #____.+++#_________##ooo+#######o++##_...#______________+.._#",
+  "             ##____.++.#__________##o+oooooo++++##__...#______________+.._#",
+  "             #____..+++#_____._.___##+++ooo+++###__....#_____________.+...#",
+  "             #____..+++#_____._..___###+++++###____....#_____________++...#",
+  "             #____..+++#_____......___#######______....#____________+.+...#",
+  "            ##____..+++#_____......_________......_..+##____________+++...#",
+  "            #_____..+++#______.______________...___..+#_____________+++..+#",
+  "            #_____..++++#__________________________.++#____________+++...+#",
+  "            #_____..++++#______________________..__.++#____________++..+++#",
+  "            #_____..++++#______________________...._++#__________+++++.++##",
+  "            #_____..++++#______________________...._++#__________++++.+++##",
+  "             #____..++++#_____________oo___________.++#_________+++++.+++#",
+  "             #_###..++++##____________oo.___________++#_________++++++++#",
+  "             ###o##.+++++#____________oo.___________++#________++++++++##",
+  "              ##oo##.++++##___________oooo__________++##____###++++++++#",
+  "               #oo.+#.....#___________..ooo_________++o#___#oo###++#+###",
+  "               #oo+.##....#___________..+oo_________o++#___#++oo####ooo##",
+  "               ##o+#####..#___________..oo##________oo+##__#++oooo##ooo##",
+  "                #o.########___________..+oo#________oo+###_#++oooooooooo#",
+  "                #o+########___________..+oo##_______ooo#####++oooooooo+o#",
+  "                #..########___________..++o###______ooo#####++++o+++++++#",
+  "                #oo########___________..++o#_#_______oo#####++++++#++#+#_",
+  "                 ##########___________..++o#_#_______oo#####+++#++#++#+#",
+  "                   ########_._________..++o#_#_______.ooo###+++#++#++#+#",
+  "                    #######_....._____..++o#_#________ooooo#+++#++#++###",
+  "                    #######_....._____..+++#_#________.oooo###########",
+  "                          #__...._____..+++#_#___._____.ooooooooo#",
+  "                          #__.________..+++#_#___....._...ooooooo#",
+  "                          #___________..+++#_#___.....__...oooooo#       _",
+  "                          #___________..+++#_#____________.....__#       _",
+  "                          #___________..+++#_#___________________#",
+];
+
+const band = (x, y) => BODY[y - BODY_TOP]?.[x] ?? " ";
+
+// Flood-fill the fur between outlines, starting from seed pixels.
+function region(seeds, y0, y1) {
+  const out = new Set();
+  const stack = [...seeds];
+  while (stack.length) {
+    const [x, y] = stack.pop();
+    const k = `${x},${y}`;
+    if (out.has(k) || y < y0 || y > y1) continue;
+    const b = band(x, y);
+    if (b === " " || b === "#") continue;
+    out.add(k);
+    stack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+  }
+  return out;
+}
+
+// Body parts on the 96×96 grid (outline pixels excluded).
+const PART = {
+  torso: region([[30, 50], [50, 50]], 24, 70),
+  leftArm: region([[17, 45]], 24, 61),
+  rightArm: region([[62, 45]], 24, 63),
+};
 
 // ---------------------------------------------------------------------------
 // Tiny pixel canvas
@@ -235,35 +318,67 @@ function glasses() {
 }
 
 // Frost Scarf in the device animation's colours (public/fuchey_animation.html:
-// coral band, darker coral tail, light stripe blocks), wrapped around the neck
-// just under the beard instead of floating across the chest.
+// coral band, darker coral tail, light stripe blocks). It wraps the neck under
+// the mustache, sagging a little in front with its ends tucked behind the
+// shoulders, and knots on one side so two striped tails hang over the beard.
 function scarf() {
   const p = canvas();
   const coral = "#f08a64";
+  const light = "#ffb592";
   const shade = "#d8704e";
-  const light = "#ffd3bf";
+  const deep = "#b85a3c";
+  const stripe = "#ffd3bf";
 
-  // Band hugging the neck, following the shoulder line
-  p.span(28, 28, 59, coral);
-  p.span(29, 26, 61, coral);
-  p.span(30, 26, 61, coral);
-  p.span(31, 26, 61, coral);
-  p.span(32, 28, 59, coral);
-  p.span(28, 30, 57, "#f7a585");
-  p.span(32, 28, 59, shade);
-  [30, 37, 44].forEach((x) => p.rect(x, 30, x + 2, 30, light));
-
-  // Knot on the right and a tail that hangs down the chest
-  p.rect(49, 29, 55, 34, shade);
-  p.span(29, 50, 54, coral);
-  for (let y = 35; y <= 47; y++) {
-    const sway = y > 41 ? 1 : 0;
-    p.span(y, 50 + sway, 55 + sway, y % 6 === 2 ? light : y >= 46 ? shade : coral);
-    p.set(55 + sway, y, shade);
+  // Wrap: centre line sags 4px in front
+  const mid = (x) => 29 + Math.round(4 * (1 - ((x - 43.5) / 21) ** 2));
+  for (let x = 22; x <= 65; x++) {
+    const c = mid(x);
+    for (let y = c - 2; y <= c + 3; y++) p.set(x, y, y === c - 2 ? light : y >= c + 2 ? shade : coral);
+    p.set(x, c + 3, deep);
   }
+  // Where one turn of the wrap overlaps the next
+  [31, 41].forEach((x0) => {
+    for (let i = 0; i <= 5; i++) p.set(x0 + i, mid(x0 + i) - 2 + i, deep);
+  });
+  // Stripe blocks around the wrap
+  [25, 35, 45, 58].forEach((x0) => {
+    for (let x = x0; x <= x0 + 2; x++) {
+      p.set(x, mid(x), stripe);
+      p.set(x, mid(x) + 1, stripe);
+    }
+  });
+
+  // Tails: the back one swings left and is in shadow, the front one hangs
+  // longer with a little sway.
+  const tail = (x0, y0, y1, drift, cols) => {
+    for (let y = y0; y <= y1; y++) {
+      const x = x0 + Math.floor((y - y0) / drift.every) * drift.dir;
+      const band = (y - y0) % 8;
+      const fringe = y >= y1 - 2;
+      for (let i = 0; i < 6; i++) {
+        let c = i === 5 ? cols.edge : i === 0 ? cols.lit : cols.base;
+        if (band === 4 || band === 5) c = cols.stripe;
+        if (fringe) c = i % 2 ? cols.edge : cols.stripe;
+        p.set(x + i, y, c);
+      }
+    }
+  };
+  tail(43, 35, 49, { every: 5, dir: -1 }, { base: shade, lit: coral, edge: deep, stripe: "#f2b79c" });
+  tail(50, 35, 55, { every: 7, dir: 1 }, { base: coral, lit: light, edge: shade, stripe });
+
+  // Knot where the tails leave the wrap
+  for (let y = 31; y <= 37; y++) {
+    const hw = y === 31 || y === 37 ? 2 : 3;
+    p.span(y, 52 - hw, 52 + hw, coral);
+  }
+  p.span(31, 50, 54, light);
+  p.span(32, 49, 50, light);
+  p.span(37, 50, 54, shade);
+  p.rect(55, 33, 55, 36, shade);
+  p.set(51, 34, shade);
+  p.set(52, 35, shade);
+
   p.outline("#7a3a24");
-  // Fringe
-  [51, 53, 55].forEach((x) => p.set(x, 49, light));
   return { front: p };
 }
 
@@ -301,82 +416,168 @@ function snowGlobe() {
   return { front: p };
 }
 
-// Shared torso silhouette for outfits.
-function torso(p, { from = 29, to = 60, shoulders = true, open } = {}) {
-  for (let y = shoulders ? 27 : from; y <= to; y++) {
-    const [l, r] = TORSO[y];
-    for (let x = l; x <= r; x++) {
-      // Shoulders only outside the beard (rows above `from`)
-      if (y < from && x > 31 && x < 55) continue;
-      if (open && open(x, y)) continue;
-      p.set(x, y, "BASE");
+// Beard width per row ([row, left, right]); the beard hangs over clothes and
+// straps, so they're never drawn inside it.
+const BEARD = {};
+[
+  [24, 26, 61], [25, 26, 61], [26, 27, 61], [27, 27, 60], [28, 27, 60], [29, 27, 59],
+  [30, 27, 59], [31, 27, 59], [32, 28, 58], [33, 29, 57], [34, 29, 57], [35, 27, 56],
+  [36, 27, 56], [37, 27, 55], [38, 27, 54], [39, 27, 53], [40, 28, 53], [41, 28, 52],
+  [42, 28, 51], [43, 28, 50], [44, 28, 50], [45, 29, 53], [46, 30, 53], [47, 31, 52],
+  [48, 32, 51], [49, 33, 50], [50, 34, 49], [51, 35, 48], [52, 36, 46], [53, 38, 44],
+  [54, 38, 44],
+].forEach(([y, l, r]) => (BEARD[y] = [l, r]));
+const underBeard = (x, y) => BEARD[y] && x >= BEARD[y][0] && x <= BEARD[y][1];
+
+const inPart = (part, x, y) => PART[part].has(`${x},${y}`);
+const partRows = (part, y) => {
+  const xs = [...PART[part]].map((k) => k.split(",").map(Number)).filter(([, py]) => py === y).map(([x]) => x);
+  return xs.length ? [Math.min(...xs), Math.max(...xs)] : null;
+};
+
+// Dress body parts in cloth. The fur's shading bands become the cloth's
+// shades, so sleeves keep the arm's crease and the torso its roundness.
+// `to` is the last covered row per part (hem / cuff line).
+function fit(p, to, pal) {
+  for (const [part, last] of Object.entries(to)) {
+    for (const k of PART[part]) {
+      const [x, y] = k.split(",").map(Number);
+      if (y > last) continue;
+      const b = band(x, y);
+      p.set(x, y, b === "o" ? pal.deep : b === "+" ? pal.dark : pal.base);
     }
   }
+  // Light along the tops of the shoulders, just under the outline
+  for (const pt of p.px.values())
+    if (pt.y < 33 && band(pt.x, pt.y - 1) === "#" && pt.c === pal.base) pt.c = pal.light;
 }
 
-function paint(p, palette) {
-  for (const pt of p.px.values()) if (pt.c === "BASE") pt.c = palette.base;
-  p.shade({ light: palette.light, dark: palette.dark }, [palette.base]);
+// A finished edge at the bottom of a part: a band of trim colour on the last
+// rows, then an outline row on the fur just below, so the cloth reads as
+// wrapping around the body instead of ending in a cut.
+function trim(p, part, last, rows, colour) {
+  for (let y = last - rows + 1; y <= last; y++) {
+    const r = partRows(part, y);
+    if (r) for (let x = r[0]; x <= r[1]; x++) if (inPart(part, x, y)) p.set(x, y, typeof colour === "function" ? colour(x, y) : colour);
+  }
+  const r = partRows(part, last);
+  if (r) for (let x = r[0]; x <= r[1]; x++) if (" #".indexOf(band(x, last + 1)) < 0) p.set(x, last + 1, OUTLINE);
+}
+
+// Card icon for an outfit: the garment laid flat, with the part the beard
+// covers on the character filled in and a neckline cut instead.
+function flat(front, pal, neck) {
+  const p = canvas();
+  for (const pt of front.px.values()) p.set(pt.x, pt.y, pt.c);
+  for (let y = 27; y <= 54; y++) {
+    const xs = [...front.px.values()].filter((q) => q.y === y).map((q) => q.x);
+    if (!xs.length) continue;
+    for (let x = Math.min(...xs); x <= Math.max(...xs); x++) {
+      if (p.has(x, y)) continue;
+      const cut = neck(x, y);
+      if (cut !== undefined) {
+        if (cut) p.set(x, y, cut);
+      } else p.set(x, y, underBeard(x, y) || band(x, y) !== "#" ? pal.base : pal.deep);
+    }
+  }
+  p.outline();
+  return p;
 }
 
 function jacket() {
   const p = canvas();
-  const vNeck = (x, y) => {
-    if (y > 41) return false;
-    const hw = Math.round((41 - y) * 0.55) + 1;
-    return x >= 44 - hw && x <= 43 + hw;
-  };
-  torso(p, { open: vNeck });
-  paint(p, { base: "#c99c5a", light: "#e2bd80", dark: "#9b7340" });
-  // Lapels along the V
-  for (let y = 29; y <= 41; y++) {
-    const hw = Math.round((41 - y) * 0.55) + 1;
-    p.set(43 - hw, y, "#e8c98f");
-    p.set(44 + hw, y, "#e8c98f");
-    p.set(42 - hw, y, "#9b7340");
-    p.set(45 + hw, y, "#9b7340");
+  const pal = { base: "#c99c5a", light: "#e2bd80", dark: "#a97d44", deep: "#8a6436" };
+  const to = { torso: 60, leftArm: 56, rightArm: 58 };
+  fit(p, to, pal);
+  // Cuffs and hem
+  trim(p, "leftArm", to.leftArm, 3, "#9b7340");
+  trim(p, "rightArm", to.rightArm, 3, "#9b7340");
+  trim(p, "torso", to.torso, 2, "#8a6436");
+  [[54, "leftArm"], [56, "rightArm"]].forEach(([y, part]) => {
+    const r = partRows(part, y);
+    for (let x = r[0]; x <= r[1]; x++) if (inPart(part, x, y)) p.set(x, y, "#b38646");
+  });
+  // Zip from under the beard to the hem
+  for (let y = 55; y <= 60; y++) {
+    p.set(41, y, y % 2 ? "#f3e2b8" : "#cdb586");
+    p.set(42, y, "#6e4f2a");
   }
-  // Zip + pockets + hem
-  p.rect(43, 42, 44, 58, "#f3e2b8");
-  for (let y = 43; y <= 58; y += 3) p.set(43, y, "#9b7340");
-  p.rect(30, 46, 37, 51, "#b38646");
-  p.span(46, 30, 37, "#8a6436");
-  p.rect(48, 46, 53, 51, "#b38646");
-  p.span(46, 48, 53, "#8a6436");
-  p.set(33, 47, "#f3e2b8");
-  p.set(50, 47, "#f3e2b8");
-  p.span(59, 25, 53, "#8a6436");
-  p.span(60, 25, 53, "#8a6436");
-  p.outline("#3b2a17");
-  return { front: p };
+  p.set(41, 61, "#f3e2b8");
+  // Patch pockets with flaps
+  const pocket = (x0, x1, y0) => {
+    for (let y = y0; y <= y0 + 5; y++) for (let x = x0; x <= x1; x++) if (inPart("torso", x, y)) p.set(x, y, y === y0 + 5 ? "#8a6436" : "#b38646");
+    for (let x = x0; x <= x1; x++) if (inPart("torso", x, y0)) p.set(x, y0, "#8a6436");
+    for (let x = x0; x <= x1; x++) if (inPart("torso", x, y0 - 1)) p.set(x, y0 - 1, "#e2bd80");
+    p.set(Math.round((x0 + x1) / 2), y0 + 1, "#f3e2b8");
+  };
+  pocket(24, 31, 52);
+  pocket(47, 52, 51);
+  // Shoulder epaulettes
+  [[18, 22, 28], [62, 66, 29]].forEach(([x0, x1, y]) => {
+    for (let x = x0; x <= x1; x++) {
+      if (" #".indexOf(band(x, y)) < 0) p.set(x, y, "#8a6436");
+      if (" #".indexOf(band(x, y + 1)) < 0) p.set(x, y + 1, "#b38646");
+    }
+  });
+  const icon = flat(p, pal, (x, y) => {
+    if (y > 46) return undefined;
+    const hw = (46 - y) * 0.45 + 1;
+    const d = Math.abs(x - 41.5);
+    if (d <= hw - 2) return "#4a3520";
+    if (d <= hw) return "#e8c98f";
+    return undefined;
+  });
+  for (let y = 47; y <= 54; y++) p.has(41, y) || icon.set(41, y, y % 2 ? "#f3e2b8" : "#cdb586");
+  return { front: p, icon };
 }
 
 function hoodie() {
   const p = canvas();
-  torso(p);
-  paint(p, { base: "#1a2b45", light: "#2b4468", dark: "#0f1a2c" });
-  // Collar
-  p.span(29, 33, 54, "#0f1a2c");
-  p.span(30, 35, 52, "#24395a");
-  // Drawstrings
-  p.rect(39, 31, 39, 36, "#e6f1f7");
-  p.rect(48, 31, 48, 35, "#e6f1f7");
-  // Circuit traces
-  p.rect(33, 35, 33, 50, "#38d6ee");
-  p.span(42, 33, 38, "#38d6ee");
-  p.rect(38, 42, 39, 43, "#9b86ff");
-  p.rect(53, 33, 53, 47, "#38d6ee");
-  p.span(38, 48, 53, "#38d6ee");
-  p.rect(47, 38, 48, 39, "#9b86ff");
-  p.set(33, 51, "#7fe9ff");
-  p.set(53, 48, "#7fe9ff");
+  const pal = { base: "#1f3354", light: "#33507c", dark: "#172741", deep: "#0f1a2c" };
+  const to = { torso: 62, leftArm: 58, rightArm: 60 };
+  fit(p, to, pal);
+  const rib = (x) => (x % 2 ? "#14223a" : "#24395a");
+  trim(p, "leftArm", to.leftArm, 3, rib);
+  trim(p, "rightArm", to.rightArm, 3, rib);
+  trim(p, "torso", to.torso, 2, rib);
+
+  // Drawstrings hanging out from under the beard
+  [36, 46].forEach((x, i) => {
+    for (let y = 44; y <= 57 - i; y++) if (inPart("torso", x, y)) p.set(x, y, "#e6f1f7");
+    p.set(x, 58 - i, "#38d6ee");
+  });
   // Kangaroo pocket
-  p.rect(36, 50, 51, 56, "#14223a");
-  p.span(50, 36, 51, "#38d6ee");
-  p.span(59, 25, 53, "#0f1a2c");
-  p.span(60, 25, 53, "#0f1a2c");
-  p.outline("#04070d");
-  return { front: p };
+  for (let y = 55; y <= 60; y++)
+    for (let x = 29; x <= 54; x++) if (inPart("torso", x, y)) p.set(x, y, y === 55 ? "#38d6ee" : "#172741");
+  for (let y = 56; y <= 60; y++) {
+    p.set(29 + (60 - y), y, "#0f1a2c");
+    p.set(54 - (60 - y), y, "#0f1a2c");
+  }
+  // Circuit traces running down the sleeves and sides
+  const trace = (pts, part) =>
+    pts.forEach(([x, y]) => inPart(part, x, y) && p.set(x, y, "#38d6ee"));
+  const line = (x0, y0, x1, y1) => {
+    const out = [];
+    for (let y = Math.min(y0, y1); y <= Math.max(y0, y1); y++)
+      for (let x = Math.min(x0, x1); x <= Math.max(x0, x1); x++) out.push([x, y]);
+    return out;
+  };
+  trace([...line(20, 34, 20, 44), ...line(18, 44, 20, 44), ...line(18, 44, 18, 53)], "leftArm");
+  trace([...line(65, 33, 65, 42), ...line(65, 42, 67, 42), ...line(67, 42, 67, 55)], "rightArm");
+  trace([...line(25, 44, 25, 50), ...line(25, 50, 29, 50)], "torso");
+  trace([...line(52, 46, 52, 52)], "torso");
+  [[20, 34], [18, 53], [65, 33], [67, 55], [29, 50], [52, 46]].forEach(([x, y]) => p.has(x, y) && p.set(x, y, "#9b86ff"));
+  const icon = flat(p, pal, (x, y) => {
+    const d = Math.hypot((x - 42.5) / 9, (y - 27) / 4);
+    if (d <= 0.8) return "#0b1424";
+    if (d <= 1.15) return "#2b4468";
+    return undefined;
+  });
+  [38, 47].forEach((x) => {
+    for (let y = 31; y <= 41; y++) icon.set(x, y, "#e6f1f7");
+    icon.set(x, 42, "#38d6ee");
+  });
+  return { front: p, icon };
 }
 
 function backpack() {
@@ -391,18 +592,28 @@ function backpack() {
   back.rect(19, 18, 22, 20, "#36405a");
   back.outline();
 
+  // Straps come over the shoulders along the arm seams, disappear under the
+  // beard and come out again above the hip belt.
   const front = canvas();
-  const strap = mixRows([[0, "#14f195"], [36, "#57b7e0"], [44, "#9945ff"]]);
-  for (let y = 26; y <= 52; y++) {
-    const [l, r] = TORSO[Math.max(27, y)];
-    front.span(y, l + 1, l + 4, strap);
-    if (y <= 50) front.span(y, r - 4, r - 1, strap);
+  const strap = mixRows([[0, "#14f195"], [38, "#57b7e0"], [48, "#9945ff"]]);
+  for (let y = 25; y <= 57; y++) {
+    const l = partRows("leftArm", y);
+    const r = partRows("rightArm", y);
+    const spans = [];
+    if (l) spans.push([l[1] - 1, l[1] + 3]);
+    if (r) spans.push([r[0] - 3, r[0] + 1]);
+    for (const [x0, x1] of spans)
+      for (let x = x0; x <= x1; x++) {
+        if (underBeard(x, y) || band(x, y) === " ") continue;
+        front.set(x, y, x === x0 || x === x1 ? "#1d2433" : strap(x, y));
+      }
   }
-  // Chest strap + buckle
-  front.span(40, 33, 53, "#1d2433");
-  front.span(41, 33, 53, "#1d2433");
-  front.rect(41, 39, 46, 42, "#c9d3df");
-  front.rect(42, 40, 45, 41, "#7d8a99");
+  // Hip belt + buckle
+  for (let y = 56; y <= 58; y++)
+    for (let x = 20; x <= 58; x++) if (inPart("torso", x, y)) front.set(x, y, y === 56 ? "#2d3548" : "#1d2433");
+  front.rect(39, 55, 44, 59, "#c9d3df");
+  front.rect(40, 56, 43, 58, "#7d8a99");
+  front.set(39, 55, "#ffffff");
   front.outline();
 
   return { back, front };
@@ -461,12 +672,21 @@ function bounds(runs) {
   return { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
 }
 
-// { [wearableId]: { back: runs|null, front: runs, bounds } }
+// { [wearableId]: { back: runs|null, front: runs, icon: runs|null, bounds } }
 export const wearableArt = Object.fromEntries(
   Object.entries(DRAW).map(([id, draw]) => {
-    const { back, front } = draw();
+    const { back, front, icon } = draw();
     const backRuns = back ? back.runs() : null;
     const frontRuns = front.runs();
-    return [id, { back: backRuns, front: frontRuns, bounds: bounds([...(backRuns ?? []), ...frontRuns]) }];
+    const iconRuns = icon ? icon.runs() : null;
+    return [
+      id,
+      {
+        back: backRuns,
+        front: frontRuns,
+        icon: iconRuns,
+        bounds: bounds(iconRuns ?? [...(backRuns ?? []), ...frontRuns]),
+      },
+    ];
   }),
 );
