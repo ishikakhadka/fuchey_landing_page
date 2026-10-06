@@ -110,7 +110,7 @@ function AssetDetails() {
           </dl>
 
           <Link
-            to={item.kind === "character" ? "/wardrobe" : `/wardrobe?item=${item.id}`}
+            to={item.kind === "character" ? `/wardrobe?character=${item.id}&view=mine` : `/wardrobe?item=${item.id}`}
             className="ghost-button">
             <Shirt size={16} /> {item.kind === "character" ? "Dress it up" : "Try it on"}
           </Link>

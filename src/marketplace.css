@@ -862,6 +862,10 @@
    fitted into the space below it, so hats and halos are never covered. */
 .fitting-stage {
   aspect-ratio: 1;
+  /* One row bounded to the space under the switch, so the render's 100%
+     height resolves to it. An auto row would grow to the render's square
+     size and the stage would clip the character's feet. */
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   padding: 58px 4% 4%;
   border-radius: 32px;
   box-shadow: var(--shadow);
@@ -2433,4 +2437,22 @@ a.asset-card:hover {
   text-align: center;
   font-size: 13px;
   color: var(--stage-ink, var(--ink));
+}
+
+/* Wardrobe opened from "Dress it up": owned, fitting pieces first. */
+.wardrobe-mine-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  margin-bottom: 16px;
+}
+
+.wardrobe-mine-head .details-heading {
+  margin: 0 0 4px;
+}
+
+.wardrobe-mine-head p {
+  margin: 0;
 }

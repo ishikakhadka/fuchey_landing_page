@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router";
+import { Compass } from "lucide-react";
 
 import PageHeader from "../../components/marketplace/PageHeader";
 import CategoryTabs from "../../components/marketplace/CategoryTabs";
@@ -26,7 +27,7 @@ function Wardrobe() {
   const { edition } = useEdition();
   const { characters } = useCharacters();
   const { wearables, loading, error } = useWearables();
-  const { connected, address, ownsWearable, countOwned } = useCollection();
+  const { connected, address, ownsWearable, countOwned, loading: ownedLoading } = useCollection();
   const { signer } = useWallet();
 
   const types = getWearableTypes();
@@ -37,8 +38,14 @@ function Wardrobe() {
   const linked = params.get("item");
 
   const dressable = characters.filter((c) => c.art.kind === "character");
-  const [characterId, setCharacterId] = useState(edition === "dev" ? "cyber" : "yeti");
+  // /wardrobe?character=… (from "Dress it up") opens on that character.
+  const [characterId, setCharacterId] = useState(params.get("character") ?? (edition === "dev" ? "cyber" : "yeti"));
   const character = dressable.find((c) => c.id === characterId) ?? dressable[0];
+
+  // view=mine: just the wearables this wallet owns that fit the character,
+  // until "Explore more" opens the full rail. Owning and fitting are two
+  // separate checks (ownsWearable / fitsCharacter).
+  const mineView = connected && params.get("view") === "mine";
 
   // Fitting-room state: per character, one wearable id per slot
   // ({ [characterId]: { [slot]: wearableId } }), plus the item whose details show.
@@ -113,13 +120,17 @@ function Wardrobe() {
     }
   };
 
+  const rail = mineView
+    ? wearables.filter((w) => ownsWearable(w.id) && fitsCharacter(w, character?.id))
+    : wearables;
+
   const tabs = [
-    { id: null, label: "All", count: wearables.length },
-    ...types.map((t) => ({ ...t, count: wearables.filter((w) => w.type === t.id).length })),
+    { id: null, label: "All", count: rail.length },
+    ...types.map((t) => ({ ...t, count: rail.filter((w) => w.type === t.id).length })),
   ];
 
-  const visible = wearables.filter(
-    (w) => (!type || w.type === type) && (!ownedOnly || ownsWearable(w.id)),
+  const visible = rail.filter(
+    (w) => (!type || w.type === type) && (mineView || !ownedOnly || ownsWearable(w.id)),
   );
 
   const update = (key, value) => {
@@ -128,6 +139,12 @@ function Wardrobe() {
     else next.delete(key);
     setParams(next, { replace: true });
   };
+
+  const exploreMore = (
+    <button type="button" className="primary-button" onClick={() => update("view", null)}>
+      <Compass size={16} /> Explore more
+    </button>
+  );
 
   return (
     <div className="container market-page">
@@ -154,6 +171,16 @@ function Wardrobe() {
         )}
 
         <section className="wardrobe-rack" aria-label="Wearables">
+          {mineView && (
+            <div className="wardrobe-mine-head">
+              <div>
+                <h2 className="details-heading">Your wardrobe</h2>
+                <p className="muted">Wearables you own that fit {character?.name ?? "this character"}.</p>
+              </div>
+              {exploreMore}
+            </div>
+          )}
+
           <div className="filter-bar">
             <CategoryTabs
               label="Wearable type"
@@ -162,30 +189,44 @@ function Wardrobe() {
               onChange={(id) => update("type", id)}
             />
 
-            <label
-              className={`owned-toggle ${connected ? "" : "is-disabled"}`}
-              title={connected ? undefined : "Connect a wallet first"}>
-              <input
-                type="checkbox"
-                checked={ownedOnly}
-                disabled={!connected}
-                onChange={(e) => update("owned", e.target.checked ? "1" : null)}
-              />
-              <span className="owned-toggle-track" aria-hidden="true" />
-              Owned
-            </label>
+            {!mineView && (
+              <label
+                className={`owned-toggle ${connected ? "" : "is-disabled"}`}
+                title={connected ? undefined : "Connect a wallet first"}>
+                <input
+                  type="checkbox"
+                  checked={ownedOnly}
+                  disabled={!connected}
+                  onChange={(e) => update("owned", e.target.checked ? "1" : null)}
+                />
+                <span className="owned-toggle-track" aria-hidden="true" />
+                Owned
+              </label>
+            )}
           </div>
 
           {error && <p className="market-error">Couldn’t load the wardrobe. Try refreshing.</p>}
 
-          {!loading && visible.length === 0 ? (
-            <EmptyState title="Nothing on this rail yet.">
-              {ownedOnly
-                ? "You don’t own anything in this category yet."
-                : "New pieces drop regularly — check back soon."}
-            </EmptyState>
+          {!loading && !(mineView && ownedLoading) && visible.length === 0 ? (
+            mineView ? (
+              <EmptyState
+                title={
+                  rail.length
+                    ? "Nothing of this type in your wardrobe."
+                    : `Nothing in your wardrobe fits ${character?.name ?? "this character"} yet.`
+                }
+                action={exploreMore}>
+                Browse the full wardrobe to try pieces on and pick some up.
+              </EmptyState>
+            ) : (
+              <EmptyState title="Nothing on this rail yet.">
+                {ownedOnly
+                  ? "You don’t own anything in this category yet."
+                  : "New pieces drop regularly — check back soon."}
+              </EmptyState>
+            )
           ) : (
-            <div className="wearable-grid" aria-busy={loading}>
+            <div className="wearable-grid" aria-busy={loading || (mineView && ownedLoading)}>
               {visible.map((w) => (
                 <WearableCard
                   key={w.id}

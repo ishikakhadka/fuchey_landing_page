@@ -72,7 +72,7 @@ function OwnedFuchey() {
               <figcaption>
                 <strong>{character.name}</strong>
                 <span className="muted">{equipped.length ? equipped.map((w) => w.name).join(" · ") : "No saved look yet"}</span>
-                <Link to="/wardrobe" className="text-link">
+                <Link to={`/wardrobe?character=${character.id}&view=mine`} className="text-link">
                   Dress up →
                 </Link>
               </figcaption>
