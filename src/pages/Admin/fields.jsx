@@ -98,6 +98,24 @@ export function Toggle({ label, checked, onChange, hint }) {
   );
 }
 
+// A failed save: the message plus every "field: problem" the server sent,
+// so a problem in a field this form doesn't show can never block silently.
+export function SaveError({ message, errors }) {
+  if (!message) return null;
+  return (
+    <div className="admin-error">
+      <p>{message}</p>
+      {errors?.length > 0 && (
+        <ul>
+          {errors.map((e) => (
+            <li key={e}>{e}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 export function Section({ title, children, aside }) {
   return (
     <section className="admin-section">

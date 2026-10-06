@@ -159,7 +159,7 @@ test("admin uploads a layer, creates and publishes a wearable; it appears in the
   assert.deepEqual(live.compatible_characters, ["yeti"]);
 });
 
-test("validation rejects bad visuals, unknown characters and fake NFT addresses", async () => {
+test("validation rejects bad visuals and unknown characters", async () => {
   const bad = await call(
     "admin",
     {
@@ -170,7 +170,6 @@ test("validation rejects bad visuals, unknown characters and fake NFT addresses"
         type: "hat",
         compatible_characters: ["nobody"],
         visual: { kind: "image", x: 0, y: 0, scale: 1, width: 10, height: 10 },
-        nft: { devnet: { collection: "not-an-address", candyMachine: "11111111111111111111111111111111" } },
       },
     },
     adminToken,
@@ -179,8 +178,6 @@ test("validation rejects bad visuals, unknown characters and fake NFT addresses"
   const details = bad.body.details.join("\n");
   assert.match(details, /compatible_characters: unknown character/);
   assert.match(details, /visual.image: required/);
-  assert.match(details, /nft.devnet.collection: must be a Solana address/);
-  assert.match(details, /candy machine needs its collection and candy guard/);
 });
 
 test("loadouts: compatible items save, incompatible ones are refused, ids only", async () => {

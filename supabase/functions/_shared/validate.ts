@@ -3,13 +3,11 @@
 // marketplace components expect. Returns a clean row (unknown keys dropped)
 // or throws a 400 listing every problem.
 
-import bs58 from "npm:bs58@6.0.0";
 import { HttpError } from "./http.ts";
 
 export const SLOTS = ["hat", "headwear", "outfit", "accessory", "backpack", "held", "special"];
 const RARITIES = ["common", "uncommon", "rare", "epic", "legendary"];
 const STATUSES = ["available", "coming-soon", "sold-out"];
-const NETWORKS = ["devnet", "mainnet-beta"];
 const EDITIONS = ["companion", "dev"];
 const BUILT_IN_IMAGES = ["yeti", "cyber"];
 
@@ -66,16 +64,6 @@ class Checker {
       return null;
     }
   }
-  pubkey(v: unknown, path: string) {
-    if (v == null || v === "") return null;
-    try {
-      if (typeof v === "string" && bs58.decode(v).length === 32) return v;
-    } catch {
-      // fall through
-    }
-    this.fail(path, "must be a Solana address");
-    return null;
-  }
 }
 
 const isObj = (v: unknown): v is Obj => typeof v === "object" && v !== null && !Array.isArray(v);
@@ -90,39 +78,6 @@ function listing(c: Checker, o: Obj) {
     if (supply == null) c.fail("supply", "required for items on sale");
   }
   return { status, price, supply, limit_per_wallet };
-}
-
-// { [network]: { collection, candyMachine, candyGuard, treasury, metadataUri, imageUri, mintLimitId } }
-function nft(c: Checker, v: unknown) {
-  if (v == null) return {};
-  if (!isObj(v)) return c.fail("nft", "must be an object"), {};
-  const out: Obj = {};
-  for (const [network, entry] of Object.entries(v)) {
-    const p = `nft.${network}`;
-    if (!NETWORKS.includes(network)) {
-      c.fail(p, "unknown network");
-      continue;
-    }
-    if (!isObj(entry)) {
-      c.fail(p, "must be an object");
-      continue;
-    }
-    const e = {
-      collection: c.pubkey(entry.collection, `${p}.collection`),
-      candyMachine: c.pubkey(entry.candyMachine, `${p}.candyMachine`),
-      candyGuard: c.pubkey(entry.candyGuard, `${p}.candyGuard`),
-      treasury: c.pubkey(entry.treasury, `${p}.treasury`),
-      metadataUri: c.url(entry.metadataUri, `${p}.metadataUri`),
-      imageUri: c.url(entry.imageUri, `${p}.imageUri`),
-      mintLimitId: c.num(entry, "mintLimitId", { min: 0, max: 255, int: true, path: `${p}.mintLimitId` }),
-    };
-    // A candy machine is only usable for purchases with its collection and guard.
-    if (e.candyMachine && (!e.collection || !e.candyGuard)) {
-      c.fail(p, "a candy machine needs its collection and candy guard addresses");
-    }
-    if (Object.values(e).some((x) => x != null)) out[network] = e;
-  }
-  return out;
 }
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
@@ -255,7 +210,6 @@ export function validateWearable(input: unknown, characterIds: string[]) {
     compatible_characters: compatible,
     ...listing(c, input),
     image_url: c.url(input.image_url, "image_url"),
-    nft: nft(c, input.nft),
     visual: visual(c, input.visual, type, compatible),
   };
   c.done();
@@ -305,7 +259,6 @@ export function validateCharacter(input: unknown) {
     wardrobe_slots: slots,
     image_url: c.url(input.image_url, "image_url"),
     ...listing(c, input),
-    nft: nft(c, input.nft),
   };
   c.done();
   return row;

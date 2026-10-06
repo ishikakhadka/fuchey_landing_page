@@ -72,14 +72,14 @@ Deno.serve(
 
       case "saveWearable": {
         const { data: chars } = await db.from("characters").select("id");
-        const { nft: _nft, ...row } = validateWearable(body.wearable, (chars ?? []).map((c) => c.id));
+        const row = validateWearable(body.wearable, (chars ?? []).map((c) => c.id));
         const { data, error } = await db.from("wearables").upsert(row).select().single();
         fail(error);
         return json({ wearable: data });
       }
 
       case "saveCharacter": {
-        const { nft: _nft, ...row } = validateCharacter(body.character);
+        const row = validateCharacter(body.character);
         const { data, error } = await db.from("characters").upsert(row).select().single();
         fail(error);
         return json({ character: data });

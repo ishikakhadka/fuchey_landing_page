@@ -6,7 +6,7 @@ import { RARITIES, WEARABLE_TYPES } from "../../data/taxonomy";
 import { editions } from "../../data/editions";
 import { fitsCharacter } from "../../services/marketplace/catalog";
 import { adminDelete, adminSaveCharacter } from "../../services/backend/admin";
-import { Checks, Field, NumberInput, Section, Select, TextInput } from "./fields";
+import { Checks, Field, NumberInput, Section, Select, TextInput, SaveError } from "./fields";
 import ImageUpload from "./ImageUpload";
 import NftFields from "./NftFields";
 
@@ -233,7 +233,7 @@ function CharacterEditor({ initial, wearables, session, onSaved, onDeleted, onCl
       </div>
 
       <div className="admin-actions">
-        {status.error && <p className="admin-error">{status.error}</p>}
+        <SaveError message={status.error} errors={errors} />
         {status.message && <p className="admin-ok">{status.message}</p>}
         <div className="admin-actions-row">
           {!isNew && (

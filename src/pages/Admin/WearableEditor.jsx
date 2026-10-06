@@ -7,7 +7,7 @@ import { RARITIES, WEARABLE_TYPES } from "../../data/taxonomy";
 import { CHARACTER_VIEW, resolveVisual, visualBounds } from "../../render/visual";
 import { fitsCharacter } from "../../services/marketplace/catalog";
 import { adminDelete, adminSaveWearable } from "../../services/backend/admin";
-import { Checks, NumberInput, Section, Select, TextInput } from "./fields";
+import { Checks, NumberInput, Section, Select, TextInput, SaveError } from "./fields";
 import ImageUpload from "./ImageUpload";
 import NftFields from "./NftFields";
 
@@ -374,7 +374,7 @@ function WearableEditor({ initial, characters, wearables, session, onSaved, onDe
       </div>
 
       <div className="admin-actions">
-        {status.error && <p className="admin-error">{status.error}</p>}
+        <SaveError message={status.error} errors={errors} />
         {status.message && <p className="admin-ok">{status.message}</p>}
         <div className="admin-actions-row">
           {!isNew && (

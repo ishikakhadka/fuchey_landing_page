@@ -146,6 +146,16 @@ test("saving an asset can't set NFT state; deployed assets can't be deleted", as
   await rest(`wearables?id=eq.${ID}`, { method: "PATCH", body: JSON.stringify({ nft: {} }) });
 });
 
+test("a minted item still saves, with its ipfs:// NFT data sent back as the editor does", async () => {
+  const nft = { devnet: { status: "minted", metadataUri: "ipfs://QmTest", imageUri: "ipfs://QmImage", collection: wallet().address } };
+  await rest(`wearables?id=eq.${ID}`, { method: "PATCH", body: JSON.stringify({ nft }) });
+  const saved = await call("admin", { action: "saveWearable", wearable: { ...wearable, description: "Edited after minting.", nft } }, token);
+  assert.equal(saved.status, 200, JSON.stringify(saved.body));
+  assert.equal(saved.body.wearable.description, "Edited after minting.");
+  assert.deepEqual(saved.body.wearable.nft, nft, "saving leaves the NFT data alone");
+  await rest(`wearables?id=eq.${ID}`, { method: "PATCH", body: JSON.stringify({ nft: {} }) });
+});
+
 test("inventory resolves any wallet address; purchase-verify rejects unproven claims", async () => {
   const someone = wallet().address;
   const inv = await call("inventory", { wallet: someone, network: "devnet" });
