@@ -90,6 +90,24 @@ export async function verifyDeploy(network: Network, expect: {
   return { ok: problems.length === 0, problems, candyGuard };
 }
 
+// Where a deployed product's metadata URI lives on-chain: the collection, and
+// the candy machine's hidden settings (what every new copy gets). Null if
+// either account is missing.
+export async function readProductMetadata(network: Network, collection: string, candyMachine: string) {
+  const [colAcc, cmAcc] = await Promise.all([account(network, collection), account(network, candyMachine)]);
+  const col = colAcc?.owner === CORE_PROGRAM ? decodeCollection(colAcc.data) : null;
+  const cm = cmAcc?.owner === CANDY_MACHINE_PROGRAM ? decodeCandyMachine(cmAcc.data) : null;
+  if (!col || !cm) return null;
+  return {
+    collectionUri: col.uri,
+    collectionAuthority: col.updateAuthority,
+    machineAuthority: cm.authority,
+    hiddenName: cm.hidden?.name ?? null,
+    hiddenUri: cm.hidden?.uri ?? null,
+    itemsAvailable: cm.itemsAvailable,
+  };
+}
+
 // --- sales ---------------------------------------------------------------------
 
 // What the guard enforces right now, plus live supply.

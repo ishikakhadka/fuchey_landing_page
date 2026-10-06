@@ -46,7 +46,7 @@ Deno.serve(
       if (error) throw new HttpError(400, error.message);
     };
 
-    const NFT_ACTIONS = ["nftStatus", "previewMetadata", "generateMetadata", "prepareMint", "confirmMint", "prepareSale", "confirmSale"];
+    const NFT_ACTIONS = ["nftStatus", "previewMetadata", "generateMetadata", "prepareMint", "confirmMint", "prepareSale", "confirmSale", "prepareMetadataUpdate", "confirmMetadataUpdate"];
     if (NFT_ACTIONS.includes(body.action)) return json(await nftAction(body.action, body, db, wallet));
     if (REGISTRY_ACTIONS.includes(body.action)) return json(await registryAction(body.action, body, db));
 

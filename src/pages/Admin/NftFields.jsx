@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { Check, CircleAlert, ExternalLink, FileJson, Loader2, Sparkles, X } from "lucide-react";
+import { Check, CircleAlert, ExternalLink, FileJson, ImageUp, Loader2, Sparkles, X } from "lucide-react";
 
 import { NETWORK, explorerAddressUrl, explorerTxUrl } from "../../config/network";
 import { useWallet } from "../../hooks/useWallet";
 import { adminNft } from "../../services/backend/admin";
-import { deployProduct, updateSale } from "../../services/nft/deploy";
+import { deployProduct, updateMetadata, updateSale } from "../../services/nft/deploy";
 import { Section } from "./fields";
 
 // The NFT side of an asset, on the network the site runs on:
@@ -136,6 +136,14 @@ function NftFields({ kind, id, isNew, dirty, session }) {
       preparing: "Preparing the deployment…",
       signing: "Approve the transactions in your wallet…",
     });
+
+  const updateArtwork = () => {
+    if (!window.confirm("Upload the saved artwork and update it on-chain for this item and every copy already minted?")) return;
+    onChain("prepareMetadataUpdate", "confirmMetadataUpdate", {}, updateMetadata, {
+      preparing: "Uploading the new artwork and metadata to IPFS…",
+      signing: "Approve the artwork update in your wallet…",
+    });
+  };
 
   const setSaleState = (state) => {
     if (state === "ended" && !window.confirm("End this sale? No more copies can be bought until you open it again.")) return;
@@ -301,7 +309,8 @@ function NftFields({ kind, id, isNew, dirty, session }) {
           {canMint && (
             <p className="admin-hint">
               Your wallet approves the transactions that create the collection and candy machine (it pays the network
-              rent, about 0.01–0.02 SOL). Each buyer then mints their own copy. Supply and metadata are fixed once minted.
+              rent, about 0.01–0.02 SOL). Each buyer then mints their own copy. Supply is fixed once minted; the artwork can
+              be updated on-chain later.
             </p>
           )}
         </div>
@@ -349,6 +358,27 @@ function NftFields({ kind, id, isNew, dirty, session }) {
           {wrongWallet && (
             <p className="admin-warn">Only the wallet that minted this item ({short(nft.authority)}) can change its sale.</p>
           )}
+        </div>
+      )}
+
+      {minted && (
+        <div className="admin-field is-wide">
+          <span className="admin-label">Artwork in wallets</span>
+          <div className="admin-inline">
+            <button
+              type="button"
+              className="ghost-button"
+              onClick={updateArtwork}
+              disabled={disabled || wrongWallet || !wallet.can.signTransaction || data?.problems?.length > 0}>
+              <ImageUp size={15} /> Update artwork on-chain
+            </button>
+          </div>
+          <p className="admin-hint">
+            Changing the image above only updates this site. To change what wallets show, save it, then update it
+            on-chain: the new artwork and metadata go to IPFS, and your wallet approves pointing the collection, future
+            copies and every copy already owned at them (a small network fee per copy). Wallets can take a while to
+            refresh their cached image.
+          </p>
         </div>
       )}
 

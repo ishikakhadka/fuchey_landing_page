@@ -112,6 +112,44 @@ export async function deployWithUmi(umi, plan, onStage) {
   return { collection: collection.publicKey.toString(), candyMachine: candyMachine.publicKey.toString(), signatures };
 }
 
+// New artwork for a deployed product. Points the collection, the candy
+// machine (every future copy) and each live copy at the new metadata URI.
+// Copy names and supply stay as deployed. One wallet approval for all of it.
+// plan: { authority, collection, candyMachine, metadataUrl, hiddenName, supply, assets } → { signatures }
+export async function updateMetadata(signer, plan, onStage) {
+  if (signer?.publicKey?.toBase58() !== plan.authority) {
+    throw new Error("Connect the admin wallet that deployed this item.");
+  }
+  return updateMetadataWithUmi(await walletUmi(signer), plan, onStage);
+}
+
+export async function updateMetadataWithUmi(umi, plan, onStage) {
+  const l = await libs();
+  const { none, publicKey, some, transactionBuilder } = l.umi;
+  const collection = publicKey(plan.collection);
+
+  let builder = transactionBuilder()
+    .add(l.core.updateCollectionV1(umi, { collection, newName: none(), newUri: some(plan.metadataUrl) }))
+    .add(
+      l.cm.updateCandyMachine(umi, {
+        candyMachine: publicKey(plan.candyMachine),
+        data: {
+          itemsAvailable: plan.supply,
+          maxEditionSupply: 0,
+          isMutable: true,
+          configLineSettings: none(),
+          hiddenSettings: some({ name: plan.hiddenName, uri: plan.metadataUrl, hash: await sha256(plan.metadataUrl) }),
+        },
+      }),
+    );
+  for (const asset of plan.assets) {
+    builder = builder.add(
+      l.core.updateV1(umi, { asset: publicKey(asset), collection, newName: none(), newUri: some(plan.metadataUrl), newUpdateAuthority: none() }),
+    );
+  }
+  return { signatures: await signAndSend(umi, l, [builder], onStage) };
+}
+
 // plan: { candyGuard, price, treasury, limitPerWallet, state, startsAt?, endsAt? } → { signatures }
 export async function updateSale(signer, plan, onStage) {
   return updateSaleWithUmi(await walletUmi(signer), plan, onStage);

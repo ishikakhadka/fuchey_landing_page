@@ -7,6 +7,9 @@
 //   confirmMint      verify the deployment on-chain against the plan → "minted" (+ draft listing)
 //   prepareSale      issue the plan for a listing change (price, limit, open/closed)
 //   confirmSale      verify the candy guard on-chain against it → save the listing
+//   prepareMetadataUpdate / confirmMetadataUpdate
+//                    new artwork for a deployed item → collection, candy machine and
+//                    every live copy pointed at it on-chain, then verified
 //
 // The admin's wallet builds and signs the transactions in the browser from the
 // plan (src/services/nft/deploy.js); this server holds no keys and saves only
@@ -21,7 +24,7 @@ import { HttpError } from "../_shared/http.ts";
 import { allowedNetworks, CHAIN, COLLECTION_GROUPS, configuredTreasury, STANDARD, type AssetKind, type Network } from "../_shared/nft/config.ts";
 import { buildMetadata, mintProblems, nftName } from "../_shared/nft/metadata.ts";
 import { nftStorage } from "../_shared/nft/storage.ts";
-import { readSale, verifyDeploy, type SaleState } from "../_shared/nft/chain.ts";
+import { assetsInCollection, readAssetStates, readProductMetadata, readSale, verifyDeploy, type SaleState } from "../_shared/nft/chain.ts";
 
 type SaleTerms = {
   price: number;
@@ -83,6 +86,24 @@ function internalUrl(url: string) {
   return pub && internal && url.startsWith(pub) ? internal + url.slice(pub.length) : url;
 }
 
+// Artwork + metadata JSON to IPFS, built from the saved asset.
+async function uploadArtwork(kind: AssetKind, row: Row) {
+  const storage = nftStorage();
+  const res = await fetch(internalUrl(row.image_url)).catch((e) => {
+    throw new HttpError(502, `Couldn’t download the artwork: ${(e as Error).message}`);
+  });
+  if (!res.ok) throw new HttpError(400, `Couldn’t read the artwork (${res.status}).`);
+  const type = res.headers.get("content-type") ?? "image/png";
+  if (!/^image\/(png|webp|gif|jpeg)/.test(type)) throw new HttpError(400, "Artwork must be a PNG, WebP, GIF or JPEG.");
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  if (bytes.length > MAX_IMAGE) throw new HttpError(400, "Artwork must be under 10 MB.");
+
+  const image = await storage.putFile(bytes, `${kind}-${row.id}.${type.split("/")[1]}`, type);
+  const metadata = buildMetadata(kind, row, image);
+  const meta = await storage.putJson(metadata, `${kind}-${row.id}.json`);
+  return { image, metadata, meta, provider: storage.provider };
+}
+
 function treasuryFor(network: Network, admin: string) {
   const t = configuredTreasury(network);
   if (t) return t;
@@ -131,18 +152,7 @@ export async function nftAction(action: string, body: Record<string, unknown>, d
 
       await save(db, kind, row, network, { ...entry, status: "uploading", error: null });
       try {
-        const res = await fetch(internalUrl(row.image_url)).catch((e) => {
-          throw new HttpError(502, `Couldn’t download the artwork: ${(e as Error).message}`);
-        });
-        if (!res.ok) throw new HttpError(400, `Couldn’t read the artwork (${res.status}).`);
-        const type = res.headers.get("content-type") ?? "image/png";
-        if (!/^image\/(png|webp|gif|jpeg)/.test(type)) throw new HttpError(400, "Artwork must be a PNG, WebP, GIF or JPEG.");
-        const bytes = new Uint8Array(await res.arrayBuffer());
-        if (bytes.length > MAX_IMAGE) throw new HttpError(400, "Artwork must be under 10 MB.");
-
-        const image = await storage.putFile(bytes, `${kind}-${row.id}.${type.split("/")[1]}`, type);
-        const metadata = buildMetadata(kind, row, image);
-        const meta = await storage.putJson(metadata, `${kind}-${row.id}.json`);
+        const { image, metadata, meta } = await uploadArtwork(kind, row);
         const saved = await save(db, kind, row, network, {
           status: "metadata-created",
           imageUri: image.uri,
@@ -322,6 +332,89 @@ export async function nftAction(action: string, body: Record<string, unknown>, d
       // from `listings`, not from the catalogue's status column).
       await db.from(TABLE[kind]).update({ price: t.price }).eq("id", row.id);
       return status(db, kind, await load(db, kind, row.id), network);
+    }
+
+    // Changing the art of a deployed product: new artwork + metadata go to
+    // IPFS, then the admin's wallet points the collection, the candy machine
+    // (future copies) and every live copy at it. Saved only once the chain
+    // shows all of them on the new URI.
+    case "prepareMetadataUpdate": {
+      if (entry.status !== "minted") throw new HttpError(409, "Only deployed items can have their on-chain artwork updated.");
+      if (entry.authority !== admin) {
+        throw new HttpError(403, `Only the wallet that deployed this item (${entry.authority}) can update it on-chain.`);
+      }
+      const problems = mintProblems(kind, row);
+      if (problems.length) throw new HttpError(400, "Fix these before updating the artwork.", problems);
+      if (!nftStorage().configured) throw new HttpError(503, "NFT storage isn’t configured. Set the PINATA_JWT secret on the Supabase project.");
+
+      const onChain = await readProductMetadata(network, entry.collection, entry.candyMachine);
+      if (!onChain) throw new HttpError(409, "The collection or candy machine isn’t readable on-chain.");
+      if (onChain.collectionAuthority !== admin || onChain.machineAuthority !== admin) {
+        throw new HttpError(403, "This wallet isn’t the on-chain update authority for this item.");
+      }
+      const copies = await assetsInCollection(network, entry.collection);
+
+      const { image, metadata, meta, provider } = await uploadArtwork(kind, row);
+      const pendingMetadata = {
+        imageUri: image.uri,
+        imageUrl: image.url,
+        metadataUri: meta.uri,
+        metadataUrl: meta.url,
+        metadata,
+        storage: provider,
+        preparedAt: new Date().toISOString(),
+      };
+      await save(db, kind, row, network, { ...entry, pendingMetadata });
+      return {
+        plan: {
+          network,
+          authority: admin,
+          collection: entry.collection,
+          candyMachine: entry.candyMachine,
+          metadataUrl: meta.url,
+          // Kept as deployed: copy names and supply don't change.
+          hiddenName: onChain.hiddenName,
+          supply: onChain.itemsAvailable,
+          assets: copies.map((c) => c.address),
+        },
+      };
+    }
+
+    case "confirmMetadataUpdate": {
+      const p = entry.pendingMetadata;
+      if (!p) throw new HttpError(409, "No artwork update in progress — start it again.");
+      const problems: string[] = [];
+      const onChain = await readProductMetadata(network, entry.collection, entry.candyMachine);
+      if (!onChain) problems.push("collection or candy machine not readable");
+      else {
+        if (onChain.collectionUri !== p.metadataUrl) problems.push("collection still has the old metadata");
+        if (onChain.hiddenUri !== p.metadataUrl) problems.push("candy machine still mints with the old metadata");
+      }
+      const copies = await assetsInCollection(network, entry.collection);
+      const states = await readAssetStates(network, copies.map((c) => c.address));
+      const stale = [...states.entries()].filter(([, s]) => s.state === "live" && s.uri !== p.metadataUrl).map(([a]) => a);
+      if (stale.length) problems.push(`${stale.length} cop${stale.length === 1 ? "y" : "ies"} still on the old metadata`);
+      if (problems.length) throw new HttpError(409, "The artwork update isn’t visible on-chain as expected yet.", problems);
+
+      const signatures = Array.isArray(body.signatures) ? body.signatures.map(String).slice(0, 50) : [];
+      const { pendingMetadata: _done, ...rest } = entry;
+      const saved = await save(db, kind, row, network, {
+        ...rest,
+        imageUri: p.imageUri,
+        imageUrl: p.imageUrl,
+        metadataUri: p.metadataUri,
+        metadataUrl: p.metadataUrl,
+        metadata: p.metadata,
+        storage: p.storage,
+        metadataUpdatedAt: new Date().toISOString(),
+        transactions: [...(rest.transactions ?? []), ...signatures.map((s: string) => ({ kind: "metadata", signature: s }))],
+      });
+      // Keep the registry's cached metadata in step with the chain.
+      await db
+        .from("nfts")
+        .update({ metadata_uri: p.metadataUrl, metadata_json: p.metadata })
+        .match({ network, collection_address: entry.collection });
+      return { ...(await status(db, kind, row, network)), nft: saved };
     }
 
     default:
