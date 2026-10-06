@@ -20,6 +20,32 @@ nft/setup-marketplace.mjs ──► REST (service role) ─► nft[<network>] ad
 | `wearables` | Identity, `type` (slot), `compatible_characters`, listing, `image_url` (NFT image), `nft`, and **`visual`** |
 | `loadouts` | `(wallet, character_id) → slots { [slot]: wearableId }`, ids only |
 | `admins` | Wallet addresses allowed into the dashboard |
+| `listings` | Sale state of a deployed product (price, open/closed, candy machine) |
+| `purchases` | Verified purchase transactions |
+| `nfts` | One row per minted Core asset: Fuchey asset id, asset address, collection, metadata, mint tx, status |
+| `nft_ownership` | Ownership periods per NFT; exactly one `is_current`, earlier ones end as transferred / burned |
+
+### NFT ownership
+
+Solana is the source of truth; `nfts` / `nft_ownership` are a cache of chain
+reads (`functions/_shared/nft/ownership.ts`). Four separate identities:
+
+| | Example | Meaning |
+|---|---|---|
+| Fuchey asset id | `yeti` | Catalogue identity. Many NFTs share one (editions) |
+| NFT asset address | `24Ait7…` | The Core asset, unique per NFT |
+| Collection address | `Vm6Lqn…` | The product's Core collection |
+| Owner wallet | `AcAMBn…` | A Solana address. Never a wallet app |
+
+A listing is the product's sale state and never decides ownership. Owners
+are written only right after reading the asset account, by:
+
+- `purchase-verify`: purchase + NFT + first owner, in one transaction
+- `inventory`: the wallet's assets, and re-reads NFTs it no longer holds (catches outside transfers)
+- admin **Sync ownership** / **Sync all** (`/admin` → NFTs): Sync all also finds copies in Fuchey collections the database hasn't seen
+
+A failed chain read marks the NFT `unverified` and keeps the last confirmed
+owner. A cron or webhook can call `syncAllOwnership(db, network)` later.
 
 `nft` is keyed by network:
 `{ "devnet": { collection, candyMachine, candyGuard, treasury, metadataUri, imageUri, mintLimitId } }`.
@@ -71,7 +97,7 @@ Then open `/admin`, connect that wallet and sign in.
 ```sh
 npx supabase link --project-ref <ref>
 npx supabase db push --include-seed      # schema + the original catalogue
-npx supabase functions deploy admin loadout
+npx supabase functions deploy admin loadout inventory purchase-verify
 ```
 
 Set `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` in the site's build

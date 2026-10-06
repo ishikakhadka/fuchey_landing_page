@@ -4,6 +4,7 @@
 // POST { wallet, network }
 //   → {
 //       wallet, network, chain, syncedAt,
+//       assets:     [{ assetId, type, nftAssetAddress, ownerWallet, name }],
 //       characters: [{ assetId, asset, name }],
 //       wearables:  [{ assetId, asset, name, type, compatibleCharacters }],
 //       loadouts:   { [characterId]: { slots, equipped: [wearableId] } }
@@ -12,14 +13,20 @@
 // Resolution: wallet → Core assets (Helius DAS, or a program scan) → only
 // those in a deployed Fuchey collection → asset ids → characters / wearables.
 // `equipped` is the saved look filtered to wearables the wallet actually
-// owns and that fit the character. The ownership table is refreshed as a
-// cache; the chain stays the source of truth. Works for any wallet app —
-// only the address matters.
+// owns and that fit the character — ownership and compatibility stay two
+// separate checks that only meet here.
+//
+// The NFT registry (nfts / nft_ownership) is refreshed as a cache, keeping
+// history: NFTs the database still credits to this wallet but the chain
+// doesn't list are re-read, so a transfer made outside the marketplace is
+// recorded against its new owner. The chain stays the source of truth. Works
+// for any wallet app — only the address matters.
 
 import { handler, HttpError, json, serviceClient } from "../_shared/http.ts";
 import { allowedNetworks, CHAIN, type Network } from "../_shared/nft/config.ts";
 import { assetsOwnedBy } from "../_shared/nft/chain.ts";
 import { collectionIndex, isAddress } from "../_shared/nft/index.ts";
+import { type NftRow, recordObservations, syncOwnership } from "../_shared/nft/ownership.ts";
 
 Deno.serve(
   handler(async (req) => {
@@ -35,22 +42,22 @@ Deno.serve(
       .map((a) => ({ asset: a.address, item: a.collection ? index.get(a.collection) : undefined }))
       .filter((a): a is { asset: string; item: NonNullable<typeof a.item> } => Boolean(a.item));
 
-    // Refresh the cache for this wallet.
+    // Refresh the registry for this wallet.
     const syncedAt = new Date().toISOString();
-    await db.from("ownership").delete().match({ network, wallet });
-    if (mine.length) {
-      await db.from("ownership").upsert(
-        mine.map(({ asset, item }) => ({
-          network,
-          asset_address: asset,
-          chain: CHAIN,
-          wallet,
-          asset_kind: item.kind,
-          asset_id: item.id,
-          collection: item.collection,
-          last_synced_at: syncedAt,
-        })),
-      );
+    await recordObservations(db, network, mine.map(({ asset, item }) => ({ address: asset, owner: wallet, item })), syncedAt);
+
+    // NFTs we still credit to this wallet that the chain no longer lists:
+    // read each one to find where it went.
+    const held = new Set(mine.map((m) => m.asset));
+    const { data: credited } = await db
+      .from("nft_ownership")
+      .select("nfts!inner(*)")
+      .eq("owner_wallet", wallet)
+      .eq("is_current", true)
+      .eq("nfts.chain", CHAIN)
+      .eq("nfts.network", network);
+    for (const { nfts: nft } of (credited ?? []) as unknown as { nfts: NftRow }[]) {
+      if (!held.has(nft.asset_address)) await syncOwnership(db, nft);
     }
 
     const wearableIds = [...new Set(mine.filter((m) => m.item.kind === "wearable").map((m) => m.item.id))];
@@ -88,6 +95,15 @@ Deno.serve(
       loadouts[look.character_id] = { slots: look.slots, equipped };
     }
 
-    return json({ wallet, network, chain: CHAIN, syncedAt, characters, wearables, loadouts });
+    // Flat list for the companion app: wallet → NFT asset → Fuchey asset id.
+    const assets = mine.map((m) => ({
+      assetId: m.item.id,
+      type: m.item.kind,
+      nftAssetAddress: m.asset,
+      ownerWallet: wallet,
+      name: m.item.name,
+    }));
+
+    return json({ wallet, network, chain: CHAIN, syncedAt, assets, characters, wearables, loadouts });
   }),
 );

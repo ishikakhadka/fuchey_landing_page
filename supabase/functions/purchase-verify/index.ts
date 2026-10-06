@@ -1,13 +1,16 @@
 // Verifies a marketplace purchase after the buyer's wallet has sent it.
 //
 // POST { network, signature, asset, wallet }
-//   → { verified: true, kind, assetId, asset, wallet }
+//   → { verified: true, kind, assetId, asset, wallet, nftId }
 //
 // Everything is checked against the chain, not the request: the transaction
-// must be confirmed and successful, signed by `wallet`, involve `asset`; the
-// asset must exist, be owned by `wallet`, and sit in a Fuchey collection.
-// Only then is it recorded (purchases + ownership index). Calling it twice is
-// harmless; it never changes on-chain state.
+// must be confirmed and successful, signed by `wallet`, and a mint from the
+// product's candy machine that created `asset`; the asset must exist, be
+// owned by `wallet`, and sit in that product's Fuchey collection. Only then
+// is it recorded — purchase, NFT and first owner in one transaction (SQL
+// nft_record_purchase). The owner written is the one read from the asset
+// account, never the request's. Calling it twice is harmless; it never
+// changes on-chain state.
 
 import { handler, HttpError, json, serviceClient } from "../_shared/http.ts";
 import { allowedNetworks, CHAIN, type Network } from "../_shared/nft/config.ts";
@@ -24,16 +27,17 @@ Deno.serve(
     }
     if (!isAddress(body.asset) || !isAddress(body.wallet)) throw new HttpError(400, "Missing asset or wallet address.");
 
-    const tx = await checkPurchaseTx(network, body.signature, body.wallet, body.asset);
-    if (!tx.ok) throw new HttpError(409, `Purchase not verified: ${tx.reason}.`);
-
     const asset = await readAsset(network, body.asset);
-    if (!asset) throw new HttpError(409, "Purchase not verified: the asset doesn’t exist on-chain.");
+    // "not found" — the client retries it while our RPC catches up.
+    if (!asset) throw new HttpError(409, "Purchase not verified: the asset was not found on-chain (yet).");
     if (asset.owner !== body.wallet) throw new HttpError(409, "Purchase not verified: the wallet doesn’t own that asset.");
 
     const db = serviceClient();
     const item = asset.collection ? (await collectionIndex(db, network)).get(asset.collection) : undefined;
     if (!item) throw new HttpError(409, "Purchase not verified: that asset isn’t from a Fuchey collection.");
+
+    const tx = await checkPurchaseTx(network, body.signature, body.wallet, body.asset, item.candyMachine ? [item.candyMachine] : []);
+    if (!tx.ok) throw new HttpError(409, `Purchase not verified: ${tx.reason}.`);
 
     const { data: listing } = await db
       .from("listings")
@@ -41,27 +45,35 @@ Deno.serve(
       .match({ asset_kind: item.kind, asset_id: item.id, network })
       .maybeSingle();
 
-    await db.from("purchases").upsert({
-      signature: body.signature,
-      network,
-      chain: CHAIN,
-      wallet: body.wallet,
-      asset_kind: item.kind,
-      asset_id: item.id,
-      asset_address: body.asset,
-      price: listing?.price ?? null,
+    const { data, error } = await db.rpc("nft_record_purchase", {
+      p_purchase: {
+        signature: body.signature,
+        network,
+        chain: CHAIN,
+        wallet: body.wallet,
+        asset_kind: item.kind,
+        asset_id: item.id,
+        asset_address: body.asset,
+        price: listing?.price ?? null,
+      },
+      p_nft: {
+        asset_kind: item.kind,
+        asset_id: item.id,
+        chain: CHAIN,
+        network,
+        asset_address: body.asset,
+        collection_address: item.collection,
+        name: asset.name,
+        metadata_uri: asset.uri,
+        metadata_json: asset.uri === item.metadataUrl ? item.metadata : null,
+        mint_signature: body.signature,
+        minted_at: tx.blockTime,
+      },
+      p_owner: asset.owner,
+      p_verified_at: new Date().toISOString(),
     });
-    await db.from("ownership").upsert({
-      network,
-      asset_address: body.asset,
-      chain: CHAIN,
-      wallet: body.wallet,
-      asset_kind: item.kind,
-      asset_id: item.id,
-      collection: item.collection,
-      last_synced_at: new Date().toISOString(),
-    });
+    if (error) throw new HttpError(500, error.message);
 
-    return json({ verified: true, kind: item.kind, assetId: item.id, asset: body.asset, wallet: body.wallet });
+    return json({ verified: true, kind: item.kind, assetId: item.id, asset: body.asset, wallet: asset.owner, nftId: data.nft_id });
   }),
 );

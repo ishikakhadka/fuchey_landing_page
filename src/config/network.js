@@ -31,10 +31,16 @@ export const NETWORK = {
   isMainnet: cluster.id === "mainnet-beta",
 };
 
-export function explorerAddressUrl(address) {
-  return `https://explorer.solana.com/address/${address}${NETWORK.explorerSuffix}`;
+// `network` defaults to the site's; pass a record's own network (e.g. an NFT
+// minted on devnet) so links never point at the wrong cluster.
+const explorerSuffix = (network) => (network ? (CLUSTERS[network]?.explorerSuffix ?? "") : NETWORK.explorerSuffix);
+
+export function explorerAddressUrl(address, network) {
+  return `https://explorer.solana.com/address/${address}${explorerSuffix(network)}`;
 }
 
-export function explorerTxUrl(signature) {
-  return `https://explorer.solana.com/tx/${signature}${NETWORK.explorerSuffix}`;
+export function explorerTxUrl(signature, network) {
+  return `https://explorer.solana.com/tx/${signature}${explorerSuffix(network)}`;
 }
+
+export const networkLabel = (network) => CLUSTERS[network]?.label ?? network;

@@ -10,6 +10,7 @@
 //   upload { folder, contentType, data (base64) } → { url, path }
 //   nftStatus / previewMetadata / generateMetadata / prepareMint / confirmMint /
 //   prepareSale / confirmSale { kind, id, network, … }   (see nft.ts)
+//   nftList / nftDetail / nftSync / nftSyncAll            (see registry.ts)
 //
 // Saving an asset never touches its `nft` field: that only changes through the
 // NFT actions, after the chain has confirmed each step.
@@ -18,6 +19,7 @@ import { handler, HttpError, json, serviceClient } from "../_shared/http.ts";
 import { verifySession } from "../_shared/session.ts";
 import { validateCharacter, validateWearable } from "../_shared/validate.ts";
 import { nftAction } from "./nft.ts";
+import { REGISTRY_ACTIONS, registryAction } from "./registry.ts";
 
 const BUCKET = "catalog-art";
 
@@ -46,6 +48,7 @@ Deno.serve(
 
     const NFT_ACTIONS = ["nftStatus", "previewMetadata", "generateMetadata", "prepareMint", "confirmMint", "prepareSale", "confirmSale"];
     if (NFT_ACTIONS.includes(body.action)) return json(await nftAction(body.action, body, db, wallet));
+    if (REGISTRY_ACTIONS.includes(body.action)) return json(await registryAction(body.action, body, db));
 
     // Deleting a deployed asset would orphan NFTs people own.
     const deployed = async (table: string, id: string) => {

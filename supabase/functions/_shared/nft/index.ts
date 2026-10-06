@@ -6,7 +6,17 @@
 import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import type { AssetKind, Network } from "./config.ts";
 
-export type IndexedAsset = { kind: AssetKind; id: string; name: string; collection: string };
+export type IndexedAsset = {
+  kind: AssetKind;
+  id: string; // Fuchey asset id
+  name: string;
+  collection: string;
+  candyMachine: string | null;
+  metadataUrl: string | null; // the uri every copy carries on-chain
+  metadata: unknown; // the JSON uploaded to metadataUrl
+};
+
+type NftEntry = { status?: string; collection?: string; candyMachine?: string; metadataUrl?: string; metadata?: unknown };
 
 export async function collectionIndex(db: SupabaseClient, network: Network) {
   const [c, w] = await Promise.all([
@@ -14,10 +24,20 @@ export async function collectionIndex(db: SupabaseClient, network: Network) {
     db.from("wearables").select("id, name, nft"),
   ]);
   const index = new Map<string, IndexedAsset>();
-  const add = (kind: AssetKind, rows: { id: string; name: string; nft: Record<string, { status?: string; collection?: string }> }[] | null) => {
+  const add = (kind: AssetKind, rows: { id: string; name: string; nft: Record<string, NftEntry> }[] | null) => {
     for (const r of rows ?? []) {
       const e = r.nft?.[network];
-      if (e?.status === "minted" && e.collection) index.set(e.collection, { kind, id: r.id, name: r.name, collection: e.collection });
+      if (e?.status === "minted" && e.collection) {
+        index.set(e.collection, {
+          kind,
+          id: r.id,
+          name: r.name,
+          collection: e.collection,
+          candyMachine: e.candyMachine ?? null,
+          metadataUrl: e.metadataUrl ?? null,
+          metadata: e.metadata ?? null,
+        });
+      }
     }
   };
   add("character", c.data);

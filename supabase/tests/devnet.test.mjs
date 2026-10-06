@@ -20,7 +20,7 @@ import assert from "node:assert/strict";
 
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { generateSigner, keypairIdentity, publicKey, sol, some, transactionBuilder } from "@metaplex-foundation/umi";
-import { fetchAssetV1, fetchCollectionV1, mplCore } from "@metaplex-foundation/mpl-core";
+import { fetchAssetV1, fetchCollectionV1, mplCore, transferV1 } from "@metaplex-foundation/mpl-core";
 import { fetchCandyGuard, fetchCandyMachine, findCandyGuardPda, mintV1, mplCandyMachine } from "@metaplex-foundation/mpl-core-candy-machine";
 import { setComputeUnitLimit, transferSol } from "@metaplex-foundation/mpl-toolbox";
 import { base58 } from "@metaplex-foundation/umi/serializers";
@@ -88,7 +88,7 @@ before(async () => {
 });
 
 after(async () => {
-  await rest(`ownership?asset_id=eq.${ITEM}`, { method: "DELETE" });
+  await rest(`nfts?asset_id=eq.${ITEM}`, { method: "DELETE" }); // cascades to nft_ownership
   await rest(`purchases?asset_id=eq.${ITEM}`, { method: "DELETE" });
   await rest(`wearables?id=eq.${ITEM}`, { method: "DELETE" });
 });
@@ -224,4 +224,48 @@ test("a buyer mints a copy; the backend verifies it and resolves inventory", asy
   assert.equal(inv.status, 200, JSON.stringify(inv.body));
   assert.deepEqual(inv.body.wearables.map((w) => [w.assetId, w.asset]), [[ITEM, asset.publicKey.toString()]]);
   assert.deepEqual(inv.body.characters, []);
+  assert.deepEqual(inv.body.assets, [
+    { assetId: ITEM, type: "wearable", nftAssetAddress: asset.publicKey.toString(), ownerWallet: wallet, name: "Devnet Test" },
+  ]);
+
+  // The purchase registered the NFT and its first owner, from the chain.
+  const [nft] = await (await rest(`nfts?asset_id=eq.${ITEM}&select=*,nft_ownership(*)`)).json();
+  assert.equal(nft.asset_address, asset.publicKey.toString());
+  assert.equal(nft.collection_address, state.collection);
+  assert.equal(nft.mint_signature, signature);
+  assert.equal(nft.status, "owned");
+  assert.ok(nft.minted_at && nft.metadata_uri);
+  assert.deepEqual(
+    nft.nft_ownership.map((o) => [o.owner_wallet, o.acquisition_source, o.acquisition_signature, o.is_current]),
+    [[wallet, "marketplace", signature, true]],
+  );
+  state.asset = asset.publicKey.toString();
+});
+
+test("a transfer outside the marketplace is picked up from the chain, with history", async () => {
+  const receiver = generateSigner(base).publicKey.toString();
+  await transferV1(buyer, {
+    asset: publicKey(state.asset),
+    collection: publicKey(state.collection),
+    newOwner: publicKey(receiver),
+  }).sendAndConfirm(buyer, { confirm: { commitment: "confirmed" } });
+
+  // The old owner's inventory no longer lists it, and re-reading it records the new owner.
+  const inv = await call("inventory", { wallet: buyerKp.publicKey.toString(), network: "devnet" });
+  assert.equal(inv.status, 200, JSON.stringify(inv.body));
+  assert.deepEqual(inv.body.assets, []);
+
+  const [nft] = await (await rest(`nfts?asset_id=eq.${ITEM}&select=status,nft_ownership(*)`)).json();
+  assert.equal(nft.status, "owned");
+  const periods = nft.nft_ownership.sort((a, b) => a.id - b.id);
+  assert.deepEqual(
+    periods.map((o) => [o.owner_wallet, o.acquisition_source, o.is_current, o.ended_reason]),
+    [
+      [buyerKp.publicKey.toString(), "marketplace", false, "transferred"],
+      [receiver, "transfer", true, null],
+    ],
+  );
+
+  const theirs = await call("inventory", { wallet: receiver, network: "devnet" });
+  assert.deepEqual(theirs.body.assets.map((a) => a.nftAssetAddress), [state.asset]);
 });

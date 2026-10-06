@@ -569,3 +569,86 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+/* --- NFT registry -------------------------------------------------------- */
+
+.admin-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.admin-table th {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-table code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.admin-cell-sub {
+  display: block;
+}
+
+.nft-address {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+}
+
+.nft-address code {
+  overflow-wrap: anywhere;
+}
+
+.nft-address .icon-button {
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+
+.nft-sync-summary {
+  margin-bottom: 14px;
+}
+
+.nft-changes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.nft-changes li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-warn svg,
+.admin-ok svg {
+  vertical-align: -2px;
+}

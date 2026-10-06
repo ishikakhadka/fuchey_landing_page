@@ -16,3 +16,12 @@ export function ownedAssets(inventory) {
   const one = (kind) => (a) => ({ address: a.asset, owner: inventory.wallet, name: a.name, itemId: a.assetId, kind });
   return [...inventory.characters.map(one("character")), ...inventory.wearables.map(one("wearable"))];
 }
+
+// For the Fuchey companion: wallet → owned NFTs → Fuchey asset ids.
+// → [{ assetId, type: "character" | "wearable", nftAssetAddress, ownerWallet, name }]
+// This answers *ownership* only. Whether an owned wearable can go on a
+// character is still fitsCharacter() (services/marketplace/catalog.js).
+export async function getOwnedFucheyAssets(walletAddress) {
+  const inventory = await fetchInventory(walletAddress);
+  return inventory.assets;
+}

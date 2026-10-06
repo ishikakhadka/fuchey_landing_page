@@ -16,6 +16,8 @@ import { cachedSession, clearSession, getSession } from "../../services/backend/
 import { formatPrice } from "./format";
 import WearableEditor from "./WearableEditor";
 import CharacterEditor from "./CharacterEditor";
+import NftRegistry from "./NftRegistry";
+import NftDetail from "./NftDetail";
 import { newCharacter, newWearable } from "./drafts";
 import "./admin.css";
 
@@ -31,6 +33,7 @@ function Admin() {
   const [data, setData] = useState(null);
   const [tab, setTab] = useState("wearables");
   const [editing, setEditing] = useState(null); // { kind, item }
+  const [openNft, setOpenNft] = useState(null); // registry id
 
   const session = auth.wallet === address ? auth.session : null;
 
@@ -158,6 +161,14 @@ function Admin() {
     );
   }
 
+  if (tab === "nfts" && openNft) {
+    return (
+      <div className="container market-page admin-page">
+        <NftDetail key={openNft} session={session} id={openNft} onClose={() => setOpenNft(null)} />
+      </div>
+    );
+  }
+
   const typeLabel = (id) => getWearableTypes().find((t) => t.id === id)?.label ?? id;
   const charName = (id) => data.characters.find((c) => c.id === id)?.name ?? id;
   const items = tab === "wearables" ? data.wearables : data.characters;
@@ -175,61 +186,68 @@ function Admin() {
           {[
             ["wearables", `Wearables (${data.wearables.length})`],
             ["characters", `Characters (${data.characters.length})`],
+            ["nfts", "NFTs"],
           ].map(([id, label]) => (
             <button key={id} type="button" role="tab" aria-selected={tab === id} aria-pressed={tab === id} onClick={() => setTab(id)}>
               {label}
             </button>
           ))}
         </div>
-        <button
-          type="button"
-          className="primary-button"
-          onClick={() =>
-            setEditing(
-              tab === "wearables"
-                ? { kind: "wearable", item: newWearable(nextSort) }
-                : { kind: "character", item: newCharacter(nextSort) },
-            )
-          }>
-          <Plus size={17} /> New {tab === "wearables" ? "wearable" : "character"}
-        </button>
+        {tab !== "nfts" && (
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() =>
+              setEditing(
+                tab === "wearables"
+                  ? { kind: "wearable", item: newWearable(nextSort) }
+                  : { kind: "character", item: newCharacter(nextSort) },
+              )
+            }>
+            <Plus size={17} /> New {tab === "wearables" ? "wearable" : "character"}
+          </button>
+        )}
       </div>
 
-      <ul className="admin-list">
-        {items.map((item) => (
-          <li key={item.id}>
-            <span className={`admin-list-art character-stage stage-${item.edition ?? "companion"}`}>
-              <ItemArt
-                art={item.art}
-                alt=""
-                itemId={item.id}
-                item={tab === "wearables" ? item : undefined}
-                size="sm"
-              />
-            </span>
-            <span className="admin-list-main">
-              <strong>{item.name}</strong>
-              <span className="admin-hint">
-                {tab === "wearables"
-                  ? `${typeLabel(item.type)} · fits ${item.compatibleCharacters.map(charName).join(", ") || "nobody"}`
-                  : `${item.editionLabel || item.edition} · ${item.art.kind === "character" ? "dressable" : "placeholder"}`}
+      {tab === "nfts" ? (
+        <NftRegistry session={session} onOpen={setOpenNft} />
+      ) : (
+        <ul className="admin-list">
+          {items.map((item) => (
+            <li key={item.id}>
+              <span className={`admin-list-art character-stage stage-${item.edition ?? "companion"}`}>
+                <ItemArt
+                  art={item.art}
+                  alt=""
+                  itemId={item.id}
+                  item={tab === "wearables" ? item : undefined}
+                  size="sm"
+                />
               </span>
-            </span>
-            <span className="admin-list-meta">
-              <span className={`admin-chip ${item.published ? "is-live" : ""}`}>{item.published ? "Published" : "Draft"}</span>
-              <span className="admin-hint">
-                {item.listing.status} · {formatPrice(item.listing.price)}
+              <span className="admin-list-main">
+                <strong>{item.name}</strong>
+                <span className="admin-hint">
+                  {tab === "wearables"
+                    ? `${typeLabel(item.type)} · fits ${item.compatibleCharacters.map(charName).join(", ") || "nobody"}`
+                    : `${item.editionLabel || item.edition} · ${item.art.kind === "character" ? "dressable" : "placeholder"}`}
+                </span>
               </span>
-            </span>
-            <button
-              type="button"
-              className="ghost-button"
-              onClick={() => setEditing({ kind: tab === "wearables" ? "wearable" : "character", item })}>
-              <Pencil size={15} /> Edit
-            </button>
-          </li>
-        ))}
-      </ul>
+              <span className="admin-list-meta">
+                <span className={`admin-chip ${item.published ? "is-live" : ""}`}>{item.published ? "Published" : "Draft"}</span>
+                <span className="admin-hint">
+                  {item.listing.status} · {formatPrice(item.listing.price)}
+                </span>
+              </span>
+              <button
+                type="button"
+                className="ghost-button"
+                onClick={() => setEditing({ kind: tab === "wearables" ? "wearable" : "character", item })}>
+                <Pencil size={15} /> Edit
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

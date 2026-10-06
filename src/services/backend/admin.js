@@ -41,3 +41,11 @@ export async function adminUpload(session, folder, file) {
 // nftStatus, previewMetadata, generateMetadata, prepareMint, confirmMint,
 // prepareSale, confirmSale; payload carries { kind, id, network, … }.
 export const adminNft = (session, action, payload) => callFunction("admin", { action, ...payload }, session);
+
+// NFT registry (supabase/functions/admin/registry.ts): every minted copy and
+// its owner as last read from the chain. Syncing re-reads the chain; there is
+// no call that sets an owner.
+export const adminNftList = (session, network) => callFunction("admin", { action: "nftList", network }, session);
+export const adminNftDetail = (session, id) => callFunction("admin", { action: "nftDetail", id }, session);
+export const adminNftSync = (session, id) => callFunction("admin", { action: "nftSync", id }, session);
+export const adminNftSyncAll = (session, network) => callFunction("admin", { action: "nftSyncAll", network }, session);

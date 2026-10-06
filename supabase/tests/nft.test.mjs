@@ -160,3 +160,57 @@ test("inventory resolves any wallet address; purchase-verify rejects unproven cl
   assert.equal(v.status, 409);
   assert.match(v.body.error, /not verified/);
 });
+
+test("NFT registry: admin-only, owners only come from the chain", async () => {
+  // A registry row whose asset address has no account on devnet.
+  const address = wallet().address;
+  const claimed = wallet().address;
+  const [nft] = (
+    await rest("nfts", {
+      method: "POST",
+      body: JSON.stringify({ asset_kind: "wearable", asset_id: ID, network: "devnet", asset_address: address, collection_address: wallet().address }),
+    })
+  ).body;
+  await rest("nft_ownership", { method: "POST", body: JSON.stringify({ nft_id: nft.id, owner_wallet: claimed }) });
+
+  // Anyone can read the registry; nobody but the functions can write it.
+  const anonWrite = await fetch(`${URL_}/rest/v1/nft_ownership`, {
+    method: "POST",
+    headers: { apikey: ANON, Authorization: `Bearer ${ANON}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ nft_id: nft.id, owner_wallet: wallet().address }),
+  });
+  assert.ok(anonWrite.status >= 400, "anon can't write ownership");
+  const anonRpc = await fetch(`${URL_}/rest/v1/rpc/nft_record_owner`, {
+    method: "POST",
+    headers: { apikey: ANON, Authorization: `Bearer ${ANON}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ p_nft: nft.id, p_owner: wallet().address, p_verified_at: new Date().toISOString() }),
+  });
+  assert.ok(anonRpc.status >= 400, "anon can't call the ownership functions");
+
+  const outsider = wallet();
+  assert.equal((await call("admin", { action: "nftList", network: "devnet" }, session(outsider))).status, 403);
+  assert.equal((await call("admin", { action: "nftList", network: "devnet" })).status, 401);
+
+  const list = await call("admin", { action: "nftList", network: "devnet" }, token);
+  assert.equal(list.status, 200, JSON.stringify(list.body));
+  const mine = list.body.nfts.find((n) => n.id === nft.id);
+  assert.equal(mine.owner.wallet, claimed);
+  assert.equal(mine.status, "unknown");
+
+  // Syncing reads the chain: the account doesn't exist, so it's burned and
+  // the unproven owner's period is closed — never kept, never invented.
+  const synced = await call("admin", { action: "nftSync", id: nft.id }, token);
+  assert.equal(synced.status, 200, JSON.stringify(synced.body));
+  assert.equal(synced.body.result.status, "burned");
+  assert.equal(synced.body.nft.owner, null);
+  assert.deepEqual(
+    synced.body.nft.history.map((p) => [p.wallet, p.endedReason]),
+    [[claimed, "burned"]],
+  );
+
+  // There is no action that sets an owner.
+  const set = await call("admin", { action: "nftSetOwner", id: nft.id, owner: claimed }, token);
+  assert.equal(set.status, 400);
+
+  await rest(`nfts?id=eq.${nft.id}`, { method: "DELETE" });
+});

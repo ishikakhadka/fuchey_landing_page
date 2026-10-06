@@ -35,6 +35,9 @@ async function rpc(network: Network, method: string, params: unknown) {
   });
   const body = await response.json().catch(() => ({}));
   if (body.error) throw new HttpError(502, `Solana RPC: ${body.error.message ?? "error"}`);
+  // A missing `result` is a failed call (rate limit, outage), not an empty
+  // answer — never let it read as "account doesn't exist".
+  if (!response.ok || !("result" in body)) throw new HttpError(502, `Solana RPC: HTTP ${response.status}`);
   return body.result;
 }
 
@@ -117,8 +120,9 @@ export async function readSale(network: Network, candyGuard: string, candyMachin
 // --- purchases / ownership ---------------------------------------------------
 
 // A confirmed, successful transaction that the wallet signed and that touched
-// the asset account.
-export async function checkPurchaseTx(network: Network, signature: string, wallet: string, asset: string) {
+// the asset account (and every account in `alsoInvolves`, e.g. the product's
+// candy machine, which makes it a mint from that product).
+export async function checkPurchaseTx(network: Network, signature: string, wallet: string, asset: string, alsoInvolves: string[] = []) {
   const tx = await rpc(network, "getTransaction", [
     signature,
     { encoding: "json", commitment: "confirmed", maxSupportedTransactionVersion: 0 },
@@ -130,13 +134,104 @@ export async function checkPurchaseTx(network: Network, signature: string, walle
   const signers = msg.accountKeys.slice(0, msg.header.numRequiredSignatures);
   if (!signers.includes(wallet)) return { ok: false, reason: "wallet didn't sign this transaction" };
   if (!keys.includes(asset)) return { ok: false, reason: "transaction doesn't involve that asset" };
-  return { ok: true, slot: tx.slot as number };
+  if (alsoInvolves.some((k) => !keys.includes(k))) return { ok: false, reason: "transaction isn't a mint from that product" };
+  const blockTime = typeof tx.blockTime === "number" ? new Date(tx.blockTime * 1000).toISOString() : null;
+  return { ok: true, slot: tx.slot as number, blockTime };
 }
 
 // One Core asset → owner + collection (null if it isn't a Core asset).
 export async function readAsset(network: Network, address: string) {
   const acc = await account(network, address);
   return acc?.owner === CORE_PROGRAM ? decodeAsset(acc.data) : null;
+}
+
+// Live state of a Core asset, for ownership checks:
+//   live     the account is a Core asset → its owner, collection, name, uri
+//   burned   the account is gone, or Core left it uninitialised after a burn
+//   foreign  the account exists but isn't a Core asset
+// Throws if the RPC can't answer — callers must treat that as "unverified",
+// never as burned or unowned.
+export type AssetState =
+  | { state: "live"; owner: string; collection: string | null; name: string; uri: string }
+  | { state: "burned" }
+  | { state: "foreign" };
+
+function assetState(acc: { owner: string; data: Uint8Array } | null): AssetState {
+  if (!acc) return { state: "burned" };
+  if (acc.owner !== CORE_PROGRAM) return { state: "foreign" };
+  const asset = decodeAsset(acc.data);
+  return asset ? { state: "live", ...asset } : { state: "burned" };
+}
+
+export async function readAssetState(network: Network, address: string): Promise<AssetState> {
+  return assetState(await account(network, address));
+}
+
+// Same, for many assets at once (getMultipleAccounts, 100 per call).
+export async function readAssetStates(network: Network, addresses: string[]): Promise<Map<string, AssetState>> {
+  const out = new Map<string, AssetState>();
+  for (let i = 0; i < addresses.length; i += 100) {
+    const chunk = addresses.slice(i, i + 100);
+    const r = await rpc(network, "getMultipleAccounts", [chunk, { encoding: "base64", commitment: "confirmed" }]);
+    if (!Array.isArray(r?.value) || r.value.length !== chunk.length) throw new HttpError(502, "Solana RPC: malformed getMultipleAccounts");
+    r.value.forEach((v: { owner: string; data: [string, string] } | null, j: number) => {
+      out.set(chunk[j], assetState(v ? { owner: v.owner, data: b64(v.data[0]) } : null));
+    });
+  }
+  return out;
+}
+
+// Every live Core asset in a collection → [{ address, owner }]. Used to
+// discover copies the database hasn't seen (minted outside a verified
+// purchase). Helius DAS when configured, else a Core program scan filtered by
+// updateAuthority = Collection(collection).
+export async function assetsInCollection(network: Network, collection: string): Promise<{ address: string; owner: string }[]> {
+  if (hasDas()) {
+    const out: { address: string; owner: string }[] = [];
+    for (let page = 1; page < 50; page++) {
+      const r = await rpc(network, "getAssetsByGroup", { groupKey: "collection", groupValue: collection, page, limit: 1000 });
+      for (const item of r?.items ?? []) {
+        if (!item.burnt && item.ownership?.owner) out.push({ address: item.id, owner: item.ownership.owner });
+      }
+      if (!r?.items || r.items.length < 1000) break;
+    }
+    return out;
+  }
+  const accounts = await rpc(network, "getProgramAccounts", [
+    CORE_PROGRAM,
+    {
+      encoding: "base64",
+      commitment: "confirmed",
+      filters: [
+        { memcmp: { offset: 0, bytes: "2" } }, // key = AssetV1 (1)
+        { memcmp: { offset: 33, bytes: "3" } }, // updateAuthority kind = Collection (2)
+        { memcmp: { offset: 34, bytes: collection } },
+      ],
+    },
+  ]);
+  return (accounts ?? []).flatMap((a: { pubkey: string; account: { data: [string, string] } }) => {
+    const asset = decodeAsset(b64(a.account.data[0]));
+    return asset ? [{ address: a.pubkey, owner: asset.owner }] : [];
+  });
+}
+
+// The oldest transaction touching an address — for a Core asset, the one that
+// created (minted) it. Gives up after a few pages (null) rather than crawl.
+export async function firstSignature(network: Network, address: string) {
+  let before: string | undefined;
+  let oldest: { signature: string; blockTime: number | null; err: unknown } | null = null;
+  for (let page = 0; page < 5; page++) {
+    const r = await rpc(network, "getSignaturesForAddress", [address, { limit: 1000, commitment: "confirmed", ...(before ? { before } : {}) }]);
+    if (!Array.isArray(r) || !r.length) break;
+    oldest = r[r.length - 1];
+    if (r.length < 1000) {
+      return oldest && !oldest.err
+        ? { signature: oldest.signature, at: oldest.blockTime ? new Date(oldest.blockTime * 1000).toISOString() : null }
+        : null;
+    }
+    before = oldest!.signature;
+  }
+  return null;
 }
 
 // Every Core asset a wallet holds → [{ address, collection }]. Helius DAS when
