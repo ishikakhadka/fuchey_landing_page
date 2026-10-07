@@ -16,7 +16,7 @@
 
 const OUTLINE = "#0b0f17";
 
-// yeti.png rows 20–80 as brightness bands: '#' outline, 'o' dark, '+' mid,
+// yeti.png rows 20–94 as brightness bands: '#' outline, 'o' dark, '+' mid,
 // '.' light shade, '_' white fur, ' ' empty. Outfits are fitted to this map:
 // they cover the torso and arms the way the fur does, inherit its shading
 // (folds, arm creases), and stop at the beard, which hangs over them.
@@ -82,7 +82,20 @@ const BODY = [
   "                          #__.________..+++#_#___....._...ooooooo#",
   "                          #___________..+++#_#___.....__...oooooo#       _",
   "                          #___________..+++#_#____________.....__#       _",
-  "                          #___________..+++#_#___________________#",
+  "                          #___________..+++#_#___________________#",  "                          #__.________..+++#_#___________________#",
+  "                          #__..._.____..+++#_#____________..._.._#",
+  "                          #__....____..++++#_#_____________....._#",
+  "                          #__________..++++#_#__##_______________#",
+  "                         ##_______#_...++++#_#__##_______#_______#",
+  "                         #______####..+++++#_#_###_______##______#",
+  "                         #_____#####...##++#_###o#___###_#o#_____#",
+  "                        #########o###.#oo#+#_##oo#__##o###o#######",
+  "                        #ooo###oooo####+o###_##oo####oooooo#ooooo##_",
+  "                       ##oooooooo++++o++ooo#_##ooo##oo+oo.+#.+.o#o#_",
+  "                       #oo++oo+#o...++#o#oo#_##oo+++.#.+.++++.+.+o#_",
+  "                       #o++#o++#++..#+.o+++#_###o..++##..+##.+#..##_",
+  "                       ##++#o++#+++######.+#_######+.##########.+##",
+  "                        ####################_######################",
 ];
 
 const band = (x, y) => BODY[y - BODY_TOP]?.[x] ?? " ";
@@ -643,6 +656,230 @@ function halo() {
   return { front: p };
 }
 
+
+// Dhaka topi: Nepal's national cap. Snug on the crown, with the slanted top
+// higher on the left. Palpali dhaka is woven in dense horizontal bands of small
+// motifs (diamond chains, stepped triangles, dotted rules) in red, black and
+// white picked out with orange, yellow and green.
+function dhakaTopi() {
+  const p = canvas();
+  const left = 31;
+  const right = 58;
+  const top = (x) => -11 + Math.round(((x - left) / (right - left)) * 5); // -11 at left → -6 at right
+  const C = {
+    black: "#1a1214",
+    maroon: "#7a1622",
+    red: "#d42a35",
+    orange: "#f08a2c",
+    yellow: "#f6c945",
+    white: "#f6f0e4",
+    green: "#2f8f55",
+  };
+  const mod = (n, m) => ((n % m) + m) % m;
+
+  // Large diamonds, each in its own colour with a bright eye and a red heart,
+  // linked by white dots.
+  const bigDiamonds = (x, row) => {
+    const xm = mod(x, 8);
+    const m = mod(Math.floor(x / 8), 3);
+    const d = Math.abs(xm - 4) + Math.abs(row - 2);
+    if (d === 0) return [C.yellow, C.white, C.yellow][m];
+    if (d === 1) return C.red;
+    if (d === 2) return [C.white, C.orange, C.green][m];
+    if (xm === 0 && row === 2) return C.white;
+    return C.black;
+  };
+  // A chain of small diamonds.
+  const smallDiamonds = (x, row) => {
+    const xm = mod(x + 2, 4);
+    if (row === 1) return xm === 2 ? C.yellow : xm === 0 ? C.black : C.red;
+    return xm === 2 ? C.red : C.black;
+  };
+  // Stepped triangles on a maroon ground.
+  const triangles = (x, row) => {
+    const d = Math.abs(mod(x, 6) - 3);
+    if (d === row) return C.green;
+    if (d < row) return C.orange;
+    return C.maroon;
+  };
+  const dotted = (x, a, b) => (mod(x, 2) ? a : b);
+
+  const bands = {
+    2: (x) => dotted(x, C.white, C.black),
+    1: (x) => bigDiamonds(x, 4),
+    0: (x) => bigDiamonds(x, 3),
+    "-1": (x) => bigDiamonds(x, 2),
+    "-2": (x) => bigDiamonds(x, 1),
+    "-3": (x) => bigDiamonds(x, 0),
+    "-4": (x) => (mod(x, 4) === 1 ? C.white : C.red),
+    "-5": (x) => triangles(x, 0),
+    "-6": (x) => triangles(x, 1),
+    "-7": (x) => triangles(x, 2),
+    "-8": (x) => dotted(x, C.black, C.white),
+    "-9": (x) => smallDiamonds(x, 0),
+    "-10": (x) => smallDiamonds(x, 1),
+    "-11": (x) => smallDiamonds(x, 2),
+  };
+
+  for (let x = left; x <= right; x++) {
+    const corner = x === left || x === right ? 1 : 0;
+    for (let y = top(x) + corner; y <= 3; y++) p.set(x, y, bands[y]?.(x) ?? C.black);
+    // The folded top edge catches the light
+    p.set(x, top(x) + corner, "#5a3a3e");
+  }
+  p.span(3, left, right, "#120d0f");
+  // Pleat where the crown folds in at the front
+  for (let y = top(46) + 1; y <= 2; y++) p.set(46, y, "#0c0809");
+
+  p.outline();
+  return { front: p };
+}
+
+// Daura suruwal with an istakot: the long cross-tied tunic in ivory down to
+// the knees, a charcoal waistcoat over it with brass buttons, and suruwal
+// trousers that bunch and narrow at the ankle.
+function dauraSuruwal() {
+  const p = canvas();
+  const pal = { base: "#ece2cb", light: "#f8f2e3", dark: "#d3c5a6", deep: "#b5a582" };
+  fit(p, { torso: 70, leftArm: 61, rightArm: 63 }, pal);
+  trim(p, "leftArm", 61, 2, "#d3c5a6");
+  trim(p, "rightArm", 63, 2, "#d3c5a6");
+
+  // Istakot over the torso, ending in a straight hem
+  const vest = { base: "#3b4150", dark: "#2c313d", deep: "#20242d" };
+  const vestHem = 66;
+  for (const k of PART.torso) {
+    const [x, y] = k.split(",").map(Number);
+    if (y > vestHem) continue;
+    const b = band(x, y);
+    p.set(x, y, b === "o" ? vest.deep : b === "+" ? vest.dark : vest.base);
+  }
+  for (const pt of p.px.values())
+    if (pt.c === vest.base && pt.y < 33 && band(pt.x, pt.y - 1) === "#") pt.c = "#4d5466";
+  for (let x = 0; x < 96; x++) if (inPart("torso", x, vestHem)) p.set(x, vestHem, vest.deep);
+  // Front opening and brass buttons below the beard
+  for (let y = 54; y <= vestHem; y++) p.set(42, y, vest.deep);
+  [56, 59, 62, 65].forEach((y) => p.set(41, y, "#f2c14e"));
+  // Pockets
+  [[30, 35], [47, 52]].forEach(([x0, x1]) => {
+    for (let x = x0; x <= x1; x++) if (inPart("torso", x, 60)) p.set(x, 60, "#5a6274");
+  });
+
+  // Daura skirt below the vest, over the thighs, with the cross-over edge
+  // running down to the hem and a pair of ties at the waist.
+  const daura = (x, y) => {
+    const b = band(x, y);
+    p.set(x, y, b === "o" ? pal.deep : b === "+" ? pal.dark : pal.base);
+  };
+  const skirtHem = 80;
+  for (let y = vestHem + 1; y <= skirtHem; y++)
+    for (let x = 26; x <= 66; x++) {
+      const b = band(x, y);
+      const inside = b !== " " && (b !== "#" || (x > 26 && x < 66 && Math.abs(x - 45) <= 1));
+      if (inside || (y > 70 && x >= 44 && x <= 46)) daura(x, y);
+    }
+  for (let y = vestHem + 1; y <= skirtHem; y++) p.set(36 + Math.floor((y - vestHem) / 3), y, pal.deep);
+  [[47, 68], [48, 69], [49, 70], [49, 68], [47, 70]].forEach(([x, y]) => p.set(x, y, "#b8323a"));
+  p.set(48, 69, "#8a1f27");
+  p.span(skirtHem, 27, 65, pal.dark);
+  for (let x = 27; x <= 65; x++) p.set(x, skirtHem + 1, OUTLINE);
+
+  // Suruwal: loose over the knees, gathered tight above the feet
+  for (let y = skirtHem + 2; y <= 83; y++)
+    for (let x = 27; x <= 65; x++) {
+      const b = band(x, y);
+      if (b === " " || b === "#") continue;
+      const fold = y > 80 && (x + y) % 3 === 0;
+      p.set(x, y, fold ? pal.dark : b === "+" || b === "o" ? pal.dark : "#e2d6bb");
+    }
+  for (const [x0, x1] of [[27, 43], [47, 65]]) {
+    for (let x = x0; x <= x1; x++) if (" #".indexOf(band(x, 83)) < 0) p.set(x, 83, pal.deep);
+  }
+  return { front: p, icon: dauraFlat(pal, vest) };
+}
+
+// Card icon: the whole set on an invisible wearer. Stand collar, the daura's
+// cross-over front and red ties showing in the istakot's V, long sleeves, the
+// knee-length skirt with side slits, and suruwal tapering to tight cuffs.
+function dauraFlat(pal, vest) {
+  const p = canvas();
+  const cx = 44;
+  // Fill a row span with cloth: light on the left edge, shade on the right.
+  const cloth = (y, x0, x1, c) => {
+    for (let x = x0; x <= x1; x++) p.set(x, y, x === x0 ? c.light ?? c.base : x === x1 ? c.dark : c.base);
+  };
+  const ivory = { base: pal.base, light: pal.light, dark: pal.dark };
+  const charcoal = { base: vest.base, light: "#4d5466", dark: vest.dark };
+
+  // Sleeves, hanging a little away from the body, with cuffs
+  for (let y = 26; y <= 50; y++) {
+    const out = Math.floor((y - 26) / 6);
+    cloth(y, cx - 22 - out, cx - 15 - Math.floor(out / 2), ivory);
+    cloth(y, cx + 15 + Math.floor(out / 2), cx + 22 + out, ivory);
+  }
+  for (const y of [49, 50]) {
+    const out = Math.floor((y - 26) / 6);
+    p.span(y, cx - 22 - out, cx - 15 - Math.floor(out / 2), pal.deep);
+    p.span(y, cx + 15 + Math.floor(out / 2), cx + 22 + out, pal.deep);
+  }
+  // Shoulders and body down to the knees, flaring slightly
+  for (let y = 22; y <= 70; y++) {
+    const hw = y < 26 ? 6 + (y - 22) * 3 : y < 54 ? 15 : 15 + Math.floor((y - 54) / 5);
+    cloth(y, cx - hw, cx + hw - 1, ivory);
+  }
+  // Stand collar
+  p.rect(cx - 4, 19, cx + 3, 21, pal.base);
+  p.span(19, cx - 4, cx + 3, pal.light);
+  p.span(21, cx - 4, cx + 3, pal.dark);
+  // Side slits at the hem
+  for (let y = 65; y <= 70; y++) {
+    const hw = 15 + Math.floor((y - 54) / 5);
+    p.set(cx - hw + 2, y, pal.deep);
+    p.set(cx + hw - 3, y, pal.deep);
+  }
+  // Daura's cross-over edge running down to the hem
+  for (let y = 22; y <= 70; y++) {
+    const x = y < 38 ? cx - 4 + Math.floor((y - 22) / 2) : cx + 4;
+    p.set(x, y, pal.deep);
+  }
+  p.span(70, cx - 18, cx + 17, pal.deep);
+
+  // Istakot: sleeveless, V-neck, straight hem, brass buttons and welt pockets
+  for (let y = 22; y <= 50; y++) {
+    const hw = y < 26 ? 4 + (y - 22) * 3 : 14;
+    const v = Math.max(0, Math.round((36 - y) / 2.2));
+    if (cx - hw <= cx - v - 1) cloth(y, cx - hw, cx - v - 1, charcoal);
+    if (cx + v <= cx + hw - 1) cloth(y, cx + v, cx + hw - 1, charcoal);
+  }
+  p.span(50, cx - 14, cx + 13, vest.deep);
+  for (let y = 37; y <= 50; y++) p.set(cx, y, vest.deep);
+  [39, 42, 45, 48].forEach((y) => p.set(cx - 1, y, "#f2c14e"));
+  p.span(44, cx - 11, cx - 6, "#5a6274");
+  p.span(44, cx + 5, cx + 10, "#5a6274");
+  // Red cross-ties showing in the V
+  [[cx - 2, 28], [cx - 1, 29], [cx - 3, 29], [cx, 33], [cx + 1, 34], [cx - 1, 34]].forEach(([x, y]) => p.set(x, y, "#b8323a"));
+
+  // Suruwal: roomy at the top, gathered into tight cuffs
+  for (let y = 71; y <= 92; y++) {
+    const t = (y - 71) / 21;
+    const w = Math.round(12 - t * 6);
+    const gap = 1;
+    const inner = gap + Math.round(t * 2);
+    cloth(y, cx - inner - w, cx - inner - 1, ivory);
+    cloth(y, cx + inner, cx + inner + w - 1, ivory);
+    if (y >= 84 && y <= 90 && y % 2 === 0) {
+      for (let x = cx - inner - w + 1; x <= cx - inner - 2; x += 2) p.set(x, y, pal.dark);
+      for (let x = cx + inner + 1; x <= cx + inner + w - 2; x += 2) p.set(x, y, pal.dark);
+    }
+  }
+  for (const y of [91, 92]) {
+    p.span(y, cx - 3 - 6, cx - 4, pal.deep);
+    p.span(y, cx + 3, cx + 3 + 5, pal.deep);
+  }
+  p.outline();
+  return p;
+}
+
 // ---------------------------------------------------------------------------
 
 const DRAW = {
@@ -657,6 +894,8 @@ const DRAW = {
   "circuit-hoodie": hoodie,
   "solana-backpack": backpack,
   "genesis-halo": halo,
+  "dhaka-topi": dhakaTopi,
+  "daura-suruwal": dauraSuruwal,
 };
 
 // Stacking order on the character, back to front.

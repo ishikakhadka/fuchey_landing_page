@@ -249,6 +249,7 @@ const SLOTS = {
   "blue-beanie": "hat", "glacier-crown": "hat", "signal-headphones": "headwear", "dev-visor": "headwear",
   "pixel-glasses": "accessory", "frost-scarf": "accessory", "snow-globe": "held", "explorer-jacket": "outfit",
   "circuit-hoodie": "outfit", "solana-backpack": "backpack", "genesis-halo": "special",
+  "dhaka-topi": "hat", "daura-suruwal": "outfit",
 };
 
 for (const id of Object.keys(wearableArt)) {
@@ -265,6 +266,7 @@ const looks = [
   ["glacier-crown", "pixel-glasses", "solana-backpack", "explorer-jacket"],
   ["signal-headphones", "pixel-glasses", "frost-scarf"],
   ["blue-beanie", "frost-scarf", "snow-globe"],
+  ["dhaka-topi", "daura-suruwal"],
 ];
 const cellW = N + 8;
 const cellH = N + 28;
