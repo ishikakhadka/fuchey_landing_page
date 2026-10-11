@@ -112,7 +112,7 @@ function CharacterEditor({ initial, wearables, session, onSaved, onDeleted, onCl
               value={draft.art.kind}
               options={[
                 { id: "character", label: "Character (can wear items)" },
-                { id: "sprite", label: "Placeholder sprite (coming soon)" },
+                { id: "sprite", label: "Pixel sprite (16 × 16)" },
               ]}
               onChange={(kind) =>
                 set({ art: kind === "character" ? { kind, image: "yeti" } : { kind, sprite: { palette: { o: "#1b2430" }, rows: ["o"] }, locked: true } })
@@ -164,6 +164,9 @@ function CharacterEditor({ initial, wearables, session, onSaved, onDeleted, onCl
                   <input type="checkbox" checked={Boolean(draft.art.locked)} onChange={(e) => setArt({ locked: e.target.checked })} />
                   Show as a locked silhouette
                 </label>
+                <p className="admin-hint is-wide">
+                  An unlocked sprite with wardrobe slots can be dressed: its pack’s wearables are drawn to fit it.
+                </p>
               </>
             )}
           </Section>

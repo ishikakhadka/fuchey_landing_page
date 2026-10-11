@@ -170,6 +170,17 @@ export function visual(c: Checker, v: unknown, type: string, compatible: string[
         else if (!isObj(o)) c.fail(p, "must be an object");
         else {
           const entry: Obj = placement(c, o, p, true);
+          // Pixel-run wearables can be redrawn per character (pack gear is
+          // drawn to fit each pack character's own shape).
+          if (kind === "runs") {
+            for (const side of ["front", "back", "icon"]) {
+              if (o[side] == null) continue;
+              const list = runs(c, o[side], `${p}.${side}`);
+              if (list) entry[side] = list;
+            }
+            type Runs = { x: number; y: number; w: number }[];
+            if (entry.front || entry.back) entry.bounds = boundsOf([...((entry.back ?? []) as Runs), ...((entry.front ?? []) as Runs)]);
+          }
           if (o.layer != null) entry.layer = c.oneOf(o, "layer", SLOTS);
           if (o.z != null) entry.z = c.num(o, "z", { min: -50, max: 50, int: true, path: `${p}.z` });
           if (Object.keys(entry).length) per[id] = entry;

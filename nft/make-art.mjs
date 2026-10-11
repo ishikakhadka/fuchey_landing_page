@@ -1,7 +1,7 @@
 // Builds Fuchey artwork from source:
 //   - src/assets/cyber-yeti.png      cyberpunk recolour of the Yeti (96×96 ×4)
 //   - nft/out/images/<id>.png        NFT images for characters and wearables
-//   - nft/out/preview.png            every wearable on both characters (for review)
+//   - nft/out/preview.png            every Wild wearable on both Yetis (for review)
 //
 // Usage: node make-art.mjs
 
@@ -9,7 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import pngjs from "pngjs";
-import { wearableArt, SLOT_ORDER } from "../supabase/seed/wearableArt.js";
+import { wearableArt, gearFits, SLOT_ORDER } from "../supabase/seed/wearableArt.js";
 
 const { PNG } = pngjs;
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -258,9 +258,10 @@ for (const id of Object.keys(wearableArt)) {
 }
 
 // Preview sheet: row 1 = Yeti, row 2 = Cyber; one column per wearable + combos.
+// Pack gear is drawn for its pack's characters, not the Yetis, so it's left out.
 const looks = [
   [],
-  ...Object.keys(wearableArt).map((id) => [id]),
+  ...Object.keys(wearableArt).filter((id) => !gearFits[id]).map((id) => [id]),
   ["blue-beanie", "frost-scarf", "explorer-jacket"],
   ["dev-visor", "circuit-hoodie", "solana-backpack"],
   ["glacier-crown", "pixel-glasses", "solana-backpack", "explorer-jacket"],

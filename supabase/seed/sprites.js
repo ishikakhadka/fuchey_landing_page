@@ -1,6 +1,13 @@
-// Placeholder pixel art for unreleased characters, drawn to match the
-// Yeti's pixel style. Each sprite is a 16×16 grid: one string per
-// row, one character per pixel, "." for transparent.
+// 16×16 pixel art for the pack characters, plus placeholders for unreleased
+// ones (the Rhino), drawn to match the Yeti's pixel style. Each sprite is a
+// 16×16 grid: one string per row, one character per pixel, "." for
+// transparent.
+//
+// An unlocked sprite is a full character: the renderer scales it ×6 onto the
+// same 96×96 grid as the Yeti, and its pack's wearables are drawn to fit it
+// (see the pack gear and its per-character anchors in wearableArt.js — move
+// a head or a hand here and update its anchor there). So characters are drawn
+// bare: hats, masks and weapons belong in the wardrobe.
 //
 // Locked characters render as a silhouette of every non-"." pixel, so leg
 // gaps and the horn are kept clear of outline to stay readable that way.
@@ -31,15 +38,15 @@ export const sprites = {
   },
   // Pirate Pack
   captain: {
-    palette: { o: "#1b2430", k: "#2b2b38", w: "#f2efe6", s: "#f1c27d", e: "#1b2430", b: "#6b3e26", r: "#b8323a", y: "#f2c14e", d: "#3b2a20" },
+    palette: { o: "#1b2430", n: "#c8443c", s: "#f1c27d", e: "#1b2430", b: "#6b3e26", r: "#b8323a", y: "#f2c14e", d: "#3b2a20" },
     rows: [
+      "................",
+      "................",
       "....oooooooo....",
-      "...okkkkkkkko...",
-      ".ooookkwwkkoooo.",
-      "okkkkkkkkkkkkkko",
-      ".oooooooooooooo.",
-      "...osssssssso...",
-      "...okkkssesso...",
+      "...onnnnnnnno...",
+      "...onnnnnnnnoon.",
+      "...osssssssso.n.",
+      "...osesssseso...",
       "...osssssssso...",
       "...obbbbbbbbo...",
       "..orrbbbbbbrro..",
@@ -96,31 +103,31 @@ export const sprites = {
 
   // Tribal Pack
   warrior: {
-    palette: { o: "#1b2430", f: "#e05a3a", F: "#f2c14e", m: "#d9c38f", r: "#c0392b", k: "#1b2430", s: "#a0623c", y: "#e0a43a", l: "#6b8f3a", h: "#7a5230", i: "#c9d3dc" },
+    palette: { o: "#1b2430", h: "#2b1a12", s: "#a0623c", k: "#1b2430", r: "#c0392b", y: "#e0a43a", l: "#6b8f3a" },
     rows: [
-      "......fFf.....i.",
-      ".....fFfFf...oio",
-      "....oooooooo..h.",
-      "...ommmmmmmmo.h.",
-      "...omrmmmmrmo.h.",
-      "...omkmmmmkmo.h.",
-      "...ommrrrrmmo.h.",
-      "....ommmmmmo..h.",
-      "...osssssssso.h.",
-      "..ossrssssrssoh.",
-      "..osoyyyyyyossh.",
-      "...ollllllo...h.",
-      "...osllllso...h.",
-      "....os..so....h.",
-      "...oss..sso...h.",
-      "...ooo..ooo.....",
+      "................",
+      "................",
+      "....oooooooo....",
+      "...ohhhhhhhho...",
+      "...ohssssssho...",
+      "...osksssskso...",
+      "...orssssssro...",
+      "...osskkkksso...",
+      "...osssssssso...",
+      "..ossrssssrsso..",
+      "..osoyyyyyyoso..",
+      "...ollllllllo...",
+      "...osllllllso...",
+      "....oso..oso....",
+      "...osso..osso...",
+      "...ooo....ooo...",
     ],
   },
   shaman: {
-    palette: { o: "#1b2430", c: "#38d6ee", f: "#2fb67a", F: "#38d6ee", h: "#7a5230", y: "#f2c14e", s: "#8a5a3c", k: "#1b2430", r: "#e9e4d4", w: "#e9e4d4", l: "#c47a2b" },
+    palette: { o: "#1b2430", c: "#38d6ee", h: "#7a5230", y: "#f2c14e", s: "#8a5a3c", k: "#1b2430", r: "#e9e4d4", w: "#e9e4d4", l: "#c47a2b" },
     rows: [
-      ".oco..fFfFfF....",
-      ".oco.fFfFfFf....",
+      ".oco............",
+      ".oco............",
       "..h.oooooooooo..",
       "..h.oyyyyyyyyo..",
       "..h.osssssssso..",
@@ -161,16 +168,16 @@ export const sprites = {
     ],
   },
   bandit: {
-    palette: { o: "#1b2430", h: "#3d3f4a", s: "#e0ac7e", k: "#1b2430", r: "#8a2f2f", c: "#566173", b: "#6b4a2e", y: "#c9a24a", d: "#2b2b38" },
+    palette: { o: "#1b2430", h: "#4a3426", s: "#e0ac7e", k: "#1b2430", r: "#8a2f2f", c: "#566173", b: "#6b4a2e", y: "#c9a24a", d: "#2b2b38" },
     rows: [
-      ".....oooooo.....",
-      "....ohhhhhho....",
+      "................",
+      "................",
+      "....oooooooo....",
       "...ohhhhhhhho...",
-      "..ohhhhhhhhhho..",
-      "..ohhsssssshho..",
-      "..ohskssssksho..",
-      "..ohrrrrrrrrho..",
-      "..ohrrrrrrrrho..",
+      "...ohssssssho...",
+      "...osksssskso...",
+      "...orrrrrrrro...",
+      "...orrrrrrrro...",
       "..occrrrrrrcco..",
       ".occccbbbbcccco.",
       ".osccccyyccccso.",

@@ -1,6 +1,7 @@
 // Original wearable catalogue — SEED DATA ONLY (see characters.js).
-// Artwork lives in wearableArt.js, drawn on the Yeti's pixel grid; the seed
-// stores its generated pixel layers in each row's `visual`.
+// Artwork lives in wearableArt.js: Wild pieces on the Yeti's pixel grid, pack
+// gear drawn for each of its pack's characters. The seed stores the generated
+// pixel layers in each row's `visual`.
 
 export const wearables = [
   {
@@ -143,7 +144,7 @@ export const wearables = [
     rarity: "rare",
     description: "Black felt, gold trim and a skull up front. Captains only — or anyone who claims it first.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["captain", "squidman", "zombie-pirate"],
     listing: { status: "available", price: 0.3, supply: 800 },
   },
   {
@@ -154,7 +155,7 @@ export const wearables = [
     rarity: "common",
     description: "Keeps one eye on the horizon and the other on your wallet.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["captain", "squidman", "zombie-pirate"],
     listing: { status: "available", price: 0.05, supply: 4000 },
   },
   {
@@ -165,7 +166,7 @@ export const wearables = [
     rarity: "uncommon",
     description: "A curved blade for boarding parties. Purely ceremonial on-chain.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["captain", "squidman", "zombie-pirate"],
     listing: { status: "available", price: 0.2, supply: 1500 },
   },
   {
@@ -176,7 +177,7 @@ export const wearables = [
     rarity: "epic",
     description: "Repeats your last transaction hash. Loudly.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["captain", "squidman", "zombie-pirate"],
     listing: { status: "available", price: 0.8, supply: 300 },
   },
   {
@@ -187,7 +188,7 @@ export const wearables = [
     rarity: "epic",
     description: "Seven tall feathers on a woven band, one for every day the trail was walked.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["warrior", "shaman"],
     listing: { status: "available", price: 0.9, supply: 300 },
   },
   {
@@ -198,7 +199,7 @@ export const wearables = [
     rarity: "rare",
     description: "Carved from jungle wood. Grins at every incoming token.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["warrior", "shaman"],
     listing: { status: "available", price: 0.35, supply: 900 },
   },
   {
@@ -209,7 +210,7 @@ export const wearables = [
     rarity: "uncommon",
     description: "Beads, bones and one very large tooth. Nobody asks whose.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["warrior", "shaman"],
     listing: { status: "available", price: 0.15, supply: 2000 },
   },
   {
@@ -220,7 +221,7 @@ export const wearables = [
     rarity: "rare",
     description: "Stone-tipped and feather-bound, taller than whoever carries it.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["warrior", "shaman"],
     listing: { status: "available", price: 0.4, supply: 800 },
   },
   {
@@ -231,7 +232,7 @@ export const wearables = [
     rarity: "uncommon",
     description: "Pull it up and slip past the mempool unseen.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["bandit", "goblin"],
     listing: { status: "available", price: 0.15, supply: 2000 },
   },
   {
@@ -242,7 +243,7 @@ export const wearables = [
     rarity: "common",
     description: "A strip of silk and a lot of confidence.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["bandit", "goblin"],
     listing: { status: "available", price: 0.05, supply: 4000 },
   },
   {
@@ -253,7 +254,7 @@ export const wearables = [
     rarity: "rare",
     description: "Heavy, jingling and suspiciously full. One coin always escapes.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["bandit", "goblin"],
     listing: { status: "available", price: 0.3, supply: 1000 },
   },
   {

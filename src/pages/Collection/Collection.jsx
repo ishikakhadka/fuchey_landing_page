@@ -8,6 +8,7 @@ import ItemArt from "../../components/marketplace/ItemArt";
 import WalletButton from "../../components/wallet/WalletButton";
 import NetworkBadge from "../../components/wallet/NetworkBadge";
 
+import { isDressable } from "../../services/marketplace/catalog";
 import CharacterRender from "../../components/characters/CharacterRender";
 import { useCollection } from "../../hooks/useCollection";
 import { useCatalog } from "../../context/CatalogContext";
@@ -57,14 +58,14 @@ function OwnedFuchey() {
       <div className="owned-fuchey">
         {owned.map((c) => {
           const character = characters.find((x) => x.id === c.assetId);
-          if (character?.art.kind !== "character") return null;
+          if (!isDressable(character)) return null;
           const equipped = (inventory.loadouts[c.assetId]?.equipped ?? [])
             .map((id) => wearables.find((w) => w.id === id))
             .filter(Boolean);
           return (
             <figure key={c.assetId} className={`owned-fuchey-card character-stage stage-${character.edition}`}>
               <CharacterRender
-                image={character.art.image}
+                art={character.art}
                 characterId={character.id}
                 equipped={equipped}
                 alt={`${character.name} wearing ${equipped.map((w) => w.name).join(", ") || "nothing extra"}`}

@@ -13,7 +13,7 @@ function ItemArt({ art, alt, itemId, item, equipped = [], size = "md" }) {
 
   let content;
   if (art.kind === "character") {
-    content = <CharacterRender image={art.image} characterId={itemId} equipped={equipped} alt={alt} />;
+    content = <CharacterRender art={art} characterId={itemId} equipped={equipped} alt={alt} />;
   } else if (art.kind === "wearable") {
     content = <WearableIcon id={itemId} wearable={item} alt={alt} />;
   } else {

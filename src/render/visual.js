@@ -41,6 +41,23 @@ export function stackLayers(equipped, characterId) {
     .sort((a, b) => a.rank - b.rank || a.i - b.i);
 }
 
+// A sprite ({ palette, rows }) as horizontal runs of one palette key →
+// [{ x, y, w, key }], so it draws with few rects.
+export function spriteRuns(sprite) {
+  const out = [];
+  sprite.rows.forEach((row, y) => {
+    let x = 0;
+    while (x < row.length) {
+      const key = row[x];
+      let end = x + 1;
+      while (end < row.length && row[end] === key) end++;
+      if (key !== ".") out.push({ x, y, w: end - x, key });
+      x = end;
+    }
+  });
+  return out;
+}
+
 // Grid-space box covered by a visual (used to crop card icons).
 export function visualBounds(visual) {
   if (visual.kind === "image") {

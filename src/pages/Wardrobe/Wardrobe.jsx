@@ -16,7 +16,7 @@ import { useWearablePacks, useWearables } from "../../hooks/useWearables";
 import { useCollection } from "../../hooks/useCollection";
 import { useAsync } from "../../hooks/useAsync";
 import { useWallet } from "../../hooks/useWallet";
-import { fitsCharacter, getWearableTypes } from "../../services/marketplace/catalog";
+import { fitsCharacter, getWearableTypes, isDressable } from "../../services/marketplace/catalog";
 import { fetchLoadout, saveLoadout } from "../../services/backend/loadouts";
 import { getSession } from "../../services/backend/session";
 import { packs } from "../../data/packs";
@@ -101,9 +101,15 @@ function FittingRoomPage({ pack }) {
   const wearable = (id) => wearables.find((w) => w.id === id);
   const linked = params.get("item");
 
-  const dressable = characters.filter((c) => c.art.kind === "character");
+  // A pack's fitting room dresses that pack's own characters; the full room
+  // (deep links) has everyone who can be dressed.
+  const dressable = characters.filter(
+    (c) => isDressable(c) && (!pack || (c.pack ?? "wild") === pack.id),
+  );
   // /wardrobe?character=… (from "Dress it up") opens on that character.
-  const [characterId, setCharacterId] = useState(params.get("character") ?? (edition === "dev" ? "cyber" : "yeti"));
+  const [characterId, setCharacterId] = useState(
+    params.get("character") ?? (pack && pack.id !== "wild" ? null : edition === "dev" ? "cyber" : "yeti"),
+  );
   const character = dressable.find((c) => c.id === characterId) ?? dressable[0];
 
   // view=mine: just the wearables this wallet owns that fit the character,

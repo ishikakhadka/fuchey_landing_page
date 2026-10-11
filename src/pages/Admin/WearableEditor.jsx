@@ -6,7 +6,7 @@ import WearableCard from "../../components/wardrobe/WearableCard";
 import { RARITIES, WEARABLE_TYPES } from "../../data/taxonomy";
 import { packs } from "../../data/packs";
 import { CHARACTER_VIEW, resolveVisual, visualBounds } from "../../render/visual";
-import { fitsCharacter } from "../../services/marketplace/catalog";
+import { fitsCharacter, isDressable } from "../../services/marketplace/catalog";
 import { adminDelete, adminSaveWearable } from "../../services/backend/admin";
 import { Checks, NumberInput, Section, Select, TextInput, SaveError } from "./fields";
 import ImageUpload from "./ImageUpload";
@@ -32,7 +32,7 @@ function WearableEditor({ initial, characters, wearables, session, onSaved, onDe
   const [errors, setErrors] = useState(null);
   const [status, setStatus] = useState({ busy: false, message: null, error: null });
 
-  const dressable = characters.filter((c) => c.art?.kind === "character");
+  const dressable = characters.filter(isDressable);
   const [previewId, setPreviewId] = useState(
     () => (dressable.find((c) => initial.compatibleCharacters.includes(c.id)) ?? dressable[0])?.id,
   );
@@ -158,7 +158,7 @@ function WearableEditor({ initial, characters, wearables, session, onSaved, onDe
           <Section title="Compatible characters">
             <Checks
               label="Can be worn by"
-              options={characters.map((c) => ({ id: c.id, label: `${c.name}${c.art?.kind === "character" ? "" : " (not dressable yet)"}` }))}
+              options={characters.map((c) => ({ id: c.id, label: `${c.name}${isDressable(c) ? "" : " (not dressable yet)"}` }))}
               value={draft.compatibleCharacters}
               onChange={(v) => set({ compatibleCharacters: v })}
               errors={errors}
@@ -306,7 +306,7 @@ function WearableEditor({ initial, characters, wearables, session, onSaved, onDe
                 onKeyDown={onPreviewKey}
                 aria-label="Preview — use arrow keys to nudge (shift = 4 px)">
                 <CharacterRender
-                  image={preview.art.image}
+                  art={preview.art}
                   characterId={preview.id}
                   equipped={equipped}
                   alt={`${preview.name} wearing ${equipped.map((w) => w.name || w.id).join(", ") || "nothing"}`}

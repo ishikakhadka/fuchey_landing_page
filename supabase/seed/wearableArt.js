@@ -881,300 +881,224 @@ function dauraFlat(pal, vest) {
 }
 
 // ---------------------------------------------------------------------------
-// Pack wearables: Pirate, Tribal and Rogues gear for the dressable
-// characters, drawn on the same grid.
+// Pack gear: wardrobes for the pack characters (Pirate, Tribal, Rogues).
+//
+// Pack characters are 16×16 sprites (sprites.js) scaled ×6 onto the 96×96
+// grid, so their gear is drawn on that same 16×16 grid, in the same chunky
+// pixels, then scaled up. Each piece is drawn once per character it fits,
+// from the anchors below; the first character's drawing is the default
+// visual and the others go in visual.perCharacter.
 // ---------------------------------------------------------------------------
 
-const paint = (c, x, y) => (typeof c === "function" ? c(x, y) : c);
+const SPRITE_SCALE = 6;
 
-// Straight 1px line (Bresenham).
-function line(p, x0, y0, x1, y1, c) {
-  const dx = Math.abs(x1 - x0);
-  const dy = -Math.abs(y1 - y0);
-  const sx = x0 < x1 ? 1 : -1;
-  const sy = y0 < y1 ? 1 : -1;
-  let err = dx + dy;
-  for (;;) {
-    p.set(x0, y0, paint(c, x0, y0));
-    if (x0 === x1 && y0 === y1) return;
-    const e2 = 2 * err;
-    if (e2 >= dy) {
-      err += dy;
-      x0 += sx;
-    }
-    if (e2 <= dx) {
-      err += dx;
-      y0 += sy;
-    }
-  }
+// Where things are on each pack character, in sprite pixels:
+//   top     row of the head's top outline
+//   l, r    first / last column inside the head's outline
+//   eyes    [row, left col, right col]
+//   handR / handL  [col, row] of the hand on the viewer's right / left
+//   perch   [col, row] where a pet sits beside the head: its right edge
+//           and the row just below its feet
+//   chest   first row below the face
+const ANCHORS = {
+  captain: { top: 2, l: 4, r: 11, eyes: [6, 5, 10], handR: [13, 12], handL: [2, 12], perch: [2, 9], chest: 8 },
+  squidman: { top: 0, l: 4, r: 11, eyes: [4, 5, 10], handR: [13, 11], handL: [2, 11], perch: [1, 8], chest: 8 },
+  "zombie-pirate": { top: 0, l: 4, r: 11, eyes: [4, 4, 10], handR: [13, 10], handL: [3, 10], perch: [1, 8], chest: 8 },
+  warrior: { top: 2, l: 4, r: 11, eyes: [5, 5, 10], handR: [12, 10], handL: [3, 10], perch: [2, 8], chest: 8 },
+  shaman: { top: 2, l: 5, r: 12, eyes: [5, 6, 11], handR: [13, 10], handL: [4, 10], perch: [3, 8], chest: 8 },
+  goblin: { top: 1, l: 4, r: 11, eyes: [4, 4, 10], handR: [12, 10], handL: [3, 10], perch: [2, 8], chest: 8 },
+  bandit: { top: 2, l: 4, r: 11, eyes: [5, 5, 10], handR: [13, 10], handL: [2, 10], perch: [2, 8], chest: 8 },
+};
+
+// Sprite-pixel canvas → the 96×96 grid.
+function scaleUp(p) {
+  const out = canvas();
+  for (const pt of p.px.values())
+    for (let dy = 0; dy < SPRITE_SCALE; dy++)
+      for (let dx = 0; dx < SPRITE_SCALE; dx++) out.set(pt.x * SPRITE_SCALE + dx, pt.y * SPRITE_SCALE + dy, pt.c);
+  return out;
 }
 
-function ellipse(p, cx, cy, rx, ry, c) {
-  for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++)
-    for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++)
-      if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1) p.set(x, y, paint(c, x, y));
+// Paint a little pixel map: rows of characters, "." transparent.
+function stamp(p, x0, y0, rows, palette) {
+  rows.forEach((row, j) => [...row].forEach((ch, i) => ch !== "." && p.set(x0 + i, y0 + j, palette[ch])));
 }
 
-// Remove every drawn pixel matching `test(x, y)`.
-function erase(p, test) {
-  for (const pt of [...p.px.values()]) if (test(pt.x, pt.y)) p.px.delete(`${pt.x},${pt.y}`);
-}
+const centre = (a) => Math.floor((a.l + a.r + 1) / 2);
 
-// Pirate: black felt tricorn, both wings turned up, gold-trimmed, with a
-// skull on the front.
-function tricorn() {
+// Pirate: black tricorn with gold trim and a little skull, wings turned up.
+function tricorn(a) {
   const p = canvas();
   const felt = "#2b2b38";
-  [[-10, 7], [-9, 9], [-8, 10], [-7, 11]].forEach(([y, hw]) => p.span(y, 44 - hw, 43 + hw, felt));
-  for (let y = -6; y <= 0; y++) p.span(y, 32, 55, felt);
-  const wingTop = (x) => -Math.round(Math.max(0, Math.abs(x - 43.5) - 11) * 0.5);
-  for (let x = 21; x <= 66; x++) for (let y = wingTop(x); y <= 4; y++) p.set(x, y, felt);
-  p.shade({ light: "#474759", dark: "#1a1a24" });
-  // Gold trim along the brim and up the wings
-  for (let x = 21; x <= 66; x++) {
-    p.set(x, 3, "#f2c14e");
-    if (wingTop(x) < 0) p.set(x, wingTop(x), "#f2c14e");
-  }
-  p.span(4, 21, 66, "#c48d2c");
-  // Skull and crossbones
-  const skull = ["..www..", ".wwwww.", ".wkwkw.", ".wwwww.", "..w.w..", "w.....w", ".w...w."];
-  skull.forEach((row, i) =>
-    [...row].forEach((ch, j) => ch !== "." && p.set(40 + j, -8 + i, ch === "w" ? "#f2efe6" : "#1a1a24")),
+  const c = centre(a);
+  p.span(a.top - 3, c - 2, c + 1, felt);
+  p.span(a.top - 2, a.l + 1, a.r - 1, felt);
+  p.span(a.top - 1, a.l - 1, a.r + 1, felt);
+  p.span(a.top, a.l - 2, a.r + 2, felt);
+  p.set(a.l - 2, a.top - 1, felt);
+  p.set(a.r + 2, a.top - 1, felt);
+  p.span(a.top + 1, a.l - 1, a.r + 1, "#f2c14e");
+  p.set(a.l - 2, a.top - 1, "#f2c14e");
+  p.set(a.r + 2, a.top - 1, "#f2c14e");
+  p.span(a.top - 3, c - 2, c + 1, "#474759");
+  p.span(a.top - 2, c - 1, c, "#f2efe6");
+  p.outline();
+  return p;
+}
+
+// Pirate: eyepatch over one eye, the strap across the brow.
+function eyepatch(a) {
+  const p = canvas();
+  const [row, left] = a.eyes;
+  p.set(left + 1, row - 1, "#1c1418");
+  p.span(row - 2, left + 2, a.r + 1, "#1c1418");
+  p.rect(left - 1, row, left, row + 1, "#2a1d20");
+  p.set(left - 1, row, "#4a3438");
+  return p;
+}
+
+// Pirate: cutlass in the right hand, blade curving up and out.
+function cutlass(a) {
+  const p = canvas();
+  const [x, y] = a.handR;
+  p.set(x, y, "#6b3e26");
+  p.set(x, y + 1, "#f2c14e");
+  p.span(y - 1, x - 1, x + 1, "#f2c14e");
+  [[0, -2], [0, -3], [1, -4], [1, -5], [1, -6], [2, -7]].forEach(([dx, dy], i) =>
+    p.set(x + dx, y + dy, i === 5 ? "#f4f8fb" : "#c9d3dc"),
   );
   p.outline();
-  return { front: p };
+  return p;
 }
 
-// Pirate: leather eyepatch over one eye, strap across the brow.
-function eyepatch() {
+// Pirate: a parrot perched on the left shoulder, beside the head.
+function parrot(a) {
   const p = canvas();
-  const strap = "#1c1418";
-  line(p, 25, 10, 32, 12, strap);
-  line(p, 41, 11, 61, 7, strap);
-  ellipse(p, 36.5, 13, 5, 4, "#2a1d20");
-  p.span(10, 34, 38, "#4a3438");
-  p.set(34, 11, "#5e4448");
-  p.outline();
-  return { front: p };
-}
-
-// Pirate: a curved cutlass gripped in the right hand, blade up and out.
-function cutlass() {
-  const p = canvas();
-  // Blade: from the guard curving out to the tip
-  const steps = 80;
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps;
-    const x = Math.round(68 + 20 * t + 5 * Math.sin(Math.PI * t));
-    const y = Math.round(60 - 33 * t);
-    const w = t > 0.92 ? 0 : t > 0.78 ? 1 : 2;
-    for (let k = 0; k <= w; k++) p.set(x + k, y, k === 0 ? "#f4f8fb" : k === w ? "#8a96a3" : "#c9d3dc");
-  }
-  // Guard, knuckle bow, grip and pommel
-  p.span(61, 63, 74, "#f2c14e");
-  p.span(62, 64, 73, "#c48d2c");
-  p.rect(67, 63, 69, 71, "#6b3e26");
-  p.set(68, 65, "#8a5634");
-  p.set(68, 68, "#8a5634");
-  p.rect(66, 72, 70, 73, "#f2c14e");
-  p.outline();
-  return { front: p };
-}
-
-// Pirate: a parrot perched on the left shoulder.
-function parrot() {
-  const p = canvas();
-  const red = "#d63a3a";
-  ellipse(p, 18, 20, 5, 6, red);
-  ellipse(p, 19, 12, 4, 4, red);
-  p.shade({ light: "#f06a5a", dark: "#a82a2a" });
-  // Wing and tail
-  ellipse(p, 16, 21, 3, 5, (x, y) => (y > 22 ? "#2f7fd1" : "#f2c14e"));
-  p.rect(14, 26, 16, 31, "#2f7fd1");
-  p.rect(14, 32, 16, 33, "#2fb67a");
-  // Face: white patch, eye, hooked beak
-  p.rect(20, 10, 22, 13, "#f2efe6");
-  p.set(21, 11, "#1b2430");
-  p.rect(23, 11, 25, 12, "#3b3b42");
-  p.rect(23, 13, 24, 14, "#3b3b42");
-  p.set(25, 13, "#3b3b42");
-  // Feet gripping the shoulder
-  p.span(26, 18, 22, "#e0a43a");
-  p.outline();
-  const shifted = canvas();
-  for (const pt of p.px.values()) shifted.set(pt.x, pt.y + 3, pt.c);
-  return { front: shifted };
-}
-
-// Tribal: a crown of tall feathers on a woven band.
-function featherHeaddress() {
-  const p = canvas();
-  const colours = ["#d63a3a", "#f08a2c", "#f6c945", "#2fb67a", "#f6c945", "#f08a2c", "#d63a3a"];
-  colours.forEach((c, i) => {
-    const x = 26 + i * 6;
-    const lean = (i - 3) * 1.4;
-    const top = -16 + Math.abs(i - 3) * 2;
-    for (let y = top; y <= 0; y++) {
-      const t = (y - top) / -top;
-      const cx = Math.round(x + lean * (1 - t));
-      const tip = y < top + 3;
-      if (y > top) {
-        p.set(cx - 1, y, tip ? "#1b2430" : c);
-        p.set(cx + 1, y, tip ? "#1b2430" : c);
-      }
-      p.set(cx, y, tip ? "#1b2430" : "#f6f0e4"); // quill
-    }
+  const [x, y] = a.perch;
+  stamp(p, x - 3, y - 5, [".rr.", "rrkb", "yrr.", "yrr.", "B.g.", "B..."], {
+    r: "#d63a3a",
+    k: "#1b2430",
+    b: "#3b3b42",
+    y: "#f2c14e",
+    B: "#2f7fd1",
+    g: "#e0a43a",
   });
-  // Woven band with a zig-zag
-  p.rect(23, 1, 64, 5, "#8a4a25");
-  for (let x = 23; x <= 64; x++) p.set(x, 2 + Math.abs((x % 4) - 2), "#f6c945");
-  p.span(1, 23, 64, "#a8643a");
-  p.span(5, 23, 64, "#6b3a1c");
   p.outline();
-  return { front: p };
+  return p;
 }
 
-// Tribal: a carved wooden tiki mask over the face.
-function tikiMask() {
+// Tribal: a fan of feathers on a woven band, tallest in the middle.
+function featherHeaddress(a) {
   const p = canvas();
-  const wood = "#9a6234";
-  p.rect(29, 5, 58, 25, wood);
-  p.span(26, 31, 56, wood);
-  p.span(4, 31, 56, wood);
-  erase(p, (x, y) => (x <= 30 || x >= 57) && (y <= 5 || y >= 25));
-  p.shade({ light: "#b97c47", dark: "#74461f" });
-  for (let x = 33; x <= 54; x += 3) p.set(x, 6, "#74461f");
-  // Brow ridge, eyes, nose, grin
-  p.span(9, 31, 56, "#5a3418");
-  ellipse(p, 36.5, 13, 4, 3, "#1b1210");
-  ellipse(p, 51, 13, 4, 3, "#1b1210");
-  p.set(37, 12, "#f6c945");
-  p.set(51, 12, "#f6c945");
-  p.rect(42, 13, 45, 18, "#74461f");
-  p.rect(33, 20, 54, 24, "#1b1210");
-  for (let x = 34; x <= 52; x += 3) p.rect(x, 20, x + 1, 21, "#f6f0e4");
-  for (let x = 35; x <= 53; x += 3) p.rect(x, 23, x + 1, 24, "#f6f0e4");
-  // Red paint on the cheeks
-  [30, 55].forEach((x) => {
-    p.rect(x, 16, x + 2, 16, "#d63a3a");
-    p.rect(x, 18, x + 2, 18, "#d63a3a");
-  });
-  p.outline("#3a2210");
-  return { front: p };
-}
-
-// Tribal: bone beads and a big tooth on a cord, sagging over the beard.
-function boneNecklace() {
-  const p = canvas();
-  const mid = (x) => 30 + Math.round(6 * (1 - ((x - 43.5) / 19) ** 2));
-  for (let x = 25; x <= 62; x++) p.set(x, mid(x), "#5a3418");
-  for (let x = 27; x <= 60; x += 4) {
-    const y = mid(x);
-    p.rect(x, y - 1, x + 1, y + 1, (x / 4) % 2 >= 1 ? "#f6f0e4" : "#d63a3a");
+  const colours = ["#d63a3a", "#f08a2c", "#f6c945", "#2fb67a"];
+  for (let x = a.l; x <= a.r; x++) {
+    const h = Math.min(4, 1 + Math.min(x - a.l, a.r - x));
+    for (let y = a.top + 1 - h; y <= a.top; y++) p.set(x, y, y === a.top + 1 - h ? "#1b2430" : colours[(x - a.l) % 4]);
   }
-  // Tooth pendant
-  const y0 = mid(43) + 1;
-  [[0, 3], [1, 3], [2, 2], [3, 2], [4, 1], [5, 1], [6, 0]].forEach(([dy, hw]) =>
-    p.span(y0 + dy, 44 - hw, 43 + hw, "#f6f0e4"),
-  );
-  p.set(42, y0 + 1, "#ffffff");
-  p.outline("#3a2210");
-  return { front: p };
-}
-
-// Tribal: a tall spear held upright in the right hand, feathers below the tip.
-function tribalSpear() {
-  const p = canvas();
-  p.rect(73, -6, 74, 92, "#7a5230");
-  for (let y = -6; y <= 92; y += 5) p.set(73, y, "#9a6a40");
-  // Stone tip
-  [[-16, 0], [-15, 1], [-14, 1], [-13, 2], [-12, 2], [-11, 2], [-10, 1], [-9, 1], [-8, 0]].forEach(([y, hw]) =>
-    p.span(y, 73 - hw, 74 + hw, "#9aa6b2"),
-  );
-  p.set(73, -14, "#d6dee6");
-  p.set(73, -12, "#d6dee6");
-  // Binding and feathers
-  p.rect(72, -7, 75, -5, "#f6c945");
-  p.rect(70, -4, 71, 4, "#d63a3a");
-  p.rect(76, -4, 77, 2, "#2fb67a");
-  // Grip wrap where the hand holds it
-  for (let y = 62; y <= 72; y += 2) p.span(y, 73, 74, "#f08a2c");
+  p.span(a.top + 1, a.l - 1, a.r + 1, (x) => (x % 2 ? "#f6c945" : "#c0392b"));
   p.outline();
-  return { front: p };
+  return p;
 }
 
-// Rogues: a deep hood over the head that drapes onto the shoulders, open
-// at the face.
-function rogueHood() {
+// Tribal: a carved tiki mask over the face.
+function tikiMask(a) {
   const p = canvas();
-  const cloth = "#454857";
-  ellipse(p, 43.5, 11, 23, 15, cloth);
-  // Drape over the shoulders, either side of the beard
-  for (let y = 18; y <= 33; y++) {
-    const out = Math.round((y - 18) * 0.35);
-    p.span(y, 20 - out, 29, cloth);
-    p.span(y, 58, 67 + out, cloth);
-  }
-  // Face opening, cut down to the chin
-  erase(p, (x, y) => y > 2 && (((x - 43.5) / 15.5) ** 2 + ((y - 13) / 11) ** 2 <= 1 || (y > 13 && Math.abs(x - 43.5) < 15.5 && y < 34)));
+  const [row, left, right] = a.eyes;
+  const c = centre(a);
+  p.rect(a.l, row - 1, a.r, row + 2, "#9a6234");
+  p.span(row - 1, a.l, a.r, "#74461f");
+  p.set(left, row, "#1b1210");
+  p.set(right, row, "#1b1210");
+  p.span(row + 1, c - 1, c, "#74461f");
+  p.set(a.l, row + 1, "#d63a3a");
+  p.set(a.r, row + 1, "#d63a3a");
+  p.span(row + 2, a.l + 1, a.r - 1, (x) => (x % 2 ? "#f6f0e4" : "#1b1210"));
+  p.outline("#3a2210");
+  // No outline under the chin, so a necklace still shows
+  for (let x = a.l - 1; x <= a.r + 1; x++) p.px.delete(`${x},${row + 3}`);
+  return p;
+}
+
+// Tribal: bone and red beads on a cord, with a big tooth in the middle.
+function boneNecklace(a) {
+  const p = canvas();
+  p.span(a.chest, a.l, a.r, (x) => ["#f6f0e4", "#c0392b", "#5a3418"][(x - a.l) % 3]);
+  p.set(centre(a), a.chest + 1, "#f6f0e4");
+  return p;
+}
+
+// Tribal: a stone-tipped spear held upright beside the right hand.
+function tribalSpear(a) {
+  const p = canvas();
+  const [hx, y] = a.handR;
+  const x = hx + 1;
+  for (let r = y - 9; r <= Math.min(15, y + 5); r++) p.set(x, r, "#7a5230");
+  p.set(x, y, "#f08a2c");
+  p.set(hx, y, "#f08a2c");
+  p.set(x, y - 12, "#d6dee6");
+  p.span(y - 11, x - 1, x + 1, "#9aa6b2");
+  p.set(x, y - 10, "#9aa6b2");
+  p.set(x - 1, y - 9, "#d63a3a");
+  p.set(x + 1, y - 9, "#2fb67a");
+  p.outline();
+  return p;
+}
+
+// Rogues: a deep hood framing the face, with a little peak.
+function rogueHood(a) {
+  const p = canvas();
+  const [row] = a.eyes;
+  p.rect(a.l - 1, a.top - 1, a.r + 1, row + 2, "#454857");
+  p.span(a.top - 2, centre(a) - 1, centre(a), "#454857");
+  const open = () => {
+    for (let y = row - 1; y <= row + 2; y++) for (let x = a.l + 1; x <= a.r - 1; x++) p.px.delete(`${x},${y}`);
+  };
+  open();
   p.shade({ light: "#5f6375", dark: "#30323d" });
-  // A fold down each side and a shadowed rim
-  for (let y = 4; y <= 30; y++) {
-    p.set(24 - Math.max(0, y - 22), y, "#30323d");
-    p.set(63 + Math.max(0, y - 22), y, "#30323d");
-  }
-  for (const pt of p.px.values())
-    if (pt.y > 2 && ((pt.x - 43.5) / 17) ** 2 + ((pt.y - 13) / 12.5) ** 2 <= 1) pt.c = "#2a2c35";
-  // Pointed peak
-  p.span(-5, 42, 45, cloth);
-  p.span(-6, 43, 44, cloth);
-  p.set(44, -7, cloth);
   p.outline();
-  return { front: p };
+  open();
+  return p;
 }
 
-// Rogues: a domino mask across the eyes.
-function dominoMask() {
+// Rogues: a domino mask across the eyes, eye holes left open.
+function dominoMask(a) {
   const p = canvas();
-  const mask = "#3a1f4f";
-  ellipse(p, 36.5, 13, 7, 4, mask);
-  ellipse(p, 51, 13, 7, 4, mask);
-  p.rect(37, 11, 50, 14, mask);
-  p.span(9, 33, 40, "#5c3a7a");
-  p.span(9, 47, 54, "#5c3a7a");
-  // Eye holes
-  ellipse(p, 36.5, 13, 2.6, 1.6, "#120a18");
-  ellipse(p, 51, 13, 2.6, 1.6, "#120a18");
-  p.set(36, 12, "#f6f0e4");
-  p.set(50, 12, "#f6f0e4");
-  // Ties
-  line(p, 29, 12, 23, 10, mask);
-  line(p, 58, 12, 64, 10, mask);
-  p.outline();
-  return { front: p };
+  const [row, left, right] = a.eyes;
+  p.span(row, a.l - 1, a.r + 1, "#3a1f4f");
+  p.px.delete(`${left},${row}`);
+  p.px.delete(`${right},${row}`);
+  p.set(a.l - 1, row, "#5c3a7a");
+  p.set(a.r + 1, row, "#5c3a7a");
+  return p;
 }
 
-// Rogues: a fat coin pouch dangling from the left hand.
-function coinPouch() {
+// Rogues: a fat coin pouch hanging from the left hand.
+function coinPouch(a) {
   const p = canvas();
-  const leather = "#8a5a2e";
-  ellipse(p, 19, 80, 7, 6, leather);
-  p.rect(16, 71, 22, 74, leather);
-  p.shade({ light: "#a87443", dark: "#64401f" });
-  // Drawstring and the cord up into the hand
-  p.span(74, 15, 23, "#c9a24a");
-  p.rect(18, 66, 19, 70, "#c9a24a");
-  // Coins peeking out, and one dropped on the floor
-  ellipse(p, 18, 70, 2, 1.4, "#f2c14e");
-  p.set(17, 70, "#fff0a8");
-  ellipse(p, 29, 91, 2.5, 1.5, "#f2c14e");
-  p.set(28, 91, "#fff0a8");
-  // Stitched coin mark
-  p.rect(18, 79, 20, 82, "#f2c14e");
-  p.set(19, 80, "#c48d2c");
+  const [x, y] = a.handL;
+  stamp(p, x - 1, y + 1, [".y.", "bbb", "byb"], { y: "#f2c14e", b: "#8a5a2e" });
   p.outline();
-  return { front: p };
+  return p;
 }
+
+// Which characters each piece is drawn for (first = default drawing).
+const PIRATES = ["captain", "squidman", "zombie-pirate"];
+const TRIBAL = ["warrior", "shaman"];
+const ROGUES = ["bandit", "goblin"];
+
+const GEAR = {
+  tricorn: [tricorn, PIRATES],
+  eyepatch: [eyepatch, PIRATES],
+  cutlass: [cutlass, PIRATES],
+  parrot: [parrot, PIRATES],
+  "feather-headdress": [featherHeaddress, TRIBAL],
+  "tiki-mask": [tikiMask, TRIBAL],
+  "bone-necklace": [boneNecklace, TRIBAL],
+  "tribal-spear": [tribalSpear, TRIBAL],
+  "rogue-hood": [rogueHood, ROGUES],
+  "domino-mask": [dominoMask, ROGUES],
+  "coin-pouch": [coinPouch, ROGUES],
+};
 
 // ---------------------------------------------------------------------------
 
@@ -1192,17 +1116,6 @@ const DRAW = {
   "genesis-halo": halo,
   "dhaka-topi": dhakaTopi,
   "daura-suruwal": dauraSuruwal,
-  tricorn,
-  eyepatch,
-  cutlass,
-  parrot,
-  "feather-headdress": featherHeaddress,
-  "tiki-mask": tikiMask,
-  "bone-necklace": boneNecklace,
-  "tribal-spear": tribalSpear,
-  "rogue-hood": rogueHood,
-  "domino-mask": dominoMask,
-  "coin-pouch": coinPouch,
 };
 
 // Stacking order on the character, back to front.
@@ -1219,9 +1132,10 @@ function bounds(runs) {
   return { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
 }
 
-// { [wearableId]: { back: runs|null, front: runs, icon: runs|null, bounds } }
-export const wearableArt = Object.fromEntries(
-  Object.entries(DRAW).map(([id, draw]) => {
+// { [wearableId]: { back: runs|null, front: runs, icon: runs|null, bounds,
+//   perCharacter?: { [characterId]: { front, bounds } } } }
+export const wearableArt = Object.fromEntries([
+  ...Object.entries(DRAW).map(([id, draw]) => {
     const { back, front, icon } = draw();
     const backRuns = back ? back.runs() : null;
     const frontRuns = front.runs();
@@ -1236,4 +1150,20 @@ export const wearableArt = Object.fromEntries(
       },
     ];
   }),
-);
+  ...Object.entries(GEAR).map(([id, [draw, fits]]) => {
+    const [first, ...rest] = fits.map((c) => scaleUp(draw(ANCHORS[c])).runs());
+    return [
+      id,
+      {
+        back: null,
+        front: first,
+        icon: null,
+        bounds: bounds(first),
+        perCharacter: Object.fromEntries(rest.map((runs, i) => [fits[i + 1], { front: runs, bounds: bounds(runs) }])),
+      },
+    ];
+  }),
+]);
+
+// Characters each pack piece is drawn for.
+export const gearFits = Object.fromEntries(Object.entries(GEAR).map(([id, [, fits]]) => [id, fits]));

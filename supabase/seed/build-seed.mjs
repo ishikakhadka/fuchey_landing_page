@@ -34,6 +34,7 @@ function visualFor(w) {
     back: art.back,
     icon: art.icon,
     bounds: art.bounds,
+    ...(art.perCharacter && { perCharacter: art.perCharacter }),
   };
 }
 

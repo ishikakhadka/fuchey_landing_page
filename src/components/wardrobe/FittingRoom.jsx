@@ -32,7 +32,7 @@ function FittingRoom({ characters, character, onCharacter, worn, onRemove, focus
         </div>
 
         <CharacterRender
-          image={character.art.image}
+          art={character.art}
           characterId={character.id}
           equipped={worn}
           alt={`${character.name} wearing ${worn.map((w) => w.name).join(", ") || "nothing extra"}`}

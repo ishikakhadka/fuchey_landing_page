@@ -108,7 +108,7 @@ export const characters = [
       { trait_type: "Mood", value: "Bold" },
       { trait_type: "Habitat", value: "Quarterdeck" },
     ],
-    wardrobeSlots: [],
+    wardrobeSlots: ["hat", "accessory", "held", "special"],
     listing: comingSoon,
   },
   {
@@ -130,7 +130,7 @@ export const characters = [
       { trait_type: "Mood", value: "Busy" },
       { trait_type: "Habitat", value: "Below deck" },
     ],
-    wardrobeSlots: [],
+    wardrobeSlots: ["hat", "accessory", "held", "special"],
     listing: comingSoon,
   },
   {
@@ -152,7 +152,7 @@ export const characters = [
       { trait_type: "Mood", value: "Undying" },
       { trait_type: "Habitat", value: "Shipwreck" },
     ],
-    wardrobeSlots: [],
+    wardrobeSlots: ["hat", "accessory", "held", "special"],
     listing: comingSoon,
   },
   {
@@ -166,7 +166,7 @@ export const characters = [
     rarity: "rare",
     quote: "The trail is guarded.",
     description:
-      "A masked spear-carrier from the deep jungle who stands watch over every path into your wallet.",
+      "A war-painted guard from the deep jungle who stands watch over every path into your wallet. Hand them a spear and a mask from the Tribal wardrobe.",
     art: { kind: "sprite", sprite: sprites["warrior"], locked: false },
     attributes: [
       { trait_type: "Character", value: "Warrior" },
@@ -174,7 +174,7 @@ export const characters = [
       { trait_type: "Mood", value: "Watchful" },
       { trait_type: "Habitat", value: "Jungle" },
     ],
-    wardrobeSlots: [],
+    wardrobeSlots: ["hat", "headwear", "accessory", "held"],
     listing: comingSoon,
   },
   {
@@ -196,7 +196,7 @@ export const characters = [
       { trait_type: "Mood", value: "Mystic" },
       { trait_type: "Habitat", value: "Temple" },
     ],
-    wardrobeSlots: [],
+    wardrobeSlots: ["hat", "headwear", "accessory", "held"],
     listing: comingSoon,
   },
   {
@@ -218,7 +218,7 @@ export const characters = [
       { trait_type: "Mood", value: "Mischievous" },
       { trait_type: "Habitat", value: "Cave" },
     ],
-    wardrobeSlots: [],
+    wardrobeSlots: ["hat", "headwear", "held"],
     listing: comingSoon,
   },
   {
@@ -232,7 +232,7 @@ export const characters = [
     rarity: "uncommon",
     quote: "Masks on. Keys hidden.",
     description:
-      "A hooded drifter who knows every trick in the book, and uses them to keep yours out of it.",
+      "A drifter in a red scarf who knows every trick in the book, and uses them to keep yours out of it.",
     art: { kind: "sprite", sprite: sprites["bandit"], locked: false },
     attributes: [
       { trait_type: "Character", value: "Bandit" },
@@ -240,7 +240,7 @@ export const characters = [
       { trait_type: "Mood", value: "Sly" },
       { trait_type: "Habitat", value: "Back roads" },
     ],
-    wardrobeSlots: [],
+    wardrobeSlots: ["hat", "headwear", "held"],
     listing: comingSoon,
   },
 ];
