@@ -274,14 +274,18 @@
   width: min(78%, 440px);
 }
 
-/* Placeholder sprites fill their whole grid (no headroom like base art),
-   so they draw smaller to sit at the same height on a stage. */
+/* Sprite characters fill their whole grid (no headroom like base art),
+   so they draw a little smaller to sit at the Yeti's height on a stage. */
 .item-art.item-art-sprite {
-  width: 48%;
+  width: 62%;
 }
 
 .item-art-lg.item-art-sprite {
-  width: min(54%, 300px);
+  width: min(66%, 360px);
+}
+
+.item-art.item-art-sprite.is-locked {
+  width: 46%;
 }
 
 .item-art-layers {
@@ -787,9 +791,9 @@
 }
 
 .pack-lineup .item-art-sprite {
-  --slot: 28%;
+  --slot: 36%;
 
-  margin-inline: 1%;
+  margin-inline: -2%;
 }
 
 .pack-lineup .item-art.is-locked {

@@ -10,11 +10,12 @@
 // the same layers cropped to their bounding box, unless the wearable has its
 // own `icon` layer (outfits: shown whole, without the gap the beard covers).
 //
-// Plain data + functions, no imports. Source art only: build-seed.mjs stores
+// Plain data + functions (the pixel canvas lives in pixel.js). Source art only: build-seed.mjs stores
 // the generated layers in the database (wearables.visual), and nft/make-art.mjs
 // renders the NFT PNGs from it. The site draws from the database, not this file.
 
-const OUTLINE = "#0b0f17";
+import { OUTLINE, canvas, ellipse, erase, layer, line, part, polygon, roundRect, stamp } from "./pixel.js";
+import { anchors } from "./sprites.js";
 
 // yeti.png rows 20–94 as brightness bands: '#' outline, 'o' dark, '+' mid,
 // '.' light shade, '_' white fur, ' ' empty. Outfits are fitted to this map:
@@ -122,85 +123,6 @@ const PART = {
   leftArm: region([[17, 45]], 24, 61),
   rightArm: region([[62, 45]], 24, 63),
 };
-
-// ---------------------------------------------------------------------------
-// Tiny pixel canvas
-// ---------------------------------------------------------------------------
-
-function canvas() {
-  const px = new Map();
-  const key = (x, y) => `${x},${y}`;
-
-  const api = {
-    px,
-    set(x, y, c) {
-      px.set(key(x, y), { x, y, c });
-    },
-    get(x, y) {
-      return px.get(key(x, y))?.c;
-    },
-    has(x, y) {
-      return px.has(key(x, y));
-    },
-    span(y, x0, x1, c) {
-      for (let x = x0; x <= x1; x++) api.set(x, y, typeof c === "function" ? c(x, y) : c);
-    },
-    rect(x0, y0, x1, y1, c) {
-      for (let y = y0; y <= y1; y++) api.span(y, x0, x1, c);
-    },
-    // Recolour filled pixels on the top / bottom edge of the current shape.
-    shade({ light, dark }, only) {
-      const next = [];
-      for (const p of px.values()) {
-        if (only && !only.includes(p.c)) continue;
-        if (!api.has(p.x, p.y - 1)) next.push([p.x, p.y, light]);
-        else if (!api.has(p.x, p.y + 1) || !api.has(p.x + 1, p.y)) next.push([p.x, p.y, dark]);
-      }
-      next.forEach(([x, y, c]) => c && api.set(x, y, c));
-    },
-    // 1px outline around everything drawn so far.
-    outline(c = OUTLINE) {
-      const ring = new Set();
-      for (const p of px.values()) {
-        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-          const k = key(p.x + dx, p.y + dy);
-          if (!px.has(k)) ring.add(k);
-        }
-      }
-      ring.forEach((k) => {
-        const [x, y] = k.split(",").map(Number);
-        api.set(x, y, c);
-      });
-    },
-    // Merge horizontal runs of one colour → [{ x, y, w, c }].
-    runs() {
-      const rows = new Map();
-      for (const p of px.values()) {
-        if (!rows.has(p.y)) rows.set(p.y, []);
-        rows.get(p.y).push(p);
-      }
-      const out = [];
-      for (const [y, row] of rows) {
-        row.sort((a, b) => a.x - b.x);
-        let start = row[0];
-        let w = 1;
-        for (let i = 1; i <= row.length; i++) {
-          const p = row[i];
-          if (p && p.x === start.x + w && p.c === start.c) {
-            w++;
-          } else {
-            out.push({ x: start.x, y, w, c: start.c });
-            start = p;
-            w = 1;
-          }
-        }
-      }
-      return out;
-    },
-  };
-
-  return api;
-}
 
 const mixRows = (stops) => (x, y) => {
   // stops: [[row, colour], …] sorted by row; picks the last stop ≤ y
@@ -883,34 +805,16 @@ function dauraFlat(pal, vest) {
 // ---------------------------------------------------------------------------
 // Pack gear: wardrobes for the pack characters (Pirate, Tribal, Rogues).
 //
-// Pack characters are 16×16 sprites (sprites.js) scaled ×6 onto the 96×96
-// grid, so their gear is drawn on that same 16×16 grid, in the same chunky
-// pixels, then scaled up. Each piece is drawn once per character it fits,
-// from the anchors below; the first character's drawing is the default
-// visual and the others go in visual.perCharacter.
+// Pack characters are 48×48 sprites (sprites.js) scaled ×2 onto the 96×96
+// grid, so their gear is drawn on that same 48×48 grid, in the same pixels,
+// then scaled up. Each piece is drawn once per character it fits, from that
+// character's anchors (sprites.js); the first character's drawing is the
+// default visual and the others go in visual.perCharacter.
 // ---------------------------------------------------------------------------
 
-const SPRITE_SCALE = 6;
+const SPRITE_SCALE = 2;
 
-// Where things are on each pack character, in sprite pixels:
-//   top     row of the head's top outline
-//   l, r    first / last column inside the head's outline
-//   eyes    [row, left col, right col]
-//   handR / handL  [col, row] of the hand on the viewer's right / left
-//   perch   [col, row] where a pet sits beside the head: its right edge
-//           and the row just below its feet
-//   chest   first row below the face
-const ANCHORS = {
-  captain: { top: 2, l: 4, r: 11, eyes: [6, 5, 10], handR: [13, 12], handL: [2, 12], perch: [2, 9], chest: 8 },
-  squidman: { top: 0, l: 4, r: 11, eyes: [4, 5, 10], handR: [13, 11], handL: [2, 11], perch: [1, 8], chest: 8 },
-  "zombie-pirate": { top: 0, l: 4, r: 11, eyes: [4, 4, 10], handR: [13, 10], handL: [3, 10], perch: [1, 8], chest: 8 },
-  warrior: { top: 2, l: 4, r: 11, eyes: [5, 5, 10], handR: [12, 10], handL: [3, 10], perch: [2, 8], chest: 8 },
-  shaman: { top: 2, l: 5, r: 12, eyes: [5, 6, 11], handR: [13, 10], handL: [4, 10], perch: [3, 8], chest: 8 },
-  goblin: { top: 1, l: 4, r: 11, eyes: [4, 4, 10], handR: [12, 10], handL: [3, 10], perch: [2, 8], chest: 8 },
-  bandit: { top: 2, l: 4, r: 11, eyes: [5, 5, 10], handR: [13, 10], handL: [2, 10], perch: [2, 8], chest: 8 },
-};
-
-// Sprite-pixel canvas → the 96×96 grid.
+// Sprite-grid canvas → the 96×96 grid.
 function scaleUp(p) {
   const out = canvas();
   for (const pt of p.px.values())
@@ -919,165 +823,214 @@ function scaleUp(p) {
   return out;
 }
 
-// Paint a little pixel map: rows of characters, "." transparent.
-function stamp(p, x0, y0, rows, palette) {
-  rows.forEach((row, j) => [...row].forEach((ch, i) => ch !== "." && p.set(x0 + i, y0 + j, palette[ch])));
-}
+const mid = (a) => Math.floor((a.head.x0 + a.head.x1) / 2);
+const GOLD_TRIM = { b: "#f2c14e", l: "#ffe08a", d: "#c48d2c" };
 
-const centre = (a) => Math.floor((a.l + a.r + 1) / 2);
-
-// Pirate: black tricorn with gold trim and a little skull, wings turned up.
+// Pirate: black tricorn, wings turned up, gold trim, a skull on the front.
 function tricorn(a) {
   const p = canvas();
-  const felt = "#2b2b38";
-  const c = centre(a);
-  p.span(a.top - 3, c - 2, c + 1, felt);
-  p.span(a.top - 2, a.l + 1, a.r - 1, felt);
-  p.span(a.top - 1, a.l - 1, a.r + 1, felt);
-  p.span(a.top, a.l - 2, a.r + 2, felt);
-  p.set(a.l - 2, a.top - 1, felt);
-  p.set(a.r + 2, a.top - 1, felt);
-  p.span(a.top + 1, a.l - 1, a.r + 1, "#f2c14e");
-  p.set(a.l - 2, a.top - 1, "#f2c14e");
-  p.set(a.r + 2, a.top - 1, "#f2c14e");
-  p.span(a.top - 3, c - 2, c + 1, "#474759");
-  p.span(a.top - 2, c - 1, c, "#f2efe6");
-  p.outline();
+  const felt = { b: "#2b2b38", l: "#474759", d: "#1a1a24" };
+  const { x0, x1, y0 } = a.head;
+  const c = mid(a);
+  const crown = part((q) => roundRect(q, x0 + 5, y0 - 7, x1 - 5, y0 + 3, 5, felt.b));
+  layer(p, crown, felt);
+  const brim = part((q) => {
+    const half = (x1 - x0) / 2;
+    for (let x = x0 - 4; x <= x1 + 4; x++) {
+      const wing = Math.max(0, Math.abs(x - (x0 + x1) / 2) - (half - 5));
+      for (let y = y0 + 2 - Math.round(wing * 0.6); y <= y0 + 5; y++) q.set(x, y, felt.b);
+    }
+  });
+  layer(p, brim, felt);
+  // Gold edge along the brim
+  for (const pt of brim.px.values()) if (!brim.has(pt.x, pt.y - 1)) p.set(pt.x, pt.y, GOLD_TRIM.b);
+  p.span(y0 + 5, x0 - 3, x1 + 3, GOLD_TRIM.d);
+  stamp(p, c - 2, y0 - 5, [".www.", "wkwkw", "wwwww", ".w.w."], { w: "#f2efe6", k: felt.b });
   return p;
 }
 
-// Pirate: eyepatch over one eye, the strap across the brow.
+// Pirate: a leather eyepatch over one eye, its strap across the head.
 function eyepatch(a) {
   const p = canvas();
-  const [row, left] = a.eyes;
-  p.set(left + 1, row - 1, "#1c1418");
-  p.span(row - 2, left + 2, a.r + 1, "#1c1418");
-  p.rect(left - 1, row, left, row + 1, "#2a1d20");
-  p.set(left - 1, row, "#4a3438");
+  const [lx0, lx1] = a.eyes.l;
+  const strap = "#1c1418";
+  line(p, lx1 + 1, a.eyes.y0 - 1, a.head.x1 - 1, a.head.y0 + 6, strap);
+  line(p, lx0 - 1, a.eyes.y0 - 1, a.head.x0 + 1, a.eyes.y0 - 4, strap);
+  const patch = part((q) => roundRect(q, lx0 - 1, a.eyes.y0 - 1, lx1 + 1, a.eyes.y1 + 2, 1, "#2a1d20"));
+  layer(p, patch, { b: "#2a1d20", l: "#4a3438", d: "#1a1012" });
   return p;
 }
 
-// Pirate: cutlass in the right hand, blade curving up and out.
+// Pirate: a cutlass in the right hand, its blade curving up and out.
 function cutlass(a) {
   const p = canvas();
-  const [x, y] = a.handR;
-  p.set(x, y, "#6b3e26");
-  p.set(x, y + 1, "#f2c14e");
-  p.span(y - 1, x - 1, x + 1, "#f2c14e");
-  [[0, -2], [0, -3], [1, -4], [1, -5], [1, -6], [2, -7]].forEach(([dx, dy], i) =>
-    p.set(x + dx, y + dy, i === 5 ? "#f4f8fb" : "#c9d3dc"),
-  );
-  p.outline();
+  const [hx, hy] = a.handR;
+  const blade = part((q) => {
+    for (let i = 0; i <= 40; i++) {
+      const t = i / 40;
+      const x = Math.round(hx + 1 + 7 * t + 2.5 * Math.sin(Math.PI * t));
+      const y = Math.round(hy - 3 - 17 * t);
+      q.set(x, y, "#f4f8fb");
+      if (t < 0.85) q.set(x + 1, y, "#c9d3dc");
+      if (t < 0.6) q.set(x + 2, y, "#8a96a3");
+    }
+  });
+  layer(p, blade);
+  const hilt = part((q) => {
+    q.span(hy - 2, hx - 2, hx + 3, GOLD_TRIM.b);
+    q.rect(hx, hy - 1, hx + 1, hy + 2, "#6b3e26");
+    q.rect(hx, hy + 3, hx + 1, hy + 4, GOLD_TRIM.b);
+  });
+  layer(p, hilt);
   return p;
 }
 
-// Pirate: a parrot perched on the left shoulder, beside the head.
+// Pirate: a parrot perched on the left shoulder.
 function parrot(a) {
   const p = canvas();
-  const [x, y] = a.perch;
-  stamp(p, x - 3, y - 5, [".rr.", "rrkb", "yrr.", "yrr.", "B.g.", "B..."], {
-    r: "#d63a3a",
-    k: "#1b2430",
-    b: "#3b3b42",
-    y: "#f2c14e",
-    B: "#2f7fd1",
-    g: "#e0a43a",
-  });
-  p.outline();
+  const [px, py] = a.perch;
+  const red = { b: "#d63a3a", l: "#f06a5a", d: "#a82a2a" };
+  layer(p, part((q) => q.rect(px - 6, py - 2, px - 4, py + 4, "#2f7fd1")), { b: "#2f7fd1", l: "#5aa0e8", d: "#1f5fa8" });
+  layer(p, part((q) => {
+    ellipse(q, px - 4, py - 6, 3.6, 5, red.b);
+    ellipse(q, px - 3, py - 12, 3.2, 3, red.b);
+  }), red);
+  layer(p, part((q) => ellipse(q, px - 5, py - 5, 2.2, 3.6, (x, y) => (y > py - 4 ? "#2f7fd1" : "#f2c14e"))));
+  p.rect(px - 2, py - 13, px - 1, py - 12, "#f2efe6");
+  p.set(px - 2, py - 13, "#1b2430");
+  layer(p, part((q) => {
+    q.rect(px, py - 13, px + 1, py - 12, "#3b3b42");
+    q.set(px + 1, py - 11, "#3b3b42");
+  }));
+  p.span(py - 1, px - 5, px - 2, "#e0a43a");
   return p;
 }
 
-// Tribal: a fan of feathers on a woven band, tallest in the middle.
+// Tribal: five tall feathers fanned on a woven band.
 function featherHeaddress(a) {
   const p = canvas();
-  const colours = ["#d63a3a", "#f08a2c", "#f6c945", "#2fb67a"];
-  for (let x = a.l; x <= a.r; x++) {
-    const h = Math.min(4, 1 + Math.min(x - a.l, a.r - x));
-    for (let y = a.top + 1 - h; y <= a.top; y++) p.set(x, y, y === a.top + 1 - h ? "#1b2430" : colours[(x - a.l) % 4]);
-  }
-  p.span(a.top + 1, a.l - 1, a.r + 1, (x) => (x % 2 ? "#f6c945" : "#c0392b"));
-  p.outline();
+  const { x0, x1, y0 } = a.head;
+  const c = mid(a);
+  [[-10, 8, "#d63a3a"], [-5, 11, "#f08a2c"], [0, 14, "#2fb67a"], [5, 11, "#f08a2c"], [10, 8, "#d63a3a"]].forEach(([dx, h, col]) => {
+    const cx = c + dx;
+    const top = y0 + 4 - h;
+    const f = part((q) => {
+      for (let y = top; y <= y0 + 4; y++) {
+        const w = y === top ? 0 : 1;
+        const lean = Math.round((dx / 10) * ((y0 + 4 - y) / h) * 2);
+        for (let k = -w; k <= w; k++) q.set(cx + lean + k, y, y - top < 3 ? "#1b2430" : col);
+      }
+    });
+    layer(p, f);
+  });
+  const band = part((q) => q.rect(x0 + 1, y0 + 5, x1 - 1, y0 + 8, "#8a4a25"));
+  layer(p, band);
+  for (let x = x0 + 1; x <= x1 - 1; x++) p.set(x, y0 + 6 + Math.abs((x % 4) - 2) - 1, "#f6c945");
   return p;
 }
 
-// Tribal: a carved tiki mask over the face.
+// Tribal: a carved wooden tiki mask over the face.
 function tikiMask(a) {
   const p = canvas();
-  const [row, left, right] = a.eyes;
-  const c = centre(a);
-  p.rect(a.l, row - 1, a.r, row + 2, "#9a6234");
-  p.span(row - 1, a.l, a.r, "#74461f");
-  p.set(left, row, "#1b1210");
-  p.set(right, row, "#1b1210");
-  p.span(row + 1, c - 1, c, "#74461f");
-  p.set(a.l, row + 1, "#d63a3a");
-  p.set(a.r, row + 1, "#d63a3a");
-  p.span(row + 2, a.l + 1, a.r - 1, (x) => (x % 2 ? "#f6f0e4" : "#1b1210"));
-  p.outline("#3a2210");
-  // No outline under the chin, so a necklace still shows
-  for (let x = a.l - 1; x <= a.r + 1; x++) p.px.delete(`${x},${row + 3}`);
+  const wood = { b: "#9a6234", l: "#b97c47", d: "#74461f" };
+  const { x0, x1 } = a.head;
+  const e = a.eyes;
+  const top = e.y0 - 4;
+  const bottom = e.y1 + 9;
+  layer(p, part((q) => roundRect(q, x0 + 3, top, x1 - 3, bottom, 3, wood.b)), wood, "#3a2210");
+  p.span(top + 2, x0 + 5, x1 - 5, wood.d);
+  for (const [lx0, lx1] of [e.l, e.r]) {
+    p.rect(lx0 - 1, e.y0, lx1 + 1, e.y1 + 1, "#1b1210");
+    p.set(lx0, e.y0 + 1, "#f6c945");
+  }
+  const c = mid(a);
+  p.rect(c - 1, e.y1 + 1, c + 2, e.y1 + 4, wood.d);
+  p.rect(x0 + 7, bottom - 3, x1 - 7, bottom - 1, "#1b1210");
+  for (let x = x0 + 8; x <= x1 - 8; x += 2) p.set(x, bottom - 2, "#f6f0e4");
+  [x0 + 4, x1 - 5].forEach((x) => {
+    p.rect(x, e.y1 + 2, x + 1, e.y1 + 2, "#d63a3a");
+    p.rect(x, e.y1 + 4, x + 1, e.y1 + 4, "#d63a3a");
+  });
   return p;
 }
 
 // Tribal: bone and red beads on a cord, with a big tooth in the middle.
 function boneNecklace(a) {
   const p = canvas();
-  p.span(a.chest, a.l, a.r, (x) => ["#f6f0e4", "#c0392b", "#5a3418"][(x - a.l) % 3]);
-  p.set(centre(a), a.chest + 1, "#f6f0e4");
+  const { x0, x1 } = a.head;
+  const c = (x0 + x1) / 2;
+  const half = (x1 - x0) / 2 - 6;
+  const sag = (x) => a.chest + Math.round(3 * (1 - ((x - c) / half) ** 2));
+  for (let x = Math.ceil(c - half); x <= Math.floor(c + half); x++) p.set(x, sag(x), "#5a3418");
+  let n = 0;
+  for (let x = Math.ceil(c - half) + 1; x <= c + half - 1; x += 3, n++) {
+    const bead = part((q) => q.rect(x, sag(x) - 1, x + 1, sag(x), n % 2 ? "#c0392b" : "#f6f0e4"));
+    layer(p, bead, null, "#3a2210");
+  }
+  const tooth = part((q) => polygon(q, [[c - 2, sag(c) + 1], [c + 2, sag(c) + 1], [c, sag(c) + 6]], "#f6f0e4"));
+  layer(p, tooth, null, "#3a2210");
   return p;
 }
 
 // Tribal: a stone-tipped spear held upright beside the right hand.
 function tribalSpear(a) {
   const p = canvas();
-  const [hx, y] = a.handR;
-  const x = hx + 1;
-  for (let r = y - 9; r <= Math.min(15, y + 5); r++) p.set(x, r, "#7a5230");
-  p.set(x, y, "#f08a2c");
-  p.set(hx, y, "#f08a2c");
-  p.set(x, y - 12, "#d6dee6");
-  p.span(y - 11, x - 1, x + 1, "#9aa6b2");
-  p.set(x, y - 10, "#9aa6b2");
-  p.set(x - 1, y - 9, "#d63a3a");
-  p.set(x + 1, y - 9, "#2fb67a");
-  p.outline();
+  const [hx, hy] = a.handR;
+  const x = hx + 2;
+  layer(p, part((q) => q.rect(x, hy - 30, x + 1, 46, "#7a5230")), { b: "#7a5230", l: "#9a6a40", d: "#5a3a20" });
+  layer(p, part((q) => polygon(q, [[x + 0.5, hy - 40], [x + 3.5, hy - 33], [x + 0.5, hy - 29], [x - 2.5, hy - 33]], "#9aa6b2")), { b: "#9aa6b2", l: "#d6dee6", d: "#6a7682" });
+  p.rect(x - 1, hy - 30, x + 2, hy - 29, "#f6c945");
+  layer(p, part((q) => q.rect(x - 3, hy - 28, x - 2, hy - 22, "#d63a3a")));
+  layer(p, part((q) => q.rect(x + 3, hy - 28, x + 4, hy - 23, "#2fb67a")));
+  for (let y = hy - 2; y <= hy + 2; y += 2) p.rect(x, y, x + 1, y, "#f08a2c");
   return p;
 }
 
-// Rogues: a deep hood framing the face, with a little peak.
+// Rogues: a deep hood framing the face and draping onto the shoulders.
 function rogueHood(a) {
   const p = canvas();
-  const [row] = a.eyes;
-  p.rect(a.l - 1, a.top - 1, a.r + 1, row + 2, "#454857");
-  p.span(a.top - 2, centre(a) - 1, centre(a), "#454857");
-  const open = () => {
-    for (let y = row - 1; y <= row + 2; y++) for (let x = a.l + 1; x <= a.r - 1; x++) p.px.delete(`${x},${y}`);
-  };
-  open();
-  p.shade({ light: "#5f6375", dark: "#30323d" });
-  p.outline();
-  open();
+  const cloth = { b: "#454857", l: "#5f6375", d: "#30323d" };
+  const { x0, x1, y0 } = a.head;
+  const e = a.eyes;
+  const hood = part((q) => {
+    roundRect(q, x0 - 2, y0 - 3, x1 + 2, e.y1 + 8, 10, cloth.b);
+    roundRect(q, x0 - 1, 24, x1 + 1, 29, 3, cloth.b);
+    polygon(q, [[mid(a) - 3, y0 - 2], [mid(a) + 4, y0 - 2], [mid(a) + 2, y0 - 7]], cloth.b);
+  });
+  erase(hood, (x, y) => ((x - (x0 + x1) / 2) / ((x1 - x0) / 2 - 3)) ** 2 + ((y - (e.y1 + 4)) / (e.y1 - y0)) ** 2 <= 1 && y >= y0 + 4);
+  layer(p, hood, cloth);
+  // Folds down each side
+  line(p, x0 - 1, y0 + 8, x0 - 1, 27, cloth.d);
+  line(p, x1 + 1, y0 + 8, x1 + 1, 27, cloth.d);
   return p;
 }
 
 // Rogues: a domino mask across the eyes, eye holes left open.
 function dominoMask(a) {
   const p = canvas();
-  const [row, left, right] = a.eyes;
-  p.span(row, a.l - 1, a.r + 1, "#3a1f4f");
-  p.px.delete(`${left},${row}`);
-  p.px.delete(`${right},${row}`);
-  p.set(a.l - 1, row, "#5c3a7a");
-  p.set(a.r + 1, row, "#5c3a7a");
+  const e = a.eyes;
+  const mask = part((q) => {
+    roundRect(q, e.l[0] - 3, e.y0 - 2, e.r[1] + 3, e.y1 + 1, 2, "#3a1f4f");
+    line(q, e.l[0] - 3, e.y0, a.head.x0, e.y0 - 2, "#3a1f4f");
+    line(q, e.r[1] + 3, e.y0, a.head.x1, e.y0 - 2, "#3a1f4f");
+  });
+  for (const [lx0, lx1] of [e.l, e.r]) for (let y = e.y0; y <= e.y1; y++) for (let x = lx0; x <= lx1; x++) mask.px.delete(`${x},${y}`);
+  layer(p, mask, { b: "#3a1f4f", l: "#5c3a7a", d: "#26123a" });
   return p;
 }
 
-// Rogues: a fat coin pouch hanging from the left hand.
+// Rogues: a fat coin pouch dangling from the left hand.
 function coinPouch(a) {
   const p = canvas();
-  const [x, y] = a.handL;
-  stamp(p, x - 1, y + 1, [".y.", "bbb", "byb"], { y: "#f2c14e", b: "#8a5a2e" });
-  p.outline();
+  const [hx, hy] = a.handL;
+  const leather = { b: "#8a5a2e", l: "#a87443", d: "#64401f" };
+  layer(p, part((q) => {
+    ellipse(q, hx - 1, hy + 7, 4, 3.2, leather.b);
+    q.rect(hx - 2, hy + 3, hx, hy + 4, leather.b);
+  }), leather);
+  p.span(hy + 4, hx - 3, hx + 1, "#c9a24a");
+  p.rect(hx - 2, hy + 6, hx - 1, hy + 7, GOLD_TRIM.b);
+  layer(p, part((q) => q.rect(hx, hy + 2, hx + 1, hy + 3, GOLD_TRIM.b)));
   return p;
 }
 
@@ -1151,7 +1104,7 @@ export const wearableArt = Object.fromEntries([
     ];
   }),
   ...Object.entries(GEAR).map(([id, [draw, fits]]) => {
-    const [first, ...rest] = fits.map((c) => scaleUp(draw(ANCHORS[c])).runs());
+    const [first, ...rest] = fits.map((c) => scaleUp(draw(anchors[c])).runs());
     return [
       id,
       {
