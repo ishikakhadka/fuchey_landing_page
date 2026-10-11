@@ -3,13 +3,12 @@ import { ArrowRight, BadgeCheck, PenLine, Wallet } from "lucide-react";
 
 import ItemArt from "../../components/marketplace/ItemArt";
 import WearableIcon from "../../components/wardrobe/WearableIcon";
-import CharacterCard from "../../components/characters/CharacterCard";
-import WearableCard from "../../components/wardrobe/WearableCard";
+import PackCard from "../../components/characters/PackCard";
 import NetworkBadge from "../../components/wallet/NetworkBadge";
 
 import { useEdition } from "../../context/EditionContext";
-import { useCharacters } from "../../hooks/useCharacters";
-import { useWearables } from "../../hooks/useWearables";
+import { useCharacters, usePacks } from "../../hooks/useCharacters";
+import { useWearablePacks, useWearables } from "../../hooks/useWearables";
 import { useCollection } from "../../hooks/useCollection";
 
 const STEPS = [
@@ -51,6 +50,8 @@ function Marketplace() {
   const { edition } = useEdition();
   const { characters, error } = useCharacters();
   const { wearables } = useWearables();
+  const { packs: characterPacks } = usePacks();
+  const { packs: wardrobePacks } = useWearablePacks();
   const { ownsCharacter, ownsWearable } = useCollection();
 
   const hero = HERO[edition];
@@ -116,16 +117,20 @@ function Marketplace() {
         <div className="row-heading">
           <div>
             <p className="eyebrow">CHARACTERS</p>
-            <h2>Choose your companion</h2>
+            <h2>Choose your pack</h2>
           </div>
           <Link to="/characters" className="text-link">
             All characters →
           </Link>
         </div>
 
-        <div className="character-grid">
-          {characters.map((c) => (
-            <CharacterCard key={c.id} character={c} owned={ownsCharacter(c.id)} />
+        <div className="pack-grid">
+          {characterPacks.map((pack) => (
+            <PackCard
+              key={pack.id}
+              pack={pack}
+              ownedCount={pack.items.filter((c) => ownsCharacter(c.id)).length}
+            />
           ))}
         </div>
       </section>
@@ -134,16 +139,21 @@ function Marketplace() {
         <div className="row-heading">
           <div>
             <p className="eyebrow">WARDROBE</p>
-            <h2>Fresh off the rack</h2>
+            <h2>A rack for every pack</h2>
           </div>
           <Link to="/wardrobe" className="text-link">
             Full wardrobe →
           </Link>
         </div>
 
-        <div className="wearable-grid">
-          {wearables.slice(0, 4).map((w) => (
-            <WearableCard key={w.id} wearable={w} owned={ownsWearable(w.id)} />
+        <div className="pack-grid">
+          {wardrobePacks.map((pack) => (
+            <PackCard
+              key={pack.id}
+              pack={pack}
+              kind="wearables"
+              ownedCount={pack.items.filter((w) => ownsWearable(w.id)).length}
+            />
           ))}
         </div>
       </section>

@@ -1,28 +1,92 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router";
-import { Compass } from "lucide-react";
+import { Link, useParams, useSearchParams } from "react-router";
+import { ArrowLeft, Compass } from "lucide-react";
 
 import PageHeader from "../../components/marketplace/PageHeader";
 import CategoryTabs from "../../components/marketplace/CategoryTabs";
 import WearableCard from "../../components/wardrobe/WearableCard";
 import FittingRoom from "../../components/wardrobe/FittingRoom";
+import PackCard from "../../components/characters/PackCard";
 import EmptyState from "../../components/collection/EmptyState";
 import NetworkBadge from "../../components/wallet/NetworkBadge";
 
 import { useEdition } from "../../context/EditionContext";
 import { useCharacters } from "../../hooks/useCharacters";
-import { useWearables } from "../../hooks/useWearables";
+import { useWearablePacks, useWearables } from "../../hooks/useWearables";
 import { useCollection } from "../../hooks/useCollection";
 import { useAsync } from "../../hooks/useAsync";
 import { useWallet } from "../../hooks/useWallet";
 import { fitsCharacter, getWearableTypes } from "../../services/marketplace/catalog";
 import { fetchLoadout, saveLoadout } from "../../services/backend/loadouts";
 import { getSession } from "../../services/backend/session";
+import { packs } from "../../data/packs";
 
 const sameSlots = (a = {}, b = {}) =>
   JSON.stringify(Object.entries(a).sort()) === JSON.stringify(Object.entries(b).sort());
 
+// Links that open the fitting room straight away (try an item on, dress a
+// character, your own wardrobe, a filtered rail) skip the pack grid.
+const ROOM_PARAMS = ["item", "character", "view", "type", "owned"];
+
+// /wardrobe                → the wardrobe's packs
+// /wardrobe/packs/:packId  → the fitting room with that pack's rack
+// /wardrobe?item=… etc.    → the fitting room with every pack's pieces
 function Wardrobe() {
+  const { packId } = useParams();
+  const [params] = useSearchParams();
+
+  if (packId) {
+    const pack = packs.find((p) => p.id === packId);
+    if (!pack) {
+      return (
+        <div className="container market-page">
+          <EmptyState
+            title="This rack is empty."
+            action={
+              <Link to="/wardrobe" className="ghost-button">
+                <ArrowLeft size={16} /> All packs
+              </Link>
+            }>
+            We couldn’t find a wardrobe pack called “{packId}”.
+          </EmptyState>
+        </div>
+      );
+    }
+    return <FittingRoomPage key={pack.id} pack={pack} />;
+  }
+
+  if (ROOM_PARAMS.some((key) => params.has(key))) return <FittingRoomPage pack={null} />;
+  return <WardrobePacks />;
+}
+
+function WardrobePacks() {
+  const { packs: grouped, loading, error } = useWearablePacks();
+  const { ownsWearable } = useCollection();
+
+  return (
+    <div className="container market-page">
+      <PageHeader eyebrow="WARDROBE" title="Pick a rack." aside={<NetworkBadge />}>
+        Every pack has its own wardrobe. Open one to try its pieces on — each one is an NFT that
+        lists the characters it fits.
+      </PageHeader>
+
+      {error && <p className="market-error">Couldn’t load the wardrobe. Try refreshing.</p>}
+
+      <div className="pack-grid" aria-busy={loading}>
+        {grouped.map((pack) => (
+          <PackCard
+            key={pack.id}
+            pack={pack}
+            kind="wearables"
+            ownedCount={pack.items.filter((w) => ownsWearable(w.id)).length}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FittingRoomPage({ pack }) {
   const [params, setParams] = useSearchParams();
   const { edition } = useEdition();
   const { characters } = useCharacters();
@@ -120,13 +184,17 @@ function Wardrobe() {
     }
   };
 
+  const racked = pack ? wearables.filter((w) => (w.pack ?? "wild") === pack.id) : wearables;
   const rail = mineView
-    ? wearables.filter((w) => ownsWearable(w.id) && fitsCharacter(w, character?.id))
-    : wearables;
+    ? racked.filter((w) => ownsWearable(w.id) && fitsCharacter(w, character?.id))
+    : racked;
 
+  // A pack's rack is small: only show the types it actually has.
   const tabs = [
     { id: null, label: "All", count: rail.length },
-    ...types.map((t) => ({ ...t, count: rail.filter((w) => w.type === t.id).length })),
+    ...types
+      .map((t) => ({ ...t, count: rail.filter((w) => w.type === t.id).length }))
+      .filter((t) => !pack || t.count || t.id === type),
   ];
 
   const visible = rail.filter(
@@ -148,8 +216,16 @@ function Wardrobe() {
 
   return (
     <div className="container market-page">
-      <PageHeader eyebrow="WARDROBE" title="Dress the part." aside={<NetworkBadge />}>
-        Try anything on, then make it yours. Every piece is an NFT, and each one lists the characters it fits.
+      <Link to="/wardrobe" className="back-link">
+        <ArrowLeft size={16} /> All packs
+      </Link>
+
+      <PageHeader
+        eyebrow={pack ? `WARDROBE · ${pack.name.toUpperCase()}` : "WARDROBE"}
+        title={pack?.wardrobe?.tagline ?? "Dress the part."}
+        aside={<NetworkBadge />}>
+        {pack?.wardrobe?.description ??
+          "Try anything on, then make it yours. Every piece is an NFT, and each one lists the characters it fits."}
       </PageHeader>
 
       <div className="wardrobe-layout">

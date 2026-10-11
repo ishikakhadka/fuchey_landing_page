@@ -9,6 +9,8 @@ export const SLOTS = ["hat", "headwear", "outfit", "accessory", "backpack", "hel
 const RARITIES = ["common", "uncommon", "rare", "epic", "legendary"];
 const STATUSES = ["available", "coming-soon", "sold-out"];
 const EDITIONS = ["companion", "dev"];
+// Mirrors src/data/packs.js.
+const PACKS = ["wild", "pirates", "tribal", "rogues"];
 const BUILT_IN_IMAGES = ["yeti", "cyber"];
 
 type Obj = Record<string, unknown>;
@@ -207,6 +209,7 @@ export function validateWearable(input: unknown, characterIds: string[]) {
   const row = {
     ...base,
     type,
+    pack: c.oneOf(input, "pack", PACKS, "wild"),
     compatible_characters: compatible,
     ...listing(c, input),
     image_url: c.url(input.image_url, "image_url"),
@@ -254,6 +257,7 @@ export function validateCharacter(input: unknown) {
     quote: c.str(input, "quote", { max: 200 }),
     edition: c.oneOf(input, "edition", EDITIONS, "companion"),
     edition_label: c.str(input, "edition_label", { max: 40 }),
+    pack: c.oneOf(input, "pack", PACKS, "wild"),
     art,
     attributes,
     wardrobe_slots: slots,

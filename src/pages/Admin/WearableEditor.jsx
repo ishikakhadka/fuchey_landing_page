@@ -4,6 +4,7 @@ import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Grid3x3, RotateCcw } from "l
 import CharacterRender from "../../components/characters/CharacterRender";
 import WearableCard from "../../components/wardrobe/WearableCard";
 import { RARITIES, WEARABLE_TYPES } from "../../data/taxonomy";
+import { packs } from "../../data/packs";
 import { CHARACTER_VIEW, resolveVisual, visualBounds } from "../../render/visual";
 import { fitsCharacter } from "../../services/marketplace/catalog";
 import { adminDelete, adminSaveWearable } from "../../services/backend/admin";
@@ -142,6 +143,7 @@ function WearableEditor({ initial, characters, wearables, session, onSaved, onDe
               path="type"
               hint="One item per slot can be worn at a time."
             />
+            <Select label="Pack" value={draft.pack ?? "wild"} options={packs.map((p) => ({ id: p.id, label: p.name }))} onChange={(v) => set({ pack: v })} errors={errors} path="pack" hint="Where it shows in the Wardrobe." />
             <Select label="Rarity" value={draft.rarity} options={RARITY_OPTIONS} onChange={(v) => set({ rarity: v })} errors={errors} path="rarity" />
           </Section>
 

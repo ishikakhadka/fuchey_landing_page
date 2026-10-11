@@ -45,7 +45,7 @@ const lines = [
 
 characters.forEach((c, i) => {
   lines.push(
-    `insert into public.characters (id, name, title, tagline, quote, description, edition, edition_label, rarity, art, attributes, wardrobe_slots, status, price, supply, limit_per_wallet, published, sort_order) values (` +
+    `insert into public.characters (id, name, title, tagline, quote, description, edition, edition_label, pack, rarity, art, attributes, wardrobe_slots, status, price, supply, limit_per_wallet, published, sort_order) values (` +
       [
         text(c.id),
         text(c.name),
@@ -55,6 +55,7 @@ characters.forEach((c, i) => {
         text(c.description),
         text(c.edition),
         text(c.editionLabel),
+        text(c.pack ?? "wild"),
         text(c.rarity),
         json(c.art),
         json(c.attributes ?? []),
@@ -74,12 +75,13 @@ lines.push("");
 
 wearables.forEach((w, i) => {
   lines.push(
-    `insert into public.wearables (id, name, description, type, rarity, compatible_characters, status, price, supply, limit_per_wallet, visual, published, sort_order) values (` +
+    `insert into public.wearables (id, name, description, type, pack, rarity, compatible_characters, status, price, supply, limit_per_wallet, visual, published, sort_order) values (` +
       [
         text(w.id),
         text(w.name),
         text(w.description),
         text(w.type),
+        text(w.pack ?? "wild"),
         text(w.rarity),
         arr(w.compatibleCharacters, "text"),
         text(w.listing.status),

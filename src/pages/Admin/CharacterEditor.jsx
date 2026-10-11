@@ -4,6 +4,7 @@ import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import ItemArt from "../../components/marketplace/ItemArt";
 import { RARITIES, WEARABLE_TYPES } from "../../data/taxonomy";
 import { editions } from "../../data/editions";
+import { packs } from "../../data/packs";
 import { fitsCharacter } from "../../services/marketplace/catalog";
 import { adminDelete, adminSaveCharacter } from "../../services/backend/admin";
 import { Checks, Field, NumberInput, Section, Select, TextInput, SaveError } from "./fields";
@@ -20,6 +21,7 @@ const BUILT_IN = [
   { id: "cyber", label: "Cyber Yeti (built-in)" },
 ];
 const EDITION_OPTIONS = Object.values(editions).map((e) => ({ id: e.id, label: e.label }));
+const PACK_OPTIONS = packs.map((p) => ({ id: p.id, label: p.name }));
 
 // Create / edit a character. Base art stays separate from wearable layers:
 // it's either built-in art, an uploaded 96×96 PNG, or a placeholder sprite.
@@ -100,6 +102,7 @@ function CharacterEditor({ initial, wearables, session, onSaved, onDeleted, onCl
             <TextInput label="Description" value={draft.description} onChange={(v) => set({ description: v })} errors={errors} path="description" multiline wide />
             <Select label="Edition (theme)" value={draft.edition} options={EDITION_OPTIONS} onChange={(v) => set({ edition: v })} errors={errors} path="edition" />
             <TextInput label="Edition label" value={draft.editionLabel} onChange={(v) => set({ editionLabel: v })} errors={errors} path="edition_label" />
+            <Select label="Pack" value={draft.pack ?? "wild"} options={PACK_OPTIONS} onChange={(v) => set({ pack: v })} errors={errors} path="pack" hint="Where it shows on the Characters page." />
             <Select label="Rarity" value={draft.rarity} options={Object.values(RARITIES)} onChange={(v) => set({ rarity: v })} errors={errors} path="rarity" />
           </Section>
 

@@ -274,6 +274,16 @@
   width: min(78%, 440px);
 }
 
+/* Placeholder sprites fill their whole grid (no headroom like base art),
+   so they draw smaller to sit at the same height on a stage. */
+.item-art.item-art-sprite {
+  width: 48%;
+}
+
+.item-art-lg.item-art-sprite {
+  width: min(54%, 300px);
+}
+
 .item-art-layers {
   position: relative;
   width: 100%;
@@ -688,6 +698,207 @@
 
 .character-card-meta dd {
   font-weight: 600;
+}
+
+/* =====================================================
+   PACK CARDS (Characters page)
+===================================================== */
+
+.pack-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+  gap: 28px;
+}
+
+.pack-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition:
+    transform 400ms var(--ease-spring),
+    box-shadow 400ms ease,
+    border-color 300ms ease;
+}
+
+.pack-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-lg);
+}
+
+.pack-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.pack-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-size: 22px 22px;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.55) 1.2px, transparent 1.5px);
+  opacity: 0.5;
+}
+
+.pack-stage-wild {
+  background: radial-gradient(circle at 50% 38%, #ffffff 0%, #e4eff4 46%, #bcd5e0 100%);
+}
+
+.pack-stage-pirates {
+  background: radial-gradient(circle at 50% 30%, #fbe7c2 0%, #7fc3cf 55%, #2f6f86 100%);
+}
+
+.pack-stage-tribal {
+  background: radial-gradient(circle at 50% 35%, #fde3b0 0%, #e9a35c 52%, #8a4a25 100%);
+}
+
+.pack-stage-rogues {
+  background: radial-gradient(circle at 50% 35%, #d9d3ec 0%, #8f86b5 52%, #3f3a5c 100%);
+}
+
+/* Up to three characters side by side, the middle one in front. */
+.pack-lineup {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 86%;
+  margin-top: 6%;
+}
+
+/* Base art sits in a 96-grid with headroom for hats; sprites fill their
+   whole box, so they get a smaller slot to read at the same height. */
+.pack-lineup .item-art {
+  --slot: 44%;
+
+  flex: 0 0 var(--slot);
+  width: auto;
+  margin-inline: -4%;
+  transition: transform 500ms var(--ease-spring);
+}
+
+.pack-lineup .item-art-sprite {
+  --slot: 28%;
+
+  margin-inline: 1%;
+}
+
+.pack-lineup .item-art.is-locked {
+  --slot: 26%;
+}
+
+.pack-lineup[data-count="3"] .item-art:nth-child(2) {
+  z-index: 1;
+  flex-basis: calc(var(--slot) * 1.12);
+}
+
+.pack-card:hover .pack-lineup .item-art {
+  transform: translateY(-6px);
+}
+
+.pack-card:hover .pack-lineup .item-art:nth-child(2) {
+  transform: translateY(-10px) scale(1.04);
+}
+
+/* Wardrobe packs: up to four pieces on little tiles. */
+.pack-rack {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  width: 84%;
+  margin-top: 4%;
+}
+
+.pack-rack-item {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 6px 16px rgba(15, 36, 54, 0.14);
+  transition: transform 500ms var(--ease-spring);
+}
+
+.pack-rack-item .wearable-icon {
+  width: 74%;
+  height: 74%;
+}
+
+.pack-card:hover .pack-rack-item {
+  transform: translateY(-6px) rotate(-3deg);
+}
+
+.pack-card:hover .pack-rack-item:nth-child(even) {
+  transform: translateY(-4px) rotate(3deg);
+}
+
+.pack-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 10px;
+  padding: 22px 24px 24px;
+}
+
+.pack-card h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pack-card-tagline {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brand);
+}
+
+.pack-card-description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.pack-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.pack-card-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.pack-card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brand);
+  transition: gap 300ms var(--ease-out);
+}
+
+.pack-card:hover .pack-card-cta {
+  gap: 10px;
 }
 
 /* =====================================================

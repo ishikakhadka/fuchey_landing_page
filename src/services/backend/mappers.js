@@ -1,8 +1,8 @@
 // Database rows ⇄ the item shape the components have always used, so the
 // marketplace UI and renderer didn't have to change when the data moved:
 //
-//   character: { id, name, title, …, art, wardrobeSlots, listing: { status, price, supply, limitPerWallet }, nft }
-//   wearable:  { id, name, type, …, art: { kind: "wearable" }, compatibleCharacters, listing, visual, nft }
+//   character: { id, name, title, …, pack, art, wardrobeSlots, listing: { status, price, supply, limitPerWallet }, nft }
+//   wearable:  { id, name, type, pack, …, art: { kind: "wearable" }, compatibleCharacters, listing, visual, nft }
 //
 // `nft` is keyed by network: { devnet: { collection, candyMachine, … } }.
 
@@ -47,6 +47,7 @@ export function rowToCharacter(r) {
     description: r.description,
     edition: r.edition,
     editionLabel: r.edition_label,
+    pack: r.pack ?? "wild",
     rarity: r.rarity,
     art: r.art,
     attributes: r.attributes ?? [],
@@ -69,6 +70,7 @@ export function characterToRow(c) {
     description: c.description ?? "",
     edition: c.edition,
     edition_label: c.editionLabel ?? "",
+    pack: c.pack ?? "wild",
     rarity: c.rarity,
     art: c.art,
     attributes: c.attributes ?? [],
@@ -86,6 +88,7 @@ export function rowToWearable(r) {
     id: r.id,
     name: r.name,
     type: r.type,
+    pack: r.pack ?? "wild",
     rarity: r.rarity,
     description: r.description,
     art: { kind: "wearable" },
@@ -105,6 +108,7 @@ export function wearableToRow(w) {
     name: w.name,
     description: w.description ?? "",
     type: w.type,
+    pack: w.pack ?? "wild",
     rarity: w.rarity,
     compatible_characters: w.compatibleCharacters ?? [],
     ...listingTo(w.listing),

@@ -4,6 +4,7 @@ import App from "./App.jsx";
 import Home from "./pages/Home/Home.jsx";
 import Marketplace from "./pages/Marketplace/Marketplace.jsx";
 import Characters from "./pages/Characters/Characters.jsx";
+import CharacterPack from "./pages/CharacterPack/CharacterPack.jsx";
 import CharacterDetails from "./pages/CharacterDetails/CharacterDetails.jsx";
 import Wardrobe from "./pages/Wardrobe/Wardrobe.jsx";
 import Collection from "./pages/Collection/Collection.jsx";
@@ -23,8 +24,10 @@ export const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: "marketplace", element: <Marketplace /> },
       { path: "characters", element: <Characters /> },
+      { path: "characters/packs/:packId", element: <CharacterPack /> },
       { path: "characters/:id", element: <CharacterDetails /> },
       { path: "wardrobe", element: <Wardrobe /> },
+      { path: "wardrobe/packs/:packId", element: <Wardrobe /> },
       { path: "collection", element: <Collection /> },
       { path: "collection/:address", element: <AssetDetails /> },
       { path: "admin", lazy: loadAdmin },

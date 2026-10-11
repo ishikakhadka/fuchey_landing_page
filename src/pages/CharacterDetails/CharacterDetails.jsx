@@ -11,6 +11,7 @@ import EmptyState from "../../components/collection/EmptyState";
 import NetworkBadge from "../../components/wallet/NetworkBadge";
 
 import { editions } from "../../data/editions";
+import { getPack } from "../../data/packs";
 import { useCharacter } from "../../hooks/useCharacters";
 import { useCompatibleWearables } from "../../hooks/useWearables";
 import { useCollection } from "../../hooks/useCollection";
@@ -47,6 +48,7 @@ function CharacterDetails() {
 
   const { listing } = character;
   const owned = ownsCharacter(character.id);
+  const pack = getPack(character.pack);
   const slots = getWearableTypes().filter((t) => character.wardrobeSlots.includes(t.id));
 
   const specs = [
@@ -60,8 +62,8 @@ function CharacterDetails() {
 
   return (
     <div className="container market-page character-details">
-      <Link to="/characters" className="back-link">
-        <ArrowLeft size={16} strokeWidth={2.2} /> All characters
+      <Link to={`/characters/packs/${pack.id}`} className="back-link">
+        <ArrowLeft size={16} strokeWidth={2.2} /> {pack.name}
       </Link>
 
       <div className="details-grid">

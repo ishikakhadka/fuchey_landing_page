@@ -10,6 +10,7 @@ import EmptyState from "../../components/collection/EmptyState";
 import { useWallet } from "../../hooks/useWallet";
 import { useCatalog } from "../../context/CatalogContext";
 import { backendConfigured } from "../../config/backend";
+import { getPack } from "../../data/packs";
 import { getWearableTypes } from "../../services/marketplace/catalog";
 import { adminList, adminSession } from "../../services/backend/admin";
 import { cachedSession, clearSession, getSession } from "../../services/backend/session";
@@ -228,8 +229,8 @@ function Admin() {
                 <strong>{item.name}</strong>
                 <span className="admin-hint">
                   {tab === "wearables"
-                    ? `${typeLabel(item.type)} · fits ${item.compatibleCharacters.map(charName).join(", ") || "nobody"}`
-                    : `${item.editionLabel || item.edition} · ${item.art.kind === "character" ? "dressable" : "placeholder"}`}
+                    ? `${getPack(item.pack).name} · ${typeLabel(item.type)} · fits ${item.compatibleCharacters.map(charName).join(", ") || "nobody"}`
+                    : `${getPack(item.pack).name} · ${item.editionLabel || item.edition} · ${item.art.kind === "character" ? "dressable" : "placeholder"}`}
                 </span>
               </span>
               <span className="admin-list-meta">
