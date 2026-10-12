@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router";
+import { Link, Navigate, useParams, useSearchParams } from "react-router";
 import { ArrowLeft, Compass } from "lucide-react";
 
 import PageHeader from "../../components/marketplace/PageHeader";
@@ -10,7 +10,7 @@ import PackCard from "../../components/characters/PackCard";
 import EmptyState from "../../components/collection/EmptyState";
 import NetworkBadge from "../../components/wallet/NetworkBadge";
 
-import { useEdition } from "../../context/EditionContext";
+import { useCatalog } from "../../context/CatalogContext";
 import { useCharacters } from "../../hooks/useCharacters";
 import { useWearablePacks, useWearables } from "../../hooks/useWearables";
 import { useCollection } from "../../hooks/useCollection";
@@ -30,7 +30,7 @@ const ROOM_PARAMS = ["item", "look", "character", "view", "type", "owned"];
 
 // /wardrobe                → the wardrobe's packs
 // /wardrobe/packs/:packId  → the fitting room with that pack's rack
-// /wardrobe?item=… etc.    → the fitting room with every pack's pieces
+// /wardrobe?item=… etc.    → redirects into the pack that link is about
 function Wardrobe() {
   const { packId } = useParams();
   const [params] = useSearchParams();
@@ -55,8 +55,30 @@ function Wardrobe() {
     return <FittingRoomPage key={pack.id} pack={pack} />;
   }
 
-  if (ROOM_PARAMS.some((key) => params.has(key))) return <FittingRoomPage pack={null} />;
+  if (ROOM_PARAMS.some((key) => params.has(key))) return <ToPack />;
   return <WardrobePacks />;
+}
+
+// A fitting-room link without a pack (/wardrobe?character=warrior&look=…,
+// ?item=…, ?view=mine) opens in the pack it's about, so the room only shows
+// that pack's characters and pieces — everything on the rack fits. The item
+// decides first, then the character, then the look; otherwise Wild.
+function ToPack() {
+  const [params] = useSearchParams();
+  const { characters, wearables, loading } = useCatalog();
+  if (loading) return <div className="container market-page" aria-busy="true" />;
+
+  const item = wearables.find((w) => w.id === params.get("item"));
+  const character = characters.find((c) => c.id === params.get("character"));
+  const lookPiece = wearables.find((w) => w.id === params.get("look")?.split(",")[0]);
+  const packId = (item ?? character ?? lookPiece)?.pack ?? "wild";
+
+  const next = new URLSearchParams(params);
+  // A character from another pack can't wear the linked item: let the room
+  // pick one of the item's own characters instead.
+  if (item && character && (character.pack ?? "wild") !== packId) next.delete("character");
+  const query = next.toString();
+  return <Navigate replace to={`/wardrobe/packs/${packId}${query ? `?${query}` : ""}`} />;
 }
 
 function WardrobePacks() {
@@ -88,7 +110,6 @@ function WardrobePacks() {
 
 function FittingRoomPage({ pack }) {
   const [params, setParams] = useSearchParams();
-  const { edition } = useEdition();
   const { characters } = useCharacters();
   const { wearables, loading, error } = useWearables();
   const { connected, address, ownsWearable, countOwned, loading: ownedLoading } = useCollection();
@@ -101,14 +122,11 @@ function FittingRoomPage({ pack }) {
   const wearable = (id) => wearables.find((w) => w.id === id);
   const linked = params.get("item");
 
-  // A pack's fitting room dresses that pack's own characters; the full room
-  // (deep links) has everyone who can be dressed.
-  const dressable = characters.filter(
-    (c) => isDressable(c) && (!pack || (c.pack ?? "wild") === pack.id),
-  );
+  // A pack's fitting room dresses that pack's own characters.
+  const dressable = characters.filter((c) => isDressable(c) && (c.pack ?? "wild") === pack.id);
   // /wardrobe?character=… (from "Dress it up") opens on that character.
   const [characterId, setCharacterId] = useState(
-    params.get("character") ?? (pack && pack.id !== "wild" ? null : edition === "dev" ? "cyber" : "yeti"),
+    params.get("character") ?? (pack.id !== "wild" ? null : "yeti"),
   );
   const character = dressable.find((c) => c.id === characterId) ?? dressable[0];
 
@@ -204,17 +222,17 @@ function FittingRoomPage({ pack }) {
     }
   };
 
-  const racked = pack ? wearables.filter((w) => (w.pack ?? "wild") === pack.id) : wearables;
+  const racked = wearables.filter((w) => (w.pack ?? "wild") === pack.id);
   const rail = mineView
     ? racked.filter((w) => ownsWearable(w.id) && fitsCharacter(w, character?.id))
     : racked;
 
-  // A pack's rack is small: only show the types it actually has.
+  // Only show the types this rack actually has.
   const tabs = [
     { id: null, label: "All", count: rail.length },
     ...types
       .map((t) => ({ ...t, count: rail.filter((w) => w.type === t.id).length }))
-      .filter((t) => !pack || t.count || t.id === type),
+      .filter((t) => t.count || t.id === type),
   ];
 
   const visible = rail.filter(
@@ -241,10 +259,10 @@ function FittingRoomPage({ pack }) {
       </Link>
 
       <PageHeader
-        eyebrow={pack ? `WARDROBE · ${pack.name.toUpperCase()}` : "WARDROBE"}
-        title={pack?.wardrobe?.tagline ?? "Dress the part."}
+        eyebrow={`WARDROBE · ${pack.name.toUpperCase()}`}
+        title={pack.wardrobe?.tagline ?? "Dress the part."}
         aside={<NetworkBadge />}>
-        {pack?.wardrobe?.description ??
+        {pack.wardrobe?.description ??
           "Try anything on, then make it yours. Every piece is an NFT, and each one lists the characters it fits."}
       </PageHeader>
 

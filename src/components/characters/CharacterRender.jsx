@@ -1,11 +1,10 @@
 import { useMemo } from "react";
 import yetiUrl from "../../assets/yeti.png";
-import cyberUrl from "../../assets/cyber-yeti.png";
 import { CHARACTER_VIEW, spriteRuns, stackLayers } from "../../render/visual";
 import WearableLayer from "./WearableLayer";
 
 // Base art bundled with the site; any other value is an uploaded image URL.
-const BUILT_IN = { yeti: yetiUrl, cyber: cyberUrl };
+const BUILT_IN = { yeti: yetiUrl };
 
 // A pixel sprite scaled to fill the 96×96 grid, like the base images.
 function SpriteBase({ sprite }) {

@@ -38,33 +38,6 @@ export const characters = [
     },
   },
   {
-    id: "cyber",
-    name: "Cyber",
-    title: "Fuchey Cyber",
-    tagline: "Dev Edition",
-    edition: "dev",
-    editionLabel: "Dev",
-    pack: "wild",
-    rarity: "rare",
-    quote: "Build with Fuchey.",
-    description:
-      "A night-shift Yeti for builders. Glowing eyes, soft midnight fur, and a soft spot for green test suites — Cyber pings on every invoke.",
-    art: { kind: "character", image: "cyber" },
-    attributes: [
-      { trait_type: "Character", value: "Cyber" },
-      { trait_type: "Edition", value: "Dev" },
-      { trait_type: "Mood", value: "Focused" },
-      { trait_type: "Habitat", value: "Terminal" },
-    ],
-    wardrobeSlots: ["hat", "headwear", "outfit", "accessory", "backpack", "held", "special"],
-    listing: {
-      status: "available",
-      price: 0.5,
-      supply: 1000,
-      limitPerWallet: null,
-    },
-  },
-  {
     id: "rhino",
     name: "Rhino",
     title: "Fuchey Rhino",

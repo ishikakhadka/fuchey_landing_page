@@ -1,26 +1,28 @@
 import { useRef, useState } from "react";
-import { Link } from "react-router";
-import { ArrowRight, Sparkles } from "lucide-react";
 
 import yetiUrl from "../../assets/yeti.png";
-import NetworkBadge from "../wallet/NetworkBadge";
 import ScratchCard from "./ScratchCard";
 import { useCatalog } from "../../context/CatalogContext";
+import { useEdition } from "../../context/EditionContext";
 import { useParallax, useReducedMotion } from "../../hooks/useMotion";
 
 // Picks for "Deal another card" (only called from click handlers).
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
-// The home page opener: a scratch card dealt with a random character under a
-// frost coating. Scratching it off counts as revealing that character for the
-// rest of the page (`onCardReveal`). Characters still under wraps (locked
-// art) are never dealt, so there's always a real look to uncover.
-function ExperienceHero({ onReveal, revealedIds, onCardReveal }) {
+// The home page opener: a scratch card with, under a frost coating, either a
+// random character or the Fuchey device (the toggle above the card picks).
+// Scratching a character off counts as revealing it for the rest of the page
+// (`onCardReveal`). Characters still under wraps (locked art) are never
+// dealt, so there's always a real look to uncover.
+function ExperienceHero({ revealedIds, onCardReveal }) {
   const ref = useRef(null);
   const reduced = useReducedMotion();
   useParallax(ref, !reduced);
 
   const { characters, error } = useCatalog();
+  const { current } = useEdition();
+  const [subject, setSubject] = useState("character");
+  const [deviceRevealed, setDeviceRevealed] = useState(false);
   const deck = characters.filter((c) => !c.art.locked);
   const [firstPick] = useState(() => Math.random());
   const [cardId, setCardId] = useState(null);
@@ -60,24 +62,44 @@ function ExperienceHero({ onReveal, revealedIds, onCardReveal }) {
           </p>
 
           <div className="hero-actions">
-            <Link to="/marketplace" className="primary-button" viewTransition>
-              Explore the Collection
-              <ArrowRight size={18} strokeWidth={2.2} />
-            </Link>
-            <button type="button" className="ghost-button" onClick={onReveal}>
-              <Sparkles size={16} strokeWidth={2} />
-              Reveal a Character
-            </button>
+            <a href="#waitlist" className="primary-button">
+              Join the waitlist
+            </a>
+            <a href="#discover" className="ghost-button">
+              Explore the collection
+            </a>
           </div>
 
-          <div className="xp-hero-meta">
-            <NetworkBadge />
-            <span>Characters and wearables you hold in your own wallet.</span>
+          <div className="xp-hero-waitlist">
+            <strong>The Fuchey device is in development.</strong>
+            <span>
+              Join the waitlist for early access to the Companion Edition, for everyday Solana
+              users, or the Dev Edition, for builders.
+            </span>
           </div>
         </div>
 
         <div className="xp-hero-stage">
-          {error && !characters.length ? (
+          <div className="scratch-toggle" role="group" aria-label="What’s under the frost">
+            {[
+              ["character", "Character"],
+              ["device", "Device"],
+            ].map(([id, label]) => (
+              <button key={id} type="button" aria-pressed={subject === id} onClick={() => setSubject(id)}>
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {subject === "device" ? (
+            <ScratchCard
+              key="device"
+              kind="device"
+              edition={current.id}
+              revealed={deviceRevealed}
+              onReveal={() => setDeviceRevealed(true)}
+            />
+          ) : error && !characters.length ? (
             <div className="scratch-card is-fallback">
               <div className="scratch-window character-stage stage-companion">
                 <img src={yetiUrl} alt="Yeti, a Fuchey character" className="scratch-fallback-art" />
@@ -85,7 +107,7 @@ function ExperienceHero({ onReveal, revealedIds, onCardReveal }) {
             </div>
           ) : (
             <ScratchCard
-              key={dealt}
+              key={`character-${dealt}`}
               character={character}
               revealed={revealed}
               onReveal={() => character && onCardReveal(character.id)}

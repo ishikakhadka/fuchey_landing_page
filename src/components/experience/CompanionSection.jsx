@@ -1,5 +1,4 @@
 import { Component, lazy, Suspense, useRef } from "react";
-import { CircleDot, Hourglass } from "lucide-react";
 
 import yetiUrl from "../../assets/yeti.png";
 import { useInView } from "../../hooks/useMotion";
@@ -7,18 +6,6 @@ import { useInView } from "../../hooks/useMotion";
 // three.js is heavy: its own chunk, fetched only when this section nears the
 // viewport. The scene pauses itself off-screen and disposes on unmount.
 const Fuchey3D = lazy(() => import("../Fuchey3D.jsx"));
-
-// What exists today vs. what the device is being built to do. Keep this
-// honest: move an item to LIVE only once it ships.
-const LIVE = [
-  "Collect Fuchey characters and wearables as NFTs in your own Solana wallet (devnet for now).",
-  "Try wearables on in the fitting room and save a look to your wallet. Saving signs a message, not a transaction.",
-];
-const BUILDING = [
-  "A desk companion that shows your Fuchey character, dressed in its saved look.",
-  "Reactions to your wallet activity: moods when tokens land or something new arrives.",
-  "Integrated self-custodial wallet: review and approve transactions on the device itself.",
-];
 
 // Static stand-in when WebGL or the 3D chunk isn't available.
 function DeviceFallback() {
@@ -74,28 +61,6 @@ function CompanionSection({ edition }) {
             on-chain collectibles with a physical companion and integrated self-custodial wallet
             functionality.
           </p>
-
-          <div className="xp-status">
-            <h3>
-              <CircleDot size={15} strokeWidth={2.4} /> Live today, on the web
-            </h3>
-            <ul>
-              {LIVE.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="xp-status is-planned">
-            <h3>
-              <Hourglass size={15} strokeWidth={2.2} /> In development, on the device
-            </h3>
-            <ul>
-              {BUILDING.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </div>
 
           <p className="xp-fineprint">
             The device is designed for supported Fuchey collectibles. Other NFTs won’t work with it

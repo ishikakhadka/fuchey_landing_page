@@ -1,16 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
-import { ArrowRight, Eye, Shuffle } from "lucide-react";
 
 import ItemArt from "../marketplace/ItemArt";
 import { getPack } from "../../data/packs";
+
+const Fuchey3D = lazy(() => import("../Fuchey3D.jsx"));
 
 const BRUSH = 22; // scratch radius, CSS px
 const CLEAR_AT = 0.45; // share scratched off before the rest falls away
 
 // The frost coating: a brushed ice-blue foil with a little sparkle and a
 // prompt, drawn to fit the canvas.
-function paintCoat(canvas) {
+function paintCoat(canvas, sub) {
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   const { width: w, height: h } = canvas;
   const dpr = w / canvas.clientWidth || 1;
@@ -47,11 +48,11 @@ function paintCoat(canvas) {
   ctx.textBaseline = "middle";
   // Shrinks on narrow cards so the prompt never touches the edges.
   const size = Math.min(13, canvas.clientWidth / 19);
-  ctx.font = `400 ${size * dpr}px Michroma, "Arial Black", sans-serif`;
-  ctx.fillText("SCRATCH TO REVEAL", w / 2, h / 2);
-  ctx.font = `500 ${10 * dpr}px "JetBrains Mono", monospace`;
+  ctx.font = `700 ${size * 1.35 * dpr}px "Bricolage Grotesque", "DM Sans", sans-serif`;
+  ctx.fillText("Scratch to reveal", w / 2, h / 2);
+  ctx.font = `500 ${12 * dpr}px "DM Sans", sans-serif`;
   ctx.fillStyle = "rgba(22, 46, 62, 0.7)";
-  ctx.fillText("who’s under the frost?", w / 2, h / 2 + 22 * dpr);
+  ctx.fillText(sub, w / 2, h / 2 + 24 * dpr);
 }
 
 // Share of the coating already scratched away (sampled, not every pixel).
@@ -67,13 +68,27 @@ function clearedShare(canvas) {
   return total ? clear / total : 0;
 }
 
-// A collectible scratch card for the hero: a character under a frost coating
-// that the visitor scratches off with the pointer (or reveals with a button).
-// Nothing is won: it's a look at one character from the collection.
-function ScratchCard({ character, revealed, onReveal, onDeal }) {
+// What's under the frost, per kind of card.
+const KINDS = {
+  character: {
+    sub: "who’s under the frost?",
+    hint: "A character from the collection is under the frost.",
+  },
+  device: {
+    sub: "what’s under the frost?",
+    hint: "The little device your characters will live on is under the frost.",
+  },
+};
+
+// A collectible scratch card for the hero: a character (or the Fuchey device)
+// under a frost coating that the visitor scratches off with the pointer, or
+// reveals with a button. Nothing is won: it's a look at the collection.
+function ScratchCard({ kind = "character", character, edition = "companion", revealed, onReveal, onDeal }) {
   const canvasRef = useRef(null);
   const [scratching, setScratching] = useState(false);
-  const ready = Boolean(character);
+  const device = kind === "device";
+  const copy = KINDS[kind];
+  const ready = device || Boolean(character);
 
   // Latest callback without re-running the canvas effect (which repaints).
   const revealRef = useRef(onReveal);
@@ -90,7 +105,7 @@ function ScratchCard({ character, revealed, onReveal, onDeal }) {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(canvas.clientWidth * dpr);
       canvas.height = Math.round(canvas.clientHeight * dpr);
-      paintCoat(canvas);
+      paintCoat(canvas, copy.sub);
       return;
     }
     let touched = false;
@@ -103,7 +118,7 @@ function ScratchCard({ character, revealed, onReveal, onDeal }) {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(canvas.clientWidth * dpr);
       canvas.height = Math.round(canvas.clientHeight * dpr);
-      paintCoat(canvas);
+      paintCoat(canvas, copy.sub);
     };
     fit();
     const ro = new ResizeObserver(fit);
@@ -165,7 +180,7 @@ function ScratchCard({ character, revealed, onReveal, onDeal }) {
       canvas.removeEventListener("pointerup", onUp);
       canvas.removeEventListener("pointercancel", onUp);
     };
-  }, [revealed, ready]);
+  }, [revealed, ready, copy.sub]);
 
   return (
     <div className={`scratch ${revealed ? "is-revealed" : ""} ${scratching ? "is-scratching" : ""}`}>
@@ -175,8 +190,14 @@ function ScratchCard({ character, revealed, onReveal, onDeal }) {
           <span>{revealed ? "Revealed" : "Scratch card"}</span>
         </div>
 
-        <div className={`scratch-window character-stage stage-${character?.edition ?? "companion"}`}>
-          {ready && (
+        <div
+          className={`scratch-window character-stage stage-${device ? edition : (character?.edition ?? "companion")} ${device ? "is-device" : ""}`}>
+          {device && (
+            <Suspense fallback={<div className="fuchey-3d is-loading" />}>
+              <Fuchey3D compact edition={edition} />
+            </Suspense>
+          )}
+          {!device && ready && (
             <div className="xp-idle">
               <ItemArt
                 art={character.art}
@@ -191,37 +212,47 @@ function ScratchCard({ character, revealed, onReveal, onDeal }) {
             <canvas
               ref={canvasRef}
               className={`scratch-coat ${ready ? "" : "is-waiting"}`}
-              aria-label="Scratch card coating. Drag across it to reveal a character, or use the reveal button below."
+              aria-label={`Scratch card coating. Drag across it to reveal ${device ? "the device" : "a character"}, or use the reveal button below.`}
               role="img"
             />
           )}
         </div>
 
         <div className="scratch-card-foot" aria-live="polite">
-          {revealed && character ? (
+          {revealed && device ? (
+            <a href="#waitlist" className="scratch-result">
+              <span>
+                <strong>Fuchey device</strong>
+                <small>In development</small>
+              </span>
+              <span className="scratch-inspect">Join the waitlist</span>
+            </a>
+          ) : revealed && character ? (
             <Link to={`/characters/${character.id}`} className="scratch-result" viewTransition>
               <span>
                 <strong>{character.name}</strong>
                 <small>{getPack(character.pack).name}</small>
               </span>
-              <span className="scratch-inspect">
-                Inspect <ArrowRight size={14} />
-              </span>
+              <span className="scratch-inspect">Inspect</span>
             </Link>
           ) : (
-            <span className="scratch-hint">A character from the collection is under the frost.</span>
+            <span className="scratch-hint">{copy.hint}</span>
           )}
         </div>
       </div>
 
       <div className="scratch-actions">
         {revealed ? (
-          <button type="button" className="look-action" onClick={onDeal}>
-            <Shuffle size={14} /> Deal another card
-          </button>
+          device ? (
+            <span className="scratch-tip">Drag to turn it · tap to make it hop</span>
+          ) : (
+            <button type="button" className="look-action" onClick={onDeal}>
+              Deal another card
+            </button>
+          )
         ) : (
           <button type="button" className="look-action" onClick={onReveal} disabled={!ready}>
-            <Eye size={14} /> Reveal without scratching
+            Reveal without scratching
           </button>
         )}
       </div>

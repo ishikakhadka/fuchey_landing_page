@@ -12,7 +12,7 @@ export const wearables = [
     rarity: "common",
     description: "A cosy knit for cold-wallet days. Pom-pom included.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["yeti"],
     listing: { status: "available", price: 0.05, supply: 5000 },
   },
   {
@@ -23,7 +23,7 @@ export const wearables = [
     rarity: "epic",
     description: "Gold, frost-blue gems, and an air of quiet authority.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["yeti"],
     listing: { status: "available", price: 1.2, supply: 250 },
   },
   {
@@ -34,7 +34,7 @@ export const wearables = [
     rarity: "uncommon",
     description: "For listening to the hum of block production.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["yeti"],
     listing: { status: "available", price: 0.15, supply: 2000 },
   },
   {
@@ -45,7 +45,7 @@ export const wearables = [
     rarity: "rare",
     description: "A heads-up display for slots, signatures and compute units.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["yeti"],
     listing: { status: "available", price: 0.4, supply: 1000 },
   },
   {
@@ -56,7 +56,7 @@ export const wearables = [
     rarity: "uncommon",
     description: "Many pockets. Room for a seed phrase? Never. Snacks? Always.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["yeti"],
     listing: { status: "available", price: 0.2, supply: 2000 },
   },
   {
@@ -67,7 +67,7 @@ export const wearables = [
     rarity: "rare",
     description: "Late-night deploy wear with traces that glow on mainnet.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["yeti"],
     listing: { status: "available", price: 0.35, supply: 1000 },
   },
   {
@@ -78,7 +78,7 @@ export const wearables = [
     rarity: "common",
     description: "Eight-bit shades. Deal with it.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["yeti"],
     listing: { status: "available", price: 0.05, supply: 5000 },
   },
   {
@@ -89,7 +89,7 @@ export const wearables = [
     rarity: "common",
     description: "The very first Fuchey collectible. Every Yeti deserves one.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["yeti"],
     listing: { status: "available", price: 0, supply: 10000, limitPerWallet: 1 },
   },
   {
@@ -100,7 +100,7 @@ export const wearables = [
     rarity: "uncommon",
     description: "Three stripes, zero private keys inside.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["yeti"],
     listing: { status: "available", price: 0.25, supply: 1500 },
   },
   {
@@ -111,7 +111,7 @@ export const wearables = [
     rarity: "epic",
     description: "A tiny winter in a jar. Give it a shake and watch the flakes settle.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["yeti"],
     listing: { status: "available", price: 0.75, supply: 500 },
   },
   {
@@ -122,7 +122,7 @@ export const wearables = [
     rarity: "uncommon",
     description: "Nepal's national cap in hand-loomed Palpali dhaka. Worn tilted, with pride.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["yeti"],
     listing: { status: "available", price: 0.1, supply: 2000 },
   },
   {
@@ -133,7 +133,7 @@ export const wearables = [
     rarity: "rare",
     description: "The cross-tied daura over suruwal trousers, with a charcoal istakot. Dashain-ready.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber"],
+    compatibleCharacters: ["yeti"],
     listing: { status: "available", price: 0.3, supply: 1000 },
   },
   {
@@ -265,7 +265,7 @@ export const wearables = [
     rarity: "legendary",
     description: "Reserved for the earliest Fuchey friends.",
     art: { kind: "wearable" },
-    compatibleCharacters: ["yeti", "cyber", "rhino"],
+    compatibleCharacters: ["yeti", "rhino"],
     listing: { status: "coming-soon", price: null, supply: 100 },
   },
 ];

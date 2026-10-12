@@ -18,7 +18,6 @@ const STATUSES = [
 ];
 const BUILT_IN = [
   { id: "yeti", label: "Yeti (built-in)" },
-  { id: "cyber", label: "Cyber Yeti (built-in)" },
 ];
 const EDITION_OPTIONS = Object.values(editions).map((e) => ({ id: e.id, label: e.label }));
 const PACK_OPTIONS = packs.map((p) => ({ id: p.id, label: p.name }));

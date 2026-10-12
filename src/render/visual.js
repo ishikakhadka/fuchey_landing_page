@@ -9,7 +9,8 @@ export const CHARACTER_VIEW = "-14 -19 116 116";
 //
 //   kind "runs"   pixel art as horizontal runs [{ x, y, w, c }]:
 //                 front (over the character), back (behind it), icon (card art);
-//                 optional x / y shift the whole layer
+//                 optional x / y shift the whole layer; `res` = pixels per
+//                 grid unit when the runs are drawn finer than the grid
 //   kind "image"  an uploaded transparent PNG: image (front), backImage,
 //                 width × height source pixels, placed at x, y and scaled by
 //                 `scale` grid units per source pixel
@@ -64,6 +65,7 @@ export function visualBounds(visual) {
     const s = visual.scale ?? 1;
     return { x: visual.x ?? 0, y: visual.y ?? 0, w: (visual.width ?? 96) * s, h: (visual.height ?? 96) * s };
   }
-  const b = visual.bounds ?? { x: 0, y: 0, w: 96, h: 96 };
-  return { ...b, x: b.x + (visual.x ?? 0), y: b.y + (visual.y ?? 0) };
+  const r = visual.res ?? 1;
+  const b = visual.bounds ?? { x: 0, y: 0, w: 96 * r, h: 96 * r };
+  return { x: b.x / r + (visual.x ?? 0), y: b.y / r + (visual.y ?? 0), w: b.w / r, h: b.h / r };
 }

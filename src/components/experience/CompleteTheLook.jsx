@@ -131,7 +131,7 @@ function CompleteTheLook({ unlocked, onRevealMore }) {
   const total = priced.reduce((sum, w) => sum + w.listing.price, 0);
   const unpriced = worn.length - priced.length;
   const lookLink = character
-    ? `/wardrobe?character=${character.id}${worn.length ? `&look=${worn.map((w) => w.id).join(",")}` : ""}`
+    ? `/wardrobe/packs/${character.pack ?? "wild"}?character=${character.id}${worn.length ? `&look=${worn.map((w) => w.id).join(",")}` : ""}`
     : "/wardrobe";
 
   const side = (list, where) =>

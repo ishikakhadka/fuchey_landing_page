@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { MousePointer2 } from "lucide-react";
 import { CHAPTERS, createFucheyScene } from "../three/fucheyScene.js";
 
-function Fuchey3D({ edition }) {
+// `compact`: just the turnable device, without the feature callouts, chapter
+// bar and hint (e.g. inside the hero's scratch card).
+function Fuchey3D({ edition, compact = false }) {
   const wrapRef = useRef(null);
   const overlayRef = useRef(null);
   const sceneRef = useRef(null);
@@ -28,7 +30,7 @@ function Fuchey3D({ edition }) {
     const ctrl = createFucheyScene({
       canvas,
       container: wrap,
-      overlay: overlayRef.current,
+      overlay: compact ? null : overlayRef.current,
       edition: initialEdition.current,
       reduced,
       onReady: () => setStatus("ready"),
@@ -49,18 +51,25 @@ function Fuchey3D({ edition }) {
       canvas.remove();
       sceneRef.current = null;
     };
+    // compact is fixed for the component's life
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     sceneRef.current?.setEdition(edition);
   }, [edition]);
 
+  const scene = (
+    <div ref={wrapRef} className={`fuchey-3d is-${status}`}>
+      <div ref={overlayRef} className="fuchey-overlay" />
+      {status === "loading" && <span className="fuchey-3d-loader" aria-hidden="true" />}
+    </div>
+  );
+  if (compact) return scene;
+
   return (
     <>
-      <div ref={wrapRef} className={`fuchey-3d is-${status}`}>
-        <div ref={overlayRef} className="fuchey-overlay" />
-        {status === "loading" && <span className="fuchey-3d-loader" aria-hidden="true" />}
-      </div>
+      {scene}
 
       <div className="stage-bar">
         {status === "ready" && (

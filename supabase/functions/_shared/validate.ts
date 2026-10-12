@@ -11,7 +11,7 @@ const STATUSES = ["available", "coming-soon", "sold-out"];
 const EDITIONS = ["companion", "dev"];
 // Mirrors src/data/packs.js.
 const PACKS = ["wild", "pirates", "tribal", "rogues"];
-const BUILT_IN_IMAGES = ["yeti", "cyber"];
+const BUILT_IN_IMAGES = ["yeti"];
 
 type Obj = Record<string, unknown>;
 
@@ -153,6 +153,9 @@ export function visual(c: Checker, v: unknown, type: string, compatible: string[
     const y = c.num(v, "y", { min: -96, max: 96, int: true, path: "visual.y" });
     if (x) out.x = x;
     if (y) out.y = y;
+    // Runs drawn finer than the grid: `res` pixels per grid unit
+    const res = c.num(v, "res", { min: 1, max: 4, int: true, path: "visual.res" });
+    if (res && res !== 1) out.res = res;
   } else if (kind === "image") {
     out = { kind, layer, z, ...placement(c, v, "visual", false) };
   } else {
@@ -247,7 +250,7 @@ export function validateCharacter(input: unknown) {
     const palette = isObj(s) && isObj(s.palette) ? s.palette : null;
     const width = rows?.[0]?.length;
     if (
-      !rows || !palette || !width || rows.length > 64 || width > 64 ||
+      !rows || !palette || !width || rows.length > 256 || width > 256 ||
       !rows.every((r) => typeof r === "string" && r.length === width && [...r].every((ch) => ch === "." || ch in palette)) ||
       !Object.values(palette).every((v) => typeof v === "string" && HEX.test(v))
     ) c.fail("art.sprite", "rows must be equal-length strings using only palette keys or “.”");

@@ -61,7 +61,7 @@ a wearable on the character's 96×96 pixel grid:
 // an uploaded transparent PNG
 { "kind": "image", "layer": "hat", "z": 0, "image": "https://…/cap.png", "backImage": null,
   "width": 24, "height": 8, "x": 32, "y": -2, "scale": 1,
-  "perCharacter": { "cyber": { "y": -3 } } }
+  "perCharacter": { "rhino": { "y": -3 } } }
 ```
 
 `layer` picks the stacking position. Back to front, the order is: outfit,

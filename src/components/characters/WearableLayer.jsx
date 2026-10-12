@@ -32,12 +32,14 @@ function WearableLayer({ visual, side = "front", className }) {
     );
   }
 
-  // Pixel runs are drawn in grid coordinates; x / y shift them as a whole.
+  // Pixel runs are drawn in grid coordinates, or finer: `res` pixels per
+  // grid unit (pack gear is drawn at res 2). x / y shift them as a whole.
   const runs = visual[side];
   if (!runs?.length) return null;
-  const { x = 0, y = 0 } = visual;
+  const { x = 0, y = 0, res = 1 } = visual;
+  const transform = [x || y ? `translate(${x} ${y})` : "", res !== 1 ? `scale(${1 / res})` : ""].join(" ").trim();
   return (
-    <g transform={x || y ? `translate(${x} ${y})` : undefined}>
+    <g transform={transform || undefined}>
       <PixelRuns runs={runs} className={className} />
     </g>
   );

@@ -230,7 +230,7 @@ const COL = {
 };
 
 const F = {
-  ui: (w, s) => `${w} ${s}px Sora, Segoe UI, sans-serif`,
+  ui: (w, s) => `${w} ${s}px "DM Sans", Segoe UI, sans-serif`,
   mono: (w, s) => `${w} ${s}px "JetBrains Mono", Menlo, monospace`,
 };
 
@@ -1632,8 +1632,8 @@ export function createFucheyScene({
     Promise.all(
       [
         '400 20px Michroma',
-        '600 20px Sora',
-        '400 20px Sora',
+        '600 20px "DM Sans"',
+        '400 20px "DM Sans"',
         '500 20px "JetBrains Mono"',
         '400 20px "JetBrains Mono"',
       ].map((f) => document.fonts.load(f)),

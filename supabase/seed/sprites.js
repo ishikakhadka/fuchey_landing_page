@@ -1,10 +1,11 @@
-import { canvas, ellipse, erase, layer, line, paint, part, polygon, roundRect, toSprite } from "./pixel.js";
+import { canvas as baseCanvas, ellipse, erase, layer, line, paint, part as basePart, polygon, roundRect, toSprite } from "./pixel.js";
 
 // Character art as sprite data { palette, rows }: one string per row, one
 // character per pixel, "." for transparent. The renderer scales a sprite to
 // fill the same 96×96 grid as the Yeti's image.
 //
-// The pack characters are generated below on a 48×48 grid; `anchors` says
+// The pack characters are designed below on a 48-unit grid and drawn at the
+// 192×192 (shown on the same 96×96 grid as the Yeti); `anchors` (in units) says
 // where their heads, eyes and hands are, so the pack gear in wearableArt.js
 // fits them. Characters are drawn bare: hats, masks and weapons belong in
 // the wardrobe.
@@ -14,7 +15,8 @@ import { canvas, ellipse, erase, layer, line, paint, part, polygon, roundRect, t
 // the horn are kept clear of outline to stay readable that way.
 
 // ---------------------------------------------------------------------------
-// Pack characters, drawn on a 48×48 grid (scaled ×2 onto the 96×96 grid).
+// Pack characters: designed on a 48-unit grid, drawn at 192×192 (four
+// pixels per unit) so curves, outlines, faces and shading stay crisp.
 //
 // Every pack character is built on one chibi body template: the same head,
 // torso, arm, hand, leg and foot boxes, each drawn as its own shape with its
@@ -23,17 +25,23 @@ import { canvas, ellipse, erase, layer, line, paint, part, polygon, roundRect, t
 // ears, tentacles, clothes and faces.
 // ---------------------------------------------------------------------------
 
-const SIZE = 48;
+// Designed on a 48-unit grid, drawn at k = 4: a 192×192 sprite (twice the
+// Yeti's 96×96), so faces, hands and the wardrobe on top stay crisp and
+// readable at the size the site shows characters.
+const K = 4;
+const SIZE = 48 * K;
+const canvas = () => baseCanvas(K);
+const part = (shape) => basePart(shape, K);
 
 // The body template. Characters may move the head's top (a taller dome) and
 // their eyes; everything else is shared.
 const BODY = {
   head: { x0: 10, x1: 37, y0: 5, y1: 27, r: 8 },
   torso: { x0: 14, x1: 33, y0: 27, y1: 40, r: 3 },
-  armL: { x0: 9, x1: 14, y0: 28, y1: 36, r: 2 },
-  armR: { x0: 33, x1: 38, y0: 28, y1: 36, r: 2 },
-  handL: { x0: 9, x1: 14, y0: 34, y1: 40, r: 2 },
-  handR: { x0: 33, x1: 38, y0: 34, y1: 40, r: 2 },
+  armL: { x0: 9, x1: 14, y0: 28, y1: 36, r: 2.5 },
+  armR: { x0: 33, x1: 38, y0: 28, y1: 36, r: 2.5 },
+  handL: { x0: 9, x1: 14, y0: 34, y1: 40, r: 3 },
+  handR: { x0: 33, x1: 38, y0: 34, y1: 40, r: 3 },
   legL: { x0: 16, x1: 21, y0: 37, y1: 43 },
   legR: { x0: 26, x1: 31, y0: 37, y1: 43 },
   footL: { x0: 14, x1: 21, y0: 42, y1: 45, r: 2 },
@@ -71,7 +79,11 @@ const headShape = (head, c) => part((q) => roundRect(q, head.x0, head.y0, head.x
 // Paint the parts of a shape that pass test(x, y) as a new layer.
 const clip = (shape, test, c) =>
   part((q) => {
-    for (const pt of shape.px.values()) if (test(pt.x, pt.y)) q.set(pt.x, pt.y, paint(c, pt.x, pt.y));
+    for (const pt of shape.px.values()) {
+      const x = Math.floor(pt.x / K);
+      const y = Math.floor(pt.y / K);
+      if (test(x, y)) q.setPx(pt.x, pt.y, paint(c, x, y));
+    }
   });
 
 // Eyes: dark ovals with a light glint, or coloured eyes with a pupil.
@@ -80,11 +92,12 @@ function eyes(p, e, { white = null, pupil = INK, glint = "#ffffff" } = {}) {
     if (white) {
       roundRect(p, x0, e.y0, x1, e.y1, 1, white);
       const cx = Math.floor((x0 + x1) / 2);
-      p.rect(cx, e.y0 + 1, cx + 1, e.y1 - 1, pupil);
-      p.set(cx, e.y0 + 1, glint);
+      roundRect(p, cx, e.y0 + 1, cx + 1, e.y1 - 1, 0.8, pupil);
+      p.setPx(cx * K + 1, (e.y0 + 1) * K + 1, glint);
     } else {
-      p.rect(x0, e.y0, x1, e.y1, pupil);
-      p.set(x0, e.y0, glint);
+      roundRect(p, x0, e.y0, x1, e.y1, 1, pupil);
+      p.setPx(x0 * K + 1, e.y0 * K + 1, glint);
+      p.setPx(x0 * K + 2, e.y0 * K + 1, glint);
     }
   }
 }
@@ -94,7 +107,7 @@ const anchorsFor = (head, e) => ({
   eyes: e,
   handR: [36, 37],
   handL: [11, 37],
-  perch: [9, 27],
+  perch: [11, 27],
   chest: 28,
 });
 
@@ -196,10 +209,10 @@ function zombiePirate() {
   const e = { y0: 13, y1: 18, l: [15, 20], r: [28, 31] };
 
   legsAndFeet(p, { b: "#4a3b2e", l: "#62503f", d: "#33281f" }, { b: "#3b2a20", l: "#5a4030", d: "#261a12" }, { bareL: skin });
-  const torso = box(BODY.torso, shirt.b);
+  // Blue stripes are their own colour, so shading only touches the cream
+  const torso = part((q) => roundRect(q, BODY.torso.x0, BODY.torso.y0, BODY.torso.x1, BODY.torso.y1, BODY.torso.r, (x, y) => (y >= 28 && y % 4 < 2 ? "#3a5a8c" : shirt.b)));
   erase(torso, (x, y) => (y === 40 && x % 3 === 0) || (y === 39 && x % 6 === 1));
   layer(p, torso, shirt);
-  for (const pt of p.px.values()) if (pt.y >= 28 && pt.y <= 40 && pt.x >= 15 && pt.x <= 32 && pt.c === shirt.b && pt.y % 4 < 2) pt.c = "#3a5a8c";
   // Short striped sleeves, bare green forearms
   for (const [arm, hand] of [[BODY.armL, BODY.handL], [BODY.armR, BODY.handR]]) {
     layer(p, box(arm, skin.b), skin);
@@ -399,7 +412,7 @@ function bandit() {
   eyes(p, e);
   // Scarf over the lower face, wrapped round the neck, tail on the right
   layer(p, part((q) => {
-    for (const pt of h.px.values()) if (pt.y >= 20) q.set(pt.x, pt.y, scarf.b);
+    for (const pt of h.px.values()) if (pt.y >= 20 * K) q.setPx(pt.x, pt.y, scarf.b);
     roundRect(q, 13, 25, 34, 29, 2, scarf.b);
     roundRect(q, 33, 27, 37, 34, 2, scarf.b);
   }), scarf);
@@ -444,10 +457,10 @@ export const sprites = {
   ...Object.fromEntries(Object.entries(PACK_CHARACTERS).map(([id, c]) => [id, c.sprite])),
 };
 
-// Where things are on each pack character, on its 48×48 grid:
+// Where things are on each pack character, in units of its 48-unit grid:
 //   head    { x0, x1, y0 } the head's box (y0 = top)
 //   eyes    { y0, y1, l: [x0, x1], r: [x0, x1] }
 //   handR / handL  [x, y] centre of the hand on the viewer's right / left
-//   perch   [x, y] right edge / bottom of a pet sitting on the left shoulder
+//   perch   [x, y] where a pet on the left shoulder grips (top of the shoulder)
 //   chest   first row below the chin
 export const anchors = Object.fromEntries(Object.entries(PACK_CHARACTERS).map(([id, c]) => [id, c.anchors]));

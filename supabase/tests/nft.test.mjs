@@ -50,7 +50,7 @@ const wearable = {
   description: "Lifecycle test item.",
   type: "accessory",
   rarity: "rare",
-  compatible_characters: ["yeti", "cyber"],
+  compatible_characters: ["yeti", "rhino"],
   status: "available",
   price: 0.5,
   supply: 500,

@@ -19,7 +19,7 @@ const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!URL_ || !ANON || !SERVICE) throw new Error("Set SUPABASE_URL, SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY.");
 
 const ID = `test-cap-${Date.now().toString(36)}`;
-const CYBER_ONLY = `${ID}-cyber`;
+const RHINO_ONLY = `${ID}-rhino`;
 
 function wallet() {
   const { publicKey, privateKey } = crypto.generateKeyPairSync("ed25519");
@@ -89,7 +89,7 @@ before(async () => {
 });
 
 after(async () => {
-  await rest(`wearables?id=in.(${ID},${CYBER_ONLY})`, { key: SERVICE, method: "DELETE" });
+  await rest(`wearables?id=in.(${ID},${RHINO_ONLY})`, { key: SERVICE, method: "DELETE" });
   await rest(`loadouts?wallet=eq.${admin.address}`, { key: SERVICE, method: "DELETE" });
   await rest(`admins?wallet=eq.${admin.address}`, { key: SERVICE, method: "DELETE" });
 });
@@ -100,7 +100,7 @@ test("public catalogue serves the seeded items with their render data", async ()
   assert.equal(body.length, 1);
   assert.equal(body[0].visual.kind, "runs");
   assert.ok(body[0].visual.front.length > 10, "beanie has its pixel runs");
-  assert.deepEqual(body[0].compatible_characters, ["yeti", "cyber"]);
+  assert.deepEqual(body[0].compatible_characters, ["yeti"]);
 });
 
 test("anon can't write the catalogue directly", async () => {
@@ -181,22 +181,22 @@ test("validation rejects bad visuals and unknown characters", async () => {
 });
 
 test("loadouts: compatible items save, incompatible ones are refused, ids only", async () => {
-  const cyber = await call(
+  const rhino = await call(
     "admin",
     {
       action: "saveWearable",
       wearable: {
-        id: CYBER_ONLY,
-        name: "Cyber Only",
+        id: RHINO_ONLY,
+        name: "Rhino Only",
         type: "headwear",
-        compatible_characters: ["cyber"],
+        compatible_characters: ["rhino"],
         visual: { kind: "runs", front: [{ x: 40, y: 10, w: 8, c: "#38d6ee" }] },
         published: true,
       },
     },
     adminToken,
   );
-  assert.equal(cyber.status, 200, JSON.stringify(cyber.body));
+  assert.equal(rhino.status, 200, JSON.stringify(rhino.body));
 
   const token = session(admin, "loadout");
   const ok = await call(
@@ -210,7 +210,7 @@ test("loadouts: compatible items save, incompatible ones are refused, ids only",
   const saved = (await rest(`loadouts?wallet=eq.${admin.address}&character_id=eq.yeti`)).body[0];
   assert.deepEqual(saved.slots, { hat: ID, outfit: "explorer-jacket", accessory: "pixel-glasses" });
 
-  const wrongChar = await call("loadout", { characterId: "yeti", slots: { headwear: CYBER_ONLY } }, token);
+  const wrongChar = await call("loadout", { characterId: "yeti", slots: { headwear: RHINO_ONLY } }, token);
   assert.equal(wrongChar.status, 400);
   assert.match(wrongChar.body.details.join(), /doesn’t fit yeti/);
 
