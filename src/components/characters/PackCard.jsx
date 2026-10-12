@@ -2,6 +2,10 @@ import { Link } from "react-router";
 import { ArrowRight, Check } from "lucide-react";
 import ItemArt from "../marketplace/ItemArt";
 import WearableIcon from "../wardrobe/WearableIcon";
+import { useMarketplace } from "../../context/MarketplaceContext";
+import { liveListing } from "../../hooks/useListing";
+import { getAvailability } from "../../utils/listing";
+import { NETWORK } from "../../config/network";
 
 // One pack on a pack grid: a line-up of a few of its items, what's in it, and
 // a link into the pack. Characters and wardrobe packs share the card;
@@ -14,7 +18,15 @@ const KINDS = {
 function PackCard({ pack, kind = "characters", ownedCount = 0 }) {
   const { noun, to } = KINDS[kind];
   const total = pack.items.length;
-  const available = pack.items.filter((item) => item.listing.status === "available").length;
+  const market = useMarketplace();
+  // Counted from verified sales on this network, not the catalogue's status.
+  const states = pack.items.map((item) => getAvailability(item, liveListing(market, item)).id);
+  const onSale = states.filter((id) => id === "on-sale").length;
+  const status = onSale
+    ? `${onSale} on sale now`
+    : states.every((id) => id === "coming-soon")
+      ? "Coming soon"
+      : `Not on sale on ${NETWORK.label} yet`;
   const lineup = pack.items.slice(0, kind === "wearables" ? 4 : 3);
   const copy = (kind === "wearables" && pack.wardrobe) || pack;
 
@@ -57,7 +69,7 @@ function PackCard({ pack, kind = "characters", ownedCount = 0 }) {
         <p className="pack-card-tagline">{copy.tagline}</p>
         <p className="pack-card-description">{copy.description}</p>
         <div className="pack-card-foot">
-          <span className="pack-card-count">{available ? `${available} available now` : "Coming soon"}</span>
+          <span className="pack-card-count">{status}</span>
           <span className="pack-card-cta" aria-hidden="true">
             Explore <ArrowRight size={16} />
           </span>

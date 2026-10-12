@@ -34,6 +34,12 @@ export function getWearableTypes() {
   return WEARABLE_TYPES;
 }
 
+// One wearable's type as a singular label ("Hat", "Accessory").
+export function getWearableTypeLabel(id) {
+  const label = WEARABLE_TYPES.find((t) => t.id === id)?.label;
+  return label ? label.replace(/ies$/, "y").replace(/s$/, "") : "Wearable";
+}
+
 export function getRarity(id) {
   return RARITIES[id] ?? RARITIES.common;
 }

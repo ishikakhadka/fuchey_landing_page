@@ -1,8 +1,9 @@
 import { useMarketplace } from "../context/MarketplaceContext";
 
-// Live, chain-backed listing info for one catalogue item.
-export function useListing(item) {
-  const market = useMarketplace();
+// Live, chain-backed listing info for one catalogue item, from the shared
+// marketplace state. Plain function so list views (filters, sorting) can read
+// it for every item without calling a hook per item.
+export function liveListing(market, item) {
   const live = market.supply[item.id];
 
   return {
@@ -13,4 +14,8 @@ export function useListing(item) {
     mintCount: market.mintCounts[item.id] ?? 0,
     loading: market.supplyLoading,
   };
+}
+
+export function useListing(item) {
+  return liveListing(useMarketplace(), item);
 }

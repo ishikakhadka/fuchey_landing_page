@@ -7,6 +7,7 @@ import Characters from "./pages/Characters/Characters.jsx";
 import CharacterPack from "./pages/CharacterPack/CharacterPack.jsx";
 import CharacterDetails from "./pages/CharacterDetails/CharacterDetails.jsx";
 import Wardrobe from "./pages/Wardrobe/Wardrobe.jsx";
+import WearableDetails from "./pages/WearableDetails/WearableDetails.jsx";
 import Collection from "./pages/Collection/Collection.jsx";
 import AssetDetails from "./pages/AssetDetails/AssetDetails.jsx";
 import NotFound from "./pages/NotFound.jsx";
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
       { path: "characters/:id", element: <CharacterDetails /> },
       { path: "wardrobe", element: <Wardrobe /> },
       { path: "wardrobe/packs/:packId", element: <Wardrobe /> },
+      { path: "wearables/:id", element: <WearableDetails /> },
       { path: "collection", element: <Collection /> },
       { path: "collection/:address", element: <AssetDetails /> },
       { path: "admin", lazy: loadAdmin },

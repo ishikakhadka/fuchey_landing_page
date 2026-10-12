@@ -1,32 +1,38 @@
+import { useRef, useState } from "react";
 import { useEdition } from "../../context/EditionContext";
 
-import Hero from "../../components/Hero.jsx";
-import Marquee from "../../components/Marquee.jsx";
-import HowItWorks from "../../components/HowItWorks.jsx";
-import EditionSwitcher from "../../components/EditionSwitcher.jsx";
-import Features from "../../components/Features.jsx";
-import Ecosystem from "../../components/Ecosystem.jsx";
+import ExperienceHero from "../../components/experience/ExperienceHero.jsx";
+import CharacterDiscovery from "../../components/experience/CharacterDiscovery.jsx";
+import CompleteTheLook from "../../components/experience/CompleteTheLook.jsx";
+import CompanionSection from "../../components/experience/CompanionSection.jsx";
+import FindYourFuchey from "../../components/experience/FindYourFuchey.jsx";
 import Waitlist from "../../components/Waitlist.jsx";
 
+// Characters first (a scratch card, then sealed capsules), then dressing the
+// ones you've revealed, then the device that takes them off the screen, then
+// the way in. `revealed` is shared: a character revealed anywhere is revealed
+// everywhere on the page.
 function Home() {
-  const { edition, setEdition, current } = useEdition();
+  const { current } = useEdition();
+  const discovery = useRef(null);
+  const [revealed, setRevealed] = useState([]);
+  const revealOne = () => discovery.current?.reveal();
+  const markRevealed = (id) => setRevealed((ids) => (ids.includes(id) ? ids : [...ids, id]));
 
   return (
-    <>
-      <Hero edition={current} />
+    <div className="xp-home">
+      <ExperienceHero onReveal={revealOne} revealedIds={revealed} onCardReveal={markRevealed} />
 
-      <Marquee edition={current} />
+      <CharacterDiscovery ref={discovery} revealed={revealed} setRevealed={setRevealed} />
 
-      <HowItWorks />
+      <CompleteTheLook unlocked={revealed} onRevealMore={revealOne} />
 
-      <EditionSwitcher edition={edition} setEdition={setEdition} />
+      <CompanionSection edition={current.id} />
 
-      <Features edition={current} />
-
-      <Ecosystem />
+      <FindYourFuchey />
 
       <Waitlist edition={current} />
-    </>
+    </div>
   );
 }
 

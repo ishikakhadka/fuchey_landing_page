@@ -6,9 +6,9 @@ import WalletButton from "./wallet/WalletButton";
 
 const LINKS = [
   { to: "/", label: "Home", end: true },
+  { to: "/marketplace", label: "Marketplace" },
   { to: "/characters", label: "Characters" },
   { to: "/wardrobe", label: "Wardrobe" },
-  { to: "/marketplace", label: "Marketplace" },
   { to: "/collection", label: "My Collection" },
 ];
 

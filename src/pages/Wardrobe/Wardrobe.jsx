@@ -26,7 +26,7 @@ const sameSlots = (a = {}, b = {}) =>
 
 // Links that open the fitting room straight away (try an item on, dress a
 // character, your own wardrobe, a filtered rail) skip the pack grid.
-const ROOM_PARAMS = ["item", "character", "view", "type", "owned"];
+const ROOM_PARAMS = ["item", "look", "character", "view", "type", "owned"];
 
 // /wardrobe                → the wardrobe's packs
 // /wardrobe/packs/:packId  → the fitting room with that pack's rack
@@ -152,6 +152,20 @@ function FittingRoomPage({ pack }) {
       setLooks((all) => ({ ...all, [target.id]: { ...(all[target.id] ?? {}), [item.type]: item.id } }));
     }
     setFocusedId(linked);
+  }
+
+  // Arriving via /wardrobe?character=…&look=a,b,c (from the home page's
+  // dressing room) puts that whole look on, keeping only pieces that fit.
+  const lookParam = params.get("look");
+  const [appliedLook, setAppliedLook] = useState(null);
+  if (lookParam && lookParam !== appliedLook && character && wearables.length) {
+    const pieces = lookParam
+      .split(",")
+      .map(wearable)
+      .filter((w) => w && fitsCharacter(w, character.id));
+    setAppliedLook(lookParam);
+    setLooks((all) => ({ ...all, [character.id]: Object.fromEntries(pieces.map((w) => [w.type, w.id])) }));
+    if (pieces.length) setFocusedId(pieces.at(-1).id);
   }
 
   const worn = Object.values(slots)

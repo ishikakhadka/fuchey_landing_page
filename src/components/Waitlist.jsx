@@ -16,9 +16,11 @@ function Waitlist({ edition }) {
   // Keep edition in sync
   // ----------------------------------
 
-  useEffect(() => {
+  const [syncedEdition, setSyncedEdition] = useState(edition.id);
+  if (edition.id !== syncedEdition) {
+    setSyncedEdition(edition.id);
     setSelectedEdition(edition.id);
-  }, [edition.id]);
+  }
 
   // ----------------------------------
   // Check 5 minute cooldown

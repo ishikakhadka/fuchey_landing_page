@@ -10,21 +10,21 @@ function Footer() {
               <img src="/fuchey_logo.png" alt="Fuchey" />
             </Link>
 
-            <p>Your Solana wallet, with a little personality.</p>
+            <p>Interactive on-chain collectibles, with a companion that brings them off the screen.</p>
           </div>
 
           <div className="footer-links">
             <div>
               <p className="footer-heading">EXPLORE</p>
-              <Link to="/#how">How it works</Link>
-              <Link to="/#editions">Editions</Link>
-              <Link to="/#features">Features</Link>
+              <Link to="/#discover">Reveal a character</Link>
+              <Link to="/#companion">The companion</Link>
               <Link to="/#waitlist">Waitlist</Link>
             </div>
 
             <div>
               <p className="footer-heading">MARKETPLACE</p>
-              <Link to="/characters">Characters</Link>
+              <Link to="/marketplace">Browse all</Link>
+              <Link to="/characters">Character packs</Link>
               <Link to="/wardrobe">Wardrobe</Link>
               <Link to="/collection">My Collection</Link>
             </div>
