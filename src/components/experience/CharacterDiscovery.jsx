@@ -6,10 +6,11 @@ import ItemArt from "../marketplace/ItemArt";
 import RarityBadge from "../marketplace/RarityBadge";
 import PriceTag from "../marketplace/PriceTag";
 import AvailabilityBadge from "../marketplace/AvailabilityBadge";
+import CategoryTabs from "../marketplace/CategoryTabs";
 import { useCatalog } from "../../context/CatalogContext";
 import { useCollection } from "../../hooks/useCollection";
 import { useReducedMotion } from "../../hooks/useMotion";
-import { getPack } from "../../data/packs";
+import { getPack, groupByPack } from "../../data/packs";
 
 const OPEN_MS = 1500;
 
@@ -27,10 +28,13 @@ function CharacterDiscovery({ ref, revealed, setRevealed }) {
   const { ownsCharacter } = useCollection();
   const reduced = useReducedMotion();
   const sectionRef = useRef(null);
+  const packsRef = useRef(null);
   const timer = useRef(0);
 
   const [selectedId, setSelectedId] = useState(null);
   const [openingId, setOpeningId] = useState(null);
+  // The pack shown in the rail; null follows the character on the stage.
+  const [packId, setPackId] = useState(null);
   // Which capsule is on the stage before the visitor picks one.
   const [firstPick] = useState(() => Math.random());
 
@@ -64,6 +68,7 @@ function CharacterDiscovery({ ref, revealed, setRevealed }) {
     if (!character) return;
     clearTimeout(timer.current);
     setSelectedId(character.id);
+    setPackId(null);
     if (isRevealed(character.id)) return;
     if (reduced) {
       finish(character.id);
@@ -89,6 +94,25 @@ function CharacterDiscovery({ ref, revealed, setRevealed }) {
 
   const sealedLeft = characters.filter((c) => !isRevealed(c.id)).length;
   const anotherSealed = characters.some((c) => !isRevealed(c.id) && c.id !== selected?.id);
+
+  // The rail shows one pack at a time, so it stays short however big the
+  // catalogue grows.
+  const groups = groupByPack(characters);
+  const railPack = groups.find((g) => g.id === (packId ?? getPack(selected?.pack).id)) ?? groups[0];
+  // On narrow screens the pack tabs scroll sideways: keep the current one in
+  // view (horizontally only, so the page itself never jumps).
+  const railPackId = railPack?.id;
+  useEffect(() => {
+    const row = packsRef.current?.querySelector(".category-tabs");
+    const tab = row?.querySelector('[aria-selected="true"]');
+    if (!row || !tab) return;
+    const left = tab.offsetLeft - row.offsetLeft;
+    if (left < row.scrollLeft || left + tab.offsetWidth > row.scrollLeft + row.clientWidth) {
+      row.scrollTo({ left: left - 16, behavior: reduced ? "auto" : "smooth" });
+    }
+  }, [railPackId, reduced]);
+
+  const packTabs = groups.map((g) => ({ id: g.id, label: g.name.replace(/ (Pack|Reimagined)$/, ""), count: g.items.length }));
 
   return (
     <section
@@ -225,8 +249,14 @@ function CharacterDiscovery({ ref, revealed, setRevealed }) {
               )}
             </div>
 
-            <ul className="xp-rail" aria-label="Characters">
-              {characters.map((c) => {
+            {groups.length > 1 && (
+              <div className="xp-rail-packs" ref={packsRef}>
+                <CategoryTabs label="Character pack" options={packTabs} value={railPack?.id} onChange={setPackId} />
+              </div>
+            )}
+
+            <ul className="xp-rail" aria-label={railPack ? `${railPack.name} characters` : "Characters"}>
+              {(railPack?.items ?? []).map((c) => {
                 const shown = isRevealed(c.id);
                 return (
                   <li key={c.id}>

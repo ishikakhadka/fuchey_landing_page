@@ -4,6 +4,7 @@ import WearableIcon from "../wardrobe/WearableIcon";
 
 // Artwork for any catalogue item:
 //   character → base art + optional `equipped` wearables, layered on one grid
+//   vector    → smooth vector art (Cartoon pack), dressed the same way
 //   wearable  → the wearable's own pixel art
 //   sprite    → placeholder art (e.g. locked, unreleased characters)
 // `item` lets callers draw an item that isn't in the published catalogue yet
@@ -12,7 +13,7 @@ function ItemArt({ art, alt, itemId, item, equipped = [], size = "md" }) {
   const locked = Boolean(art.locked);
 
   let content;
-  if (art.kind === "character") {
+  if (art.kind === "character" || art.kind === "vector") {
     content = <CharacterRender art={art} characterId={itemId} equipped={equipped} alt={alt} />;
   } else if (art.kind === "wearable") {
     content = <WearableIcon id={itemId} wearable={item} alt={alt} />;

@@ -10,9 +10,7 @@ import { canvas as baseCanvas, ellipse, erase, layer, line, paint, part as baseP
 // fits them. Characters are drawn bare: hats, masks and weapons belong in
 // the wardrobe.
 //
-// The Rhino is a 16×16 placeholder for an unreleased character. Locked
-// characters render as a silhouette of every non-"." pixel, so leg gaps and
-// the horn are kept clear of outline to stay readable that way.
+// The Rhino (Wild pack) is vector art now: see wildArt.js.
 
 // ---------------------------------------------------------------------------
 // Pack characters: designed on a 48-unit grid, drawn at 192×192 (four
@@ -433,27 +431,6 @@ const PACK_CHARACTERS = {
 };
 
 export const sprites = {
-  rhino: {
-    palette: { o: "#1b2430", g: "#8f9aa6", l: "#b9c3cc", d: "#5d6877", h: "#e8dcc4", c: "#38d6ee" },
-    rows: [
-      "..o.............",
-      ".oho............",
-      ".ohho...o.......",
-      "..ohho.ogo......",
-      "..ohhooggooooo..",
-      "..ohhhggggggggo.",
-      "..olhggggggggggo",
-      ".ollggggggggggdo",
-      ".ollcgggggggggdo",
-      ".ollggggggggggdo",
-      "..olgggggggggddo",
-      "...oggdggdggdggo",
-      "...ogd.gd.gd.gdo",
-      "...ogd.gd.gd.gdo",
-      "....oo.oo.oo.oo.",
-      "................",
-    ],
-  },
   ...Object.fromEntries(Object.entries(PACK_CHARACTERS).map(([id, c]) => [id, c.sprite])),
 };
 

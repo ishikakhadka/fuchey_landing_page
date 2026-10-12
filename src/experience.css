@@ -717,7 +717,7 @@
 /* The character rail */
 .xp-rail {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin-top: 40px;
 }
@@ -1011,6 +1011,14 @@
 }
 
 .xp-rail-head + .xp-rail {
+  margin-top: 16px;
+}
+
+.xp-rail-packs {
+  margin-top: 16px;
+}
+
+.xp-rail-packs + .xp-rail {
   margin-top: 16px;
 }
 
@@ -2190,6 +2198,17 @@
 }
 
 @media (max-width: 760px) {
+  .xp-rail-packs .category-tabs {
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .xp-rail-packs .category-tabs button {
+    flex-shrink: 0;
+  }
+
   .xp-reveal-capsule {
     width: min(52%, 220px);
   }
@@ -2260,7 +2279,7 @@
   }
 
   .xp-rail {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
 

@@ -11,6 +11,9 @@ export const CHARACTER_VIEW = "-14 -19 116 116";
 //                 front (over the character), back (behind it), icon (card art);
 //                 optional x / y shift the whole layer; `res` = pixels per
 //                 grid unit when the runs are drawn finer than the grid
+//   kind "vector" smooth vector art as shapes [{ d, fill, stroke, sw, op }]
+//                 (SVG path data): front, back, icon as for runs, plus
+//                 `bounds` { x, y, w, h }; optional x / y shift
 //   kind "image"  an uploaded transparent PNG: image (front), backImage,
 //                 width × height source pixels, placed at x, y and scaled by
 //                 `scale` grid units per source pixel

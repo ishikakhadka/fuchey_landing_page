@@ -45,11 +45,12 @@ export function getRarity(id) {
 }
 
 // Whether a character can wear things: base art on the 96×96 grid, or an
-// unlocked pixel sprite (scaled onto that grid) with wardrobe slots.
+// unlocked pixel sprite (scaled onto that grid) or vector art with wardrobe
+// slots. Mirrored by the loadout function.
 export function isDressable(character) {
   const art = character?.art;
   if (art?.kind === "character") return true;
-  return art?.kind === "sprite" && !art.locked && Boolean(character.wardrobeSlots?.length);
+  return (art?.kind === "sprite" || art?.kind === "vector") && !art.locked && Boolean(character.wardrobeSlots?.length);
 }
 
 // Whether a wearable can be equipped on a character.

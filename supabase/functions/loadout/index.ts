@@ -25,7 +25,12 @@ Deno.serve(
       .select("id, art, wardrobe_slots, published")
       .eq("id", characterId)
       .maybeSingle();
-    if (!character?.published || character.art?.kind !== "character") {
+    // Mirrors isDressable (src/services/marketplace/catalog.js).
+    const art = character?.art;
+    const dressable =
+      art?.kind === "character" ||
+      ((art?.kind === "sprite" || art?.kind === "vector") && !art.locked && character.wardrobe_slots?.length > 0);
+    if (!character?.published || !dressable) {
       throw new HttpError(400, "That character can’t be dressed.");
     }
 

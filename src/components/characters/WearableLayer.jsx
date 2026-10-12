@@ -2,6 +2,8 @@
 // character's 96×96 grid. Used by CharacterRender and WearableIcon, so a
 // wearable looks the same on a card, in the wardrobe and in the admin preview.
 
+import VectorShapes from "./VectorShapes";
+
 // Horizontal pixel runs as SVG rects.
 export function PixelRuns({ runs, className }) {
   return (
@@ -29,6 +31,18 @@ function WearableLayer({ visual, side = "front", className }) {
         preserveAspectRatio="none"
         style={{ imageRendering: "pixelated" }}
       />
+    );
+  }
+
+  // Vector shapes are drawn in grid coordinates; x / y shift them as a whole.
+  if (visual.kind === "vector") {
+    const shapes = visual[side];
+    if (!shapes?.length) return null;
+    const { x = 0, y = 0 } = visual;
+    return (
+      <g transform={x || y ? `translate(${x} ${y})` : undefined}>
+        <VectorShapes shapes={shapes} className={className} />
+      </g>
     );
   }
 

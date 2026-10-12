@@ -5,6 +5,7 @@ import ScratchCard from "./ScratchCard";
 import { useCatalog } from "../../context/CatalogContext";
 import { useEdition } from "../../context/EditionContext";
 import { useParallax, useReducedMotion } from "../../hooks/useMotion";
+import { useStoredState } from "../../hooks/useStoredState";
 
 // Picks for "Deal another card" (only called from click handlers).
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
@@ -13,7 +14,9 @@ const pick = (list) => list[Math.floor(Math.random() * list.length)];
 // random character or the Fuchey device (the toggle above the card picks).
 // Scratching a character off counts as revealing it for the rest of the page
 // (`onCardReveal`). Characters still under wraps (locked art) are never
-// dealt, so there's always a real look to uncover.
+// dealt, so there's always a real look to uncover. The card on the table,
+// the Character / Device choice and the device reveal are remembered in this
+// browser, so coming back to the page shows the same card, still scratched.
 function ExperienceHero({ revealedIds, onCardReveal }) {
   const ref = useRef(null);
   const reduced = useReducedMotion();
@@ -21,11 +24,11 @@ function ExperienceHero({ revealedIds, onCardReveal }) {
 
   const { characters, error } = useCatalog();
   const { current } = useEdition();
-  const [subject, setSubject] = useState("character");
-  const [deviceRevealed, setDeviceRevealed] = useState(false);
+  const [subject, setSubject] = useStoredState("fuchey:home:card-subject", "character");
+  const [deviceRevealed, setDeviceRevealed] = useStoredState("fuchey:home:device-revealed", false);
   const deck = characters.filter((c) => !c.art.locked);
   const [firstPick] = useState(() => Math.random());
-  const [cardId, setCardId] = useState(null);
+  const [cardId, setCardId] = useStoredState("fuchey:home:card", null);
   const [dealt, setDealt] = useState(0);
   const character = deck.find((c) => c.id === cardId) ?? deck[Math.floor(firstPick * deck.length)] ?? null;
   const revealed = Boolean(character && revealedIds.includes(character.id));
@@ -110,7 +113,11 @@ function ExperienceHero({ revealedIds, onCardReveal }) {
               key={`character-${dealt}`}
               character={character}
               revealed={revealed}
-              onReveal={() => character && onCardReveal(character.id)}
+              onReveal={() => {
+                if (!character) return;
+                setCardId(character.id);
+                onCardReveal(character.id);
+              }}
               onDeal={deal}
             />
           )}

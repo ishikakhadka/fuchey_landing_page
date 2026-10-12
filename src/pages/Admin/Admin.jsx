@@ -11,7 +11,7 @@ import { useWallet } from "../../hooks/useWallet";
 import { useCatalog } from "../../context/CatalogContext";
 import { backendConfigured } from "../../config/backend";
 import { getPack } from "../../data/packs";
-import { getWearableTypes } from "../../services/marketplace/catalog";
+import { getWearableTypes, isDressable } from "../../services/marketplace/catalog";
 import { adminList, adminSession } from "../../services/backend/admin";
 import { cachedSession, clearSession, getSession } from "../../services/backend/session";
 import { formatPrice } from "./format";
@@ -230,7 +230,7 @@ function Admin() {
                 <span className="admin-hint">
                   {tab === "wearables"
                     ? `${getPack(item.pack).name} · ${typeLabel(item.type)} · fits ${item.compatibleCharacters.map(charName).join(", ") || "nobody"}`
-                    : `${getPack(item.pack).name} · ${item.editionLabel || item.edition} · ${item.art.kind === "character" ? "dressable" : "placeholder"}`}
+                    : `${getPack(item.pack).name} · ${item.editionLabel || item.edition} · ${isDressable(item) ? "dressable" : "placeholder"}`}
                 </span>
               </span>
               <span className="admin-list-meta">

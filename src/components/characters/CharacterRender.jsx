@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import yetiUrl from "../../assets/yeti.png";
 import { CHARACTER_VIEW, spriteRuns, stackLayers } from "../../render/visual";
+import VectorShapes from "./VectorShapes";
 import WearableLayer from "./WearableLayer";
 
 // Base art bundled with the site; any other value is an uploaded image URL.
@@ -22,7 +23,8 @@ function SpriteBase({ sprite }) {
 // Renders a character with equipped wearables layered pixel-perfectly:
 // every wearable's back layer, then the base art, then every front layer,
 // each stacked by wardrobe layer. `art` is the character's base art: an image
-// ({ kind: "character", image }) or a pixel sprite ({ kind: "sprite", sprite }).
+// ({ kind: "character", image }), a pixel sprite ({ kind: "sprite", sprite }) or
+// vector shapes ({ kind: "vector", shapes }).
 // Purely visual: what's equipped is app state, never written into the NFT.
 function CharacterRender({ art, characterId, equipped = [], alt, className = "" }) {
   const layers = useMemo(() => stackLayers(equipped, characterId), [equipped, characterId]);
@@ -39,6 +41,8 @@ function CharacterRender({ art, characterId, equipped = [], alt, className = "" 
       ))}
       {art.kind === "sprite" ? (
         <SpriteBase sprite={art.sprite} />
+      ) : art.kind === "vector" ? (
+        <VectorShapes shapes={art.shapes} />
       ) : (
         <image
           href={BUILT_IN[art.image] ?? art.image}

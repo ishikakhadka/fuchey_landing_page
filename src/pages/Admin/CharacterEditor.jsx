@@ -112,12 +112,25 @@ function CharacterEditor({ initial, wearables, session, onSaved, onDeleted, onCl
               options={[
                 { id: "character", label: "Character (can wear items)" },
                 { id: "sprite", label: "Pixel sprite (16 × 16)" },
+                ...(initial.art.kind === "vector" ? [{ id: "vector", label: "Vector art (built-in)" }] : []),
               ]}
               onChange={(kind) =>
-                set({ art: kind === "character" ? { kind, image: "yeti" } : { kind, sprite: { palette: { o: "#1b2430" }, rows: ["o"] }, locked: true } })
+                set({
+                  art:
+                    kind === "vector"
+                      ? initial.art
+                      : kind === "character"
+                        ? { kind, image: "yeti" }
+                        : { kind, sprite: { palette: { o: "#1b2430" }, rows: ["o"] }, locked: true },
+                })
               }
             />
-            {draft.art.kind === "character" ? (
+            {draft.art.kind === "vector" ? (
+              <p className="admin-hint is-wide">
+                Built-in vector art ({draft.art.shapes?.length ?? 0} shapes), drawn in its pack’s file under supabase/seed/.
+                Wearables are placed on it the same way as on the Yeti’s 96 × 96 grid.
+              </p>
+            ) : draft.art.kind === "character" ? (
               <>
                 <Select
                   label="Image"
@@ -227,7 +240,7 @@ function CharacterEditor({ initial, wearables, session, onSaved, onDeleted, onCl
 
         <aside className="admin-preview" aria-label="Preview">
           <div className={`admin-stage character-stage stage-${draft.edition}`}>
-            {(draft.art.kind === "sprite" ? draft.art.sprite?.rows?.length : draft.art.image) ? (
+            {(draft.art.kind === "sprite" ? draft.art.sprite?.rows?.length : draft.art.kind === "vector" ? draft.art.shapes?.length : draft.art.image) ? (
               <ItemArt art={draft.art} alt={draft.name} itemId={draft.id} size="lg" />
             ) : (
               <p className="admin-hint">Upload base art to preview.</p>

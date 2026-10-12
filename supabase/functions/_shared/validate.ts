@@ -10,7 +10,7 @@ const RARITIES = ["common", "uncommon", "rare", "epic", "legendary"];
 const STATUSES = ["available", "coming-soon", "sold-out"];
 const EDITIONS = ["companion", "dev"];
 // Mirrors src/data/packs.js.
-const PACKS = ["wild", "pirates", "tribal", "rogues"];
+const PACKS = ["wild", "pirates", "tribal", "rogues", "cartoon", "anime", "myths", "legends", "heroes", "brainrot"];
 const BUILT_IN_IMAGES = ["yeti"];
 
 type Obj = Record<string, unknown>;
@@ -108,6 +108,38 @@ function runs(c: Checker, v: unknown, path: string, nullable = true) {
   return out;
 }
 
+// Vector shapes: SVG path data with a fill and/or stroke. Only path data and
+// colours are kept, never markup, so nothing here can inject SVG or HTML.
+const MAX_SHAPES = 600;
+const PATH_D = /^[MmLlHhVvCcSsQqTtAaZz0-9eE.,\s+-]{1,20000}$/;
+
+function shapes(c: Checker, v: unknown, path: string, nullable = true) {
+  if (v == null) {
+    if (!nullable) c.fail(path, "required");
+    return null;
+  }
+  if (!Array.isArray(v) || !v.length || v.length > MAX_SHAPES) return c.fail(path, `must be a list of 1–${MAX_SHAPES} shapes`), null;
+  const out = [];
+  for (const s of v) {
+    const colour = (x: unknown, none: boolean) => x == null || (typeof x === "string" && (HEX.test(x) || (none && x === "none")));
+    const n = (x: unknown, max: number) => x == null || (typeof x === "number" && x >= 0 && x <= max);
+    if (!isObj(s) || typeof s.d !== "string" || !PATH_D.test(s.d) || !colour(s.fill, true) || !colour(s.stroke, false) || !n(s.sw, 12) || !n(s.op, 1)) {
+      c.fail(path, "contains an invalid shape (needs path data d, #rrggbb fill / stroke, sw 0–12, op 0–1)");
+      return null;
+    }
+    const shape: Obj = { d: s.d };
+    for (const k of ["fill", "stroke", "sw", "op"]) if (s[k] != null) shape[k] = s[k];
+    out.push(shape);
+  }
+  return out;
+}
+
+function box(c: Checker, v: unknown, path: string) {
+  const ok = isObj(v) && [v.x, v.y, v.w, v.h].every((n) => typeof n === "number" && Math.abs(n) <= 512) && (v.w as number) > 0 && (v.h as number) > 0;
+  if (!ok) return c.fail(path, "must be { x, y, w, h } with w, h > 0"), null;
+  return { x: v.x, y: v.y, w: v.w, h: v.h };
+}
+
 function boundsOf(list: { x: number; y: number; w: number }[]) {
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
   for (const r of list) {
@@ -156,10 +188,24 @@ export function visual(c: Checker, v: unknown, type: string, compatible: string[
     // Runs drawn finer than the grid: `res` pixels per grid unit
     const res = c.num(v, "res", { min: 1, max: 4, int: true, path: "visual.res" });
     if (res && res !== 1) out.res = res;
+  } else if (kind === "vector") {
+    out = {
+      kind,
+      layer,
+      z,
+      front: shapes(c, v.front, "visual.front", false),
+      back: shapes(c, v.back, "visual.back"),
+      icon: shapes(c, v.icon, "visual.icon"),
+      bounds: box(c, v.bounds, "visual.bounds"),
+    };
+    const x = c.num(v, "x", { min: -96, max: 96, path: "visual.x" });
+    const y = c.num(v, "y", { min: -96, max: 96, path: "visual.y" });
+    if (x) out.x = x;
+    if (y) out.y = y;
   } else if (kind === "image") {
     out = { kind, layer, z, ...placement(c, v, "visual", false) };
   } else {
-    c.fail("visual.kind", 'must be "runs" or "image"');
+    c.fail("visual.kind", 'must be "runs", "vector" or "image"');
     return null;
   }
 
@@ -183,6 +229,13 @@ export function visual(c: Checker, v: unknown, type: string, compatible: string[
             }
             type Runs = { x: number; y: number; w: number }[];
             if (entry.front || entry.back) entry.bounds = boundsOf([...((entry.back ?? []) as Runs), ...((entry.front ?? []) as Runs)]);
+          } else if (kind === "vector") {
+            for (const side of ["front", "back", "icon"]) {
+              if (o[side] == null) continue;
+              const list = shapes(c, o[side], `${p}.${side}`);
+              if (list) entry[side] = list;
+            }
+            if (o.bounds != null) entry.bounds = box(c, o.bounds, `${p}.bounds`);
           }
           if (o.layer != null) entry.layer = c.oneOf(o, "layer", SLOTS);
           if (o.z != null) entry.z = c.num(o, "z", { min: -50, max: 50, int: true, path: `${p}.z` });
@@ -255,7 +308,10 @@ export function validateCharacter(input: unknown) {
       !Object.values(palette).every((v) => typeof v === "string" && HEX.test(v))
     ) c.fail("art.sprite", "rows must be equal-length strings using only palette keys or “.”");
     else art = { kind: "sprite", sprite: { palette, rows }, locked: a.locked === true };
-  } else c.fail("art.kind", 'must be "character" or "sprite"');
+  } else if (a.kind === "vector") {
+    const list = shapes(c, a.shapes, "art.shapes", false);
+    if (list) art = { kind: "vector", shapes: list, locked: a.locked === true };
+  } else c.fail("art.kind", 'must be "character", "sprite" or "vector"');
 
   const attributes = Array.isArray(input.attributes)
     ? input.attributes

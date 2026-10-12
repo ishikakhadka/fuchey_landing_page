@@ -50,6 +50,72 @@ export const packs = [
       description: "A deep hood, a domino mask and a coin pouch that’s suspiciously full.",
     },
   },
+  {
+    id: "cartoon",
+    name: "Cartoon Pack",
+    tagline: "Saturday-morning friends.",
+    description:
+      "Round, bouncy and hand-drawn smooth: a pup, a bunny, a penguin and a little robot who all live on the same funny-pages street.",
+    wardrobe: {
+      tagline: "Dress up, cartoon style.",
+      description: "Propeller caps, party hats, star shades, overalls, a hero cape and a balloon that never pops.",
+    },
+  },
+  {
+    id: "anime",
+    name: "Anime Pack",
+    tagline: "Big eyes, bigger destinies.",
+    description:
+      "Heroes and spirits straight out of a Saturday-night anime: a spiky-haired fighter, a magical girl, a silent swordsman and a fox who keeps a shrine.",
+    wardrobe: {
+      tagline: "Your transformation sequence.",
+      description: "Headbands, cat-ear headphones, a kitsune mask, a sailor uniform, a practice sword and a drift of sakura petals.",
+    },
+  },
+  {
+    id: "myths",
+    name: "Myths Reimagined",
+    tagline: "Old gods, new wallets.",
+    description:
+      "Figures from the oldest stories, redrawn small and friendly: a jackal guide of the underworld, a gorgon with a nest of snakes, a monkey who defied heaven and a bull from the labyrinth.",
+    wardrobe: {
+      tagline: "Temple gold.",
+      description: "A laurel wreath, a pharaoh’s headcloth, an Olympian toga, an ankh, a trident, a bronze shield and clouds fit for a mountaintop.",
+    },
+  },
+  {
+    id: "legends",
+    name: "Legends Reimagined",
+    tagline: "Tales told after dark.",
+    description:
+      "Folklore and fireside stories made pocket-sized: a count who only comes out at night, an outlaw archer of the greenwood, a wizard of the old court and a detective who follows every scent.",
+    wardrobe: {
+      tagline: "Dress for the story.",
+      description: "A deerstalker, a wizard’s hat, a monocle, a midnight cape, a magnifying glass, a longbow and will-o’-wisps.",
+    },
+  },
+  {
+    id: "heroes",
+    name: "Superheroes Reimagined",
+    tagline: "Capes on. Wallets safe.",
+    description:
+      "An all-new squad of Fuchey heroes: a speedster who outruns block times, a flier with cloud hair, an armoured pangolin and an owl who keeps watch all night.",
+    wardrobe: {
+      tagline: "Suit up.",
+      description: "A crest helmet, a power visor, a power suit, a storm cape, a jet pack, an energy orb and a full-power aura.",
+    },
+  },
+  {
+    id: "brainrot",
+    name: "Brainrot Pack",
+    tagline: "Absolutely no thoughts. Only vibes.",
+    description:
+      "Unhinged mash-up creatures with names you can’t stop saying: a toaster frog, an ice-cream owl, a washing-machine cat and a tomato penguin.",
+    wardrobe: {
+      tagline: "Maximum aura.",
+      description: "A spaghetti bowl hat, a maestro moustache, a drip tracksuit, a big gold chain, a pizza backpack, a tiny espresso and infinite aura.",
+    },
+  },
 ];
 
 export const DEFAULT_PACK = "wild";

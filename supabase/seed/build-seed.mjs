@@ -19,6 +19,8 @@ import { fileURLToPath } from "node:url";
 import { characters } from "./characters.js";
 import { wearables } from "./wearables.js";
 import { wearableArt } from "./wearableArt.js";
+import { vectorWearables } from "./vectorArt.js";
+import { rhinoFit } from "./wildArt.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const sync = process.argv.includes("--sync");
@@ -31,6 +33,8 @@ const arr = (v, type) => `array[${v.map(text).join(", ")}]::${type}[]`;
 
 // Wearable layers as the renderer consumes them (see src/render/visual.js).
 function visualFor(w) {
+  const vector = vectorWearables[w.id];
+  if (vector) return { kind: "vector", layer: w.type, z: 0, ...vector };
   const art = wearableArt[w.id];
   if (!art) throw new Error(`No art for ${w.id}`);
   return {
@@ -42,7 +46,9 @@ function visualFor(w) {
     icon: art.icon,
     bounds: art.bounds,
     ...(art.res && { res: art.res }),
-    ...(art.perCharacter && { perCharacter: art.perCharacter }),
+    ...((art.perCharacter || rhinoFit[w.id]) && {
+      perCharacter: { ...art.perCharacter, ...(rhinoFit[w.id] && { rhino: rhinoFit[w.id] }) },
+    }),
   };
 }
 
@@ -115,20 +121,23 @@ wearables.forEach((w, i) => {
 
 // Built-in art is owned by the source files: refresh it wherever the row
 // still uses built-in art (an admin upload switches the kind to "image").
+// Characters may move between the two built-in kinds (the Rhino went from a
+// pixel sprite to vector art), so either kind is replaced.
 if (sync) {
   lines.push("");
   characters
-    .filter((c) => c.art.kind === "sprite")
+    .filter((c) => c.art.kind === "sprite" || c.art.kind === "vector")
     .forEach((c) =>
       lines.push(
-        `update public.characters set art = ${json(c.art)} where id = ${text(c.id)} and art->>'kind' = 'sprite' and art is distinct from ${json(c.art)};`,
+        `update public.characters set art = ${json(c.art)} where id = ${text(c.id)} and art->>'kind' in ('sprite', 'vector') and art is distinct from ${json(c.art)};`,
       ),
     );
-  wearables.forEach((w) =>
+  wearables.forEach((w) => {
+    const v = visualFor(w);
     lines.push(
-      `update public.wearables set visual = ${json(visualFor(w))} where id = ${text(w.id)} and visual->>'kind' = 'runs' and visual is distinct from ${json(visualFor(w))};`,
-    ),
-  );
+      `update public.wearables set visual = ${json(v)} where id = ${text(w.id)} and visual->>'kind' = ${text(v.kind)} and visual is distinct from ${json(v)};`,
+    );
+  });
   lines.push("", "commit;");
 }
 

@@ -19,7 +19,7 @@ const STATUSES = [
 ];
 const RARITY_OPTIONS = Object.values(RARITIES);
 
-const drawable = (v) => v && (v.kind === "runs" ? v.front?.length : v.image && v.width && v.height);
+const drawable = (v) => v && (v.kind === "runs" || v.kind === "vector" ? v.front?.length : v.image && v.width && v.height);
 
 // Create / edit one wearable, with a live preview drawn by the same
 // CharacterRender the wardrobe uses.
@@ -173,18 +173,20 @@ function WearableEditor({ initial, characters, wearables, session, onSaved, onDe
               scale ¼) with a transparent background, then place it with x / y / scale while watching the preview.
             </p>
 
-            {visual.kind === "runs" ? (
+            {visual.kind === "runs" || visual.kind === "vector" ? (
               <div className="admin-field is-wide">
                 <span className="admin-label">Art</span>
                 <p className="admin-hint">
-                  Built-in pixel layers ({visual.front?.length ?? 0} runs{visual.back ? ", with a back layer" : ""}).
+                  {visual.kind === "vector"
+                    ? `Built-in vector layers (${visual.front?.length ?? 0} shapes${visual.back ? ", with a back layer" : ""}).`
+                    : `Built-in pixel layers (${visual.front?.length ?? 0} runs${visual.back ? ", with a back layer" : ""}).`}{" "}
                   Shift them with x / y below, or replace them with an uploaded image.
                 </p>
                 <button
                   type="button"
                   className="ghost-button"
                   onClick={() =>
-                    window.confirm("Replace the built-in pixel art with an uploaded image? You’ll need to upload one before saving.") &&
+                    window.confirm("Replace the built-in art with an uploaded image? You’ll need to upload one before saving.") &&
                     setVisual({ kind: "image", front: undefined, back: undefined, icon: undefined, bounds: undefined, image: null, width: null, height: null, x: 0, y: 0, scale: 1 })
                   }>
                   Replace with an image
