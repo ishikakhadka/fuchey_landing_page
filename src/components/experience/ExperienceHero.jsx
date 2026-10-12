@@ -15,8 +15,8 @@ const pick = (list) => list[Math.floor(Math.random() * list.length)];
 // Scratching a character off counts as revealing it for the rest of the page
 // (`onCardReveal`). Characters still under wraps (locked art) are never
 // dealt, so there's always a real look to uncover. The card on the table,
-// the Character / Device choice and the device reveal are remembered in this
-// browser, so coming back to the page shows the same card, still scratched.
+// the Character / Device choice and the device reveal are remembered for this
+// session, so coming back to the page shows the same card, still scratched.
 function ExperienceHero({ revealedIds, onCardReveal }) {
   const ref = useRef(null);
   const reduced = useReducedMotion();

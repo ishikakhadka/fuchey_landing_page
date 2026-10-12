@@ -11,7 +11,7 @@ import Waitlist from "../../components/Waitlist.jsx";
 // Characters first (a scratch card, then sealed capsules), then dressing the
 // ones you've revealed, then the device that takes them off the screen, then
 // the waitlist. `revealed` is shared: a character revealed anywhere is revealed
-// everywhere on the page, and it's remembered in this browser, so nothing
+// everywhere on the page, and it's remembered for this session, so nothing
 // seals itself again when the visitor leaves and comes back.
 function Home() {
   const { current } = useEdition();

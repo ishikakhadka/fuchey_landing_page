@@ -50,7 +50,8 @@ export const characters = [
     quote: "Slow to charge, impossible to stop.",
     description:
       "A gentle grassland giant with an ivory horn and a soft spot for naps in the sun. The Rhino guards your wallet like its own watering hole: unhurried, unbothered and never moved.",
-    art: { kind: "vector", shapes: vectorCharacters.rhino.shapes },
+    // Locked for now: the art is kept but not shown until it's ready.
+    art: { kind: "vector", shapes: vectorCharacters.rhino.shapes, locked: true },
     attributes: [
       { trait_type: "Character", value: "Rhino" },
       { trait_type: "Edition", value: "Wild" },

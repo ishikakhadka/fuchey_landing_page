@@ -24,7 +24,8 @@ function SpriteBase({ sprite }) {
 // every wearable's back layer, then the base art, then every front layer,
 // each stacked by wardrobe layer. `art` is the character's base art: an image
 // ({ kind: "character", image }), a pixel sprite ({ kind: "sprite", sprite }) or
-// vector shapes ({ kind: "vector", shapes }).
+// vector shapes ({ kind: "vector", shapes }). Locked art (a character still
+// under wraps) draws no base, only what's worn.
 // Purely visual: what's equipped is app state, never written into the NFT.
 function CharacterRender({ art, characterId, equipped = [], alt, className = "" }) {
   const layers = useMemo(() => stackLayers(equipped, characterId), [equipped, characterId]);
@@ -39,7 +40,7 @@ function CharacterRender({ art, characterId, equipped = [], alt, className = "" 
       {layers.map(({ wearable, visual }) => (
         <WearableLayer key={`b-${wearable.id}`} visual={visual} side="back" />
       ))}
-      {art.kind === "sprite" ? (
+      {art.locked && art.kind !== "sprite" ? null : art.kind === "sprite" ? (
         <SpriteBase sprite={art.sprite} />
       ) : art.kind === "vector" ? (
         <VectorShapes shapes={art.shapes} />
