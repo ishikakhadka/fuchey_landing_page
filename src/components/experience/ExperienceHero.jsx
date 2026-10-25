@@ -23,7 +23,7 @@ function ExperienceHero({ revealedIds, onCardReveal }) {
   useParallax(ref, !reduced);
 
   const { characters, error } = useCatalog();
-  const { current } = useEdition();
+  const { current, setEdition } = useEdition();
   const [subject, setSubject] = useStoredState("fuchey:home:card-subject", "character");
   const [deviceRevealed, setDeviceRevealed] = useStoredState("fuchey:home:device-revealed", false);
   const deck = characters.filter((c) => !c.art.locked);
@@ -99,6 +99,7 @@ function ExperienceHero({ revealedIds, onCardReveal }) {
               key="device"
               kind="device"
               edition={current.id}
+              onEditionChange={setEdition}
               revealed={deviceRevealed}
               onReveal={() => setDeviceRevealed(true)}
             />

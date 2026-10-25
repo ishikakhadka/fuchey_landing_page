@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router";
 import { Menu, X } from "lucide-react";
-import { editions } from "../data/editions";
 import WalletButton from "./wallet/WalletButton";
 
 const LINKS = [
@@ -12,9 +11,7 @@ const LINKS = [
   { to: "/collection", label: "My Collection" },
 ];
 
-function Navbar({ edition, setEdition }) {
-  const items = Object.values(editions);
-  const activeIndex = items.findIndex((item) => item.id === edition);
+function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { pathname } = useLocation();
 
@@ -48,30 +45,6 @@ function Navbar({ edition, setEdition }) {
         </nav>
 
         <div className="navbar-actions">
-          <div
-            className="edition-toggle"
-            role="group"
-            aria-label="Edition"
-            style={{ "--active": activeIndex }}>
-            <span className="edition-toggle-thumb" aria-hidden="true" />
-
-            {items.map((item) => {
-              const Icon = item.icon;
-
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={edition === item.id ? "active" : ""}
-                  aria-pressed={edition === item.id}
-                  onClick={() => setEdition(item.id)}>
-                  <Icon size={15} strokeWidth={2} />
-                  <span>{item.shortLabel}</span>
-                </button>
-              );
-            })}
-          </div>
-
           <WalletButton />
 
           <button

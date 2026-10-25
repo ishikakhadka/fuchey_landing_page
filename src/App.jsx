@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Outlet, ScrollRestoration, useLocation } from "react-router";
-import { useEdition } from "./context/EditionContext";
 
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
@@ -8,9 +7,9 @@ import WalletModal from "./components/wallet/WalletModal.jsx";
 import WalletToast from "./components/wallet/WalletToast.jsx";
 import PurchaseDialog from "./components/marketplace/PurchaseDialog.jsx";
 
-// Shared shell for every route: theme, navbar, footer.
+// Shared shell for every route: theme, navbar, footer. The site has one
+// layout; only the device showcase switches between Dev and Companion.
 function App() {
-  const { edition, setEdition } = useEdition();
   const { pathname, hash } = useLocation();
 
   // Links like "/#waitlist" from other pages land at the top by default —
@@ -21,8 +20,8 @@ function App() {
   }, [pathname, hash]);
 
   return (
-    <div className={`app theme-${edition}`}>
-      <Navbar edition={edition} setEdition={setEdition} />
+    <div className="app theme-companion">
+      <Navbar />
 
       <main>
         <Outlet />

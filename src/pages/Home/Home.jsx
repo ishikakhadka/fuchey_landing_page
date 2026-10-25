@@ -14,7 +14,7 @@ import Waitlist from "../../components/Waitlist.jsx";
 // everywhere on the page, and it's remembered for this session, so nothing
 // seals itself again when the visitor leaves and comes back.
 function Home() {
-  const { current } = useEdition();
+  const { current, setEdition } = useEdition();
   const discovery = useRef(null);
   const [revealed, setRevealed] = useStoredState("fuchey:home:revealed", []);
   const revealOne = () => discovery.current?.reveal();
@@ -28,7 +28,7 @@ function Home() {
 
       <CompleteTheLook unlocked={revealed} onRevealMore={revealOne} />
 
-      <CompanionSection edition={current.id} />
+      <CompanionSection edition={current.id} onEditionChange={setEdition} />
 
       <Waitlist edition={current} />
     </div>

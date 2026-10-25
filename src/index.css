@@ -123,10 +123,6 @@ body {
   overflow-x: hidden;
 }
 
-body:has(.theme-dev) {
-  background: #070c16;
-}
-
 img {
   display: block;
   max-width: 100%;
@@ -378,7 +374,7 @@ section {
   background: color-mix(in srgb, var(--brand) 10%, transparent);
 }
 
-/* Edition toggle with sliding thumb */
+/* Dev / Companion toggle with sliding thumb (device showcase) */
 .edition-toggle {
   position: relative;
   display: grid;
@@ -591,7 +587,7 @@ section {
   width: 100%;
 }
 
-/* frost panel from animation.html; cross-fades to night for the Dev edition */
+/* frost panel from animation.html; cross-fades to night when the stage shows Dev */
 .stage-backdrop {
   position: absolute;
   inset: 0;
@@ -1234,14 +1230,6 @@ section {
 @media (max-width: 520px) {
   .container {
     width: calc(100% - 32px);
-  }
-
-  .edition-toggle button {
-    padding: 8px 11px;
-  }
-
-  .edition-toggle button span {
-    display: none;
   }
 
   .logo {

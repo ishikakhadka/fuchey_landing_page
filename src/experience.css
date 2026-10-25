@@ -409,6 +409,29 @@
   color: var(--on-brand);
 }
 
+.scratch-actions {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+
+/* the sliding-thumb toggle, in frosted glass over the device stages */
+.device-mode-toggle {
+  border-color: var(--glass-line);
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.device-mode-toggle button {
+  min-height: 36px;
+  min-width: 104px;
+}
+
+.device-mode-toggle button:not(.active):hover {
+  color: var(--ink);
+}
+
 .scratch-tip {
   font-size: 13px;
   color: var(--ink-faint);
@@ -1550,11 +1573,26 @@
   min-height: 420px;
 }
 
-.xp-stage-tag {
+/* prototype tag + Dev / Companion toggle along the top of the stage */
+.xp-stage-top {
   position: absolute;
   top: 16px;
   left: 16px;
+  right: 16px;
   z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.xp-stage-top > * {
+  pointer-events: auto;
+}
+
+.xp-stage-tag {
   padding: 5px 11px;
   border: 1px solid var(--glass-line);
   border-radius: 999px;

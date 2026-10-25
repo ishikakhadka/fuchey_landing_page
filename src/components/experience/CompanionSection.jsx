@@ -1,6 +1,7 @@
 import { Component, lazy, Suspense, useRef } from "react";
 
 import yetiUrl from "../../assets/yeti.png";
+import DeviceModeToggle from "./DeviceModeToggle";
 import { useInView } from "../../hooks/useMotion";
 
 // three.js is heavy: its own chunk, fetched only when this section nears the
@@ -31,14 +32,14 @@ class SceneBoundary extends Component {
 
 // Section E: the physical companion, as the thing that takes your collectibles
 // off the screen, introduced after the collectibles themselves.
-function CompanionSection({ edition }) {
+function CompanionSection({ edition, onEditionChange }) {
   const stageRef = useRef(null);
   const near = useInView(stageRef, { rootMargin: "300px" });
 
   return (
     <section className="xp-section xp-companion" id="companion" aria-labelledby="xp-companion-title">
       <div className="container xp-companion-grid">
-        <div className="hero-stage xp-companion-stage" ref={stageRef}>
+        <div className={`hero-stage xp-companion-stage theme-${edition}`} ref={stageRef}>
           <div className="stage-backdrop" aria-hidden="true" />
           <div className="stage-ring" aria-hidden="true" />
           {near ? (
@@ -50,7 +51,10 @@ function CompanionSection({ edition }) {
           ) : (
             <div className="fuchey-3d is-loading" />
           )}
-          <span className="xp-stage-tag">Device prototype · in development</span>
+          <div className="xp-stage-top">
+            <span className="xp-stage-tag">Device prototype · in development</span>
+            <DeviceModeToggle value={edition} onChange={onEditionChange} />
+          </div>
         </div>
 
         <div className="xp-companion-copy">

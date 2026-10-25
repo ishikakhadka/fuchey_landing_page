@@ -32,18 +32,9 @@ function Footer() {
             <div>
               <p className="footer-heading">COMMUNITY</p>
 
-              <a
-                href="https://github.com/belly1v123/Fuchey"
-                target="_blank"
-                rel="noreferrer">
-                GitHub
+              <a href="https://x.com/fuchey__" target="_blank" rel="noopener noreferrer">
+                X
               </a>
-
-              <a href="#" target="_blank" rel="noreferrer">
-                X / Twitter
-              </a>
-
-              <a href="#">Discord</a>
             </div>
           </div>
         </div>

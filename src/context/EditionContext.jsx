@@ -1,6 +1,8 @@
 import { createContext, useContext, useState } from "react";
 import { editions } from "../data/editions";
 
+// Which device experience (Dev or Companion) the device showcase shows.
+// Shared so the hero's device card and the companion section stay in step.
 const EditionContext = createContext(null);
 
 export function EditionProvider({ children }) {

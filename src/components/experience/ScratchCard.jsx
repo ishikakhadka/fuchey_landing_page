@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 
+import DeviceModeToggle from "./DeviceModeToggle";
 import ItemArt from "../marketplace/ItemArt";
 import { getPack } from "../../data/packs";
 
@@ -83,7 +84,15 @@ const KINDS = {
 // A collectible scratch card for the hero: a character (or the Fuchey device)
 // under a frost coating that the visitor scratches off with the pointer, or
 // reveals with a button. Nothing is won: it's a look at the collection.
-function ScratchCard({ kind = "character", character, edition = "companion", revealed, onReveal, onDeal }) {
+function ScratchCard({
+  kind = "character",
+  character,
+  edition = "companion",
+  onEditionChange,
+  revealed,
+  onReveal,
+  onDeal,
+}) {
   const canvasRef = useRef(null);
   const [scratching, setScratching] = useState(false);
   const device = kind === "device";
@@ -242,6 +251,9 @@ function ScratchCard({ kind = "character", character, edition = "companion", rev
       </div>
 
       <div className="scratch-actions">
+        {device && onEditionChange && (
+          <DeviceModeToggle value={edition} onChange={onEditionChange} />
+        )}
         {revealed ? (
           device ? (
             <span className="scratch-tip">Drag to turn it · tap to make it hop</span>
