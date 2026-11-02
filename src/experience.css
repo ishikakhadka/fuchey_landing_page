@@ -1592,6 +1592,16 @@
   pointer-events: auto;
 }
 
+/* the top row holds the tag and toggle here, so the drag hint sits
+   centered just above the chapter pills instead of in the top-right */
+.xp-companion-stage .stage-hint {
+  top: auto;
+  right: 0;
+  bottom: 62px;
+  left: 0;
+  justify-content: center;
+}
+
 .xp-stage-tag {
   padding: 5px 11px;
   border: 1px solid var(--glass-line);
