@@ -160,7 +160,7 @@ function DropEditor({ initial, characters, session, onSaved, onDeleted, onClose 
           <Section title="Look and button">
             <ImageUpload
               label="Backdrop scene"
-              hint="Wide scene behind the banner and hero (PNG or WebP, at least 1600 px wide). Empty uses the pack’s built-in scene."
+              hint="Wide scene behind the banner and hero (PNG, WebP or GIF, at least 1600 px wide). Empty uses the pack’s built-in scene."
               value={draft.backdropUrl}
               folder={draft.id ? `drops/${draft.id}` : null}
               session={session}

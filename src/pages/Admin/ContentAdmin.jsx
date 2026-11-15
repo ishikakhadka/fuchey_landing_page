@@ -189,7 +189,7 @@ function SlideEditor({ slide, session, onSaved, onCancel }) {
         {draft.kind === "custom" && (
           <ImageUpload
             label="Image"
-            hint="Shown on the right of the slide (PNG or WebP)."
+            hint="Shown on the right of the slide (PNG, WebP or GIF)."
             value={draft.imageUrl}
             folder={draft.id ? `slides/${draft.id}` : null}
             session={session}

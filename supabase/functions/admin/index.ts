@@ -32,10 +32,11 @@ const BUCKET = "catalog-art";
 // SUPABASE_URL is an internal Docker hostname, so local setups set
 // PUBLIC_SUPABASE_URL (supabase/functions/.env); hosted projects don't need to.
 const PUBLIC_URL = (Deno.env.get("PUBLIC_SUPABASE_URL") ?? Deno.env.get("SUPABASE_URL")!).replace(/\/$/, "");
-const MAX_UPLOAD = 2 * 1024 * 1024;
+const MAX_UPLOAD = 8 * 1024 * 1024; // GIFs can be large; stills are usually far smaller
 
 const PNG = [0x89, 0x50, 0x4e, 0x47];
 const WEBP = [0x52, 0x49, 0x46, 0x46];
+const GIF = [0x47, 0x49, 0x46, 0x38]; // "GIF8" (GIF87a / GIF89a)
 const starts = (bytes: Uint8Array, sig: number[]) => sig.every((b, i) => bytes[i] === b);
 
 Deno.serve(
@@ -237,15 +238,15 @@ Deno.serve(
         } catch {
           throw new HttpError(400, "Upload isn’t valid base64.");
         }
-        if (!bytes.length || bytes.length > MAX_UPLOAD) throw new HttpError(400, "Images must be under 2 MB.");
-        const type = starts(bytes, PNG) ? "image/png" : starts(bytes, WEBP) ? "image/webp" : null;
-        if (!type) throw new HttpError(400, "Only PNG or WebP images.");
+        if (!bytes.length || bytes.length > MAX_UPLOAD) throw new HttpError(400, "Images must be under 8 MB.");
+        const type = starts(bytes, PNG) ? "image/png" : starts(bytes, WEBP) ? "image/webp" : starts(bytes, GIF) ? "image/gif" : null;
+        if (!type) throw new HttpError(400, "Only PNG, WebP or GIF images.");
 
         const hash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)))
           .slice(0, 8)
           .map((b) => b.toString(16).padStart(2, "0"))
           .join("");
-        const path = `${folder}/${hash}.${type === "image/png" ? "png" : "webp"}`;
+        const path = `${folder}/${hash}.${type.split("/")[1]}`;
         const { error } = await db.storage.from(BUCKET).upload(path, bytes, { contentType: type, upsert: true });
         fail(error);
         return json({ url: `${PUBLIC_URL}/storage/v1/object/public/${BUCKET}/${path}`, path });

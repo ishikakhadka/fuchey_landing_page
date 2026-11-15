@@ -286,6 +286,7 @@ export function validateWearable(input: unknown, characterIds: string[]) {
     compatible_characters: compatible,
     ...listing(c, input),
     show_nft_art: input.show_nft_art === true,
+    display_url: c.url(input.display_url, "display_url"),
     image_url: c.url(input.image_url, "image_url"),
     visual: visual(c, input.visual, type, compatible),
   };
@@ -339,6 +340,7 @@ export function validateCharacter(input: unknown) {
     attributes,
     wardrobe_slots: slots,
     show_nft_art: input.show_nft_art === true,
+    display_url: c.url(input.display_url, "display_url"),
     image_url: c.url(input.image_url, "image_url"),
     ...listing(c, input),
   };

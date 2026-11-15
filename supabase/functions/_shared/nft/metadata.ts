@@ -60,7 +60,7 @@ function externalUrl(kind: AssetKind, id: string) {
   return { external_url: kind === "character" ? `${site}/characters/${id}` : `${site}/wardrobe?item=${id}` };
 }
 
-export function buildMetadata(kind: AssetKind, row: Row, image: { uri: string; url: string }) {
+export function buildMetadata(kind: AssetKind, row: Row, image: { uri: string; url: string; type?: string }) {
   const attributes: Attr[] = [
     { trait_type: "Asset Type", value: kind === "character" ? "Character" : "Wearable" },
     { trait_type: "Fuchey ID", value: row.id },
@@ -93,8 +93,8 @@ export function buildMetadata(kind: AssetKind, row: Row, image: { uri: string; u
     properties: {
       category: "image",
       files: [
-        { uri: image.url, type: "image/png" },
-        { uri: image.uri, type: "image/png" },
+        { uri: image.url, type: image.type ?? "image/png" },
+        { uri: image.uri, type: image.type ?? "image/png" },
       ],
       fuchey: { assetType: kind, assetId: row.id, collection: COLLECTION_GROUPS[kind].id, version: 1 },
     },

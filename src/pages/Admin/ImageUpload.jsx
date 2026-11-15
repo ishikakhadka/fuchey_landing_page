@@ -38,8 +38,8 @@ function ImageUpload({ label, hint, value, folder, session, onUploaded, onClear,
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    if (!["image/png", "image/webp"].includes(file.type)) {
-      setState({ busy: false, error: "Use a PNG or WebP.", warning: null });
+    if (!["image/png", "image/webp", "image/gif"].includes(file.type)) {
+      setState({ busy: false, error: "Use a PNG, WebP or GIF.", warning: null });
       return;
     }
     if (!folder) {
@@ -76,7 +76,7 @@ function ImageUpload({ label, hint, value, folder, session, onUploaded, onClear,
         <label htmlFor={id} className={`ghost-button ${state.busy ? "is-busy" : ""}`}>
           <ImageUp size={15} /> {state.busy ? "Uploading…" : value ? "Replace" : "Upload"}
         </label>
-        <input id={id} type="file" accept="image/png,image/webp" className="sr-only" onChange={onFile} disabled={state.busy} />
+        <input id={id} type="file" accept="image/png,image/webp,image/gif" className="sr-only" onChange={onFile} disabled={state.busy} />
         {value && onClear && (
           <button type="button" className="icon-button" aria-label={`Remove ${label}`} onClick={onClear}>
             <Trash2 size={15} />

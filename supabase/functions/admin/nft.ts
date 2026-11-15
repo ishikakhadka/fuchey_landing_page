@@ -99,7 +99,7 @@ async function uploadArtwork(kind: AssetKind, row: Row) {
   if (bytes.length > MAX_IMAGE) throw new HttpError(400, "Artwork must be under 10 MB.");
 
   const image = await storage.putFile(bytes, `${kind}-${row.id}.${type.split("/")[1]}`, type);
-  const metadata = buildMetadata(kind, row, image);
+  const metadata = buildMetadata(kind, row, { ...image, type });
   const meta = await storage.putJson(metadata, `${kind}-${row.id}.json`);
   return { image, metadata, meta, provider: storage.provider };
 }

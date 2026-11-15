@@ -32,7 +32,9 @@ export async function fetchCatalog() {
       : { ...item.listing, solPrice: usd ? null : item.listing.price };
     // "Show the NFT artwork on the site": the picture everywhere except the
     // dressing room, which keeps the base art wearables line up with.
-    const art = item.showNftArt && item.imageUrl && !item.art.locked ? { ...item.art, displayImage: item.imageUrl } : item.art;
+    // A website picture (e.g. an animated GIF) wins over the NFT artwork.
+    const display = item.displayUrl || (item.showNftArt ? item.imageUrl : null);
+    const art = display && !item.art.locked ? { ...item.art, displayImage: display } : item.art;
     return { ...item, art, listing, sale };
   };
   return {

@@ -184,6 +184,18 @@ function CharacterEditor({ initial, wearables, session, onSaved, onDeleted, onCl
             )}
           </Section>
 
+          <Section title="Website picture">
+            <ImageUpload
+              label="Picture or animated GIF for the website"
+              value={draft.displayUrl}
+              folder={draft.id ? `characters/${draft.id}` : null}
+              session={session}
+              onUploaded={(url) => set({ displayUrl: url })}
+              onClear={() => set({ displayUrl: null })}
+              hint="Optional. Shown on cards, stages, the home hero, carousels and pages instead of the drawn art (PNG, WebP or GIF, up to 8 MB, transparent background works best). The dressing room keeps the drawn art. Leave empty to use the switch under NFT artwork."
+            />
+          </Section>
+
           <Section title="NFT artwork">
             <ImageUpload
               label="Artwork for the NFT"

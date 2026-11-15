@@ -169,6 +169,15 @@ test("admin uploads a layer, creates and publishes a wearable; it appears in the
   assert.equal(shown.status, 200, JSON.stringify(shown.body));
   assert.equal((await rest(`wearables?id=eq.${ID}`)).body[0].show_nft_art, true, "the site can show the NFT artwork");
 
+  // An animated GIF as the website picture.
+  const gif = Buffer.from("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", "base64");
+  const gifUp = await call("admin", { action: "upload", folder: `wearables/${ID}`, contentType: "image/gif", data: gif.toString("base64") }, adminToken);
+  assert.equal(gifUp.status, 200, JSON.stringify(gifUp.body));
+  assert.match(gifUp.body.url, /\.gif$/);
+  const withGif = await call("admin", { action: "saveWearable", wearable: { ...wearable, display_url: gifUp.body.url, published: true } }, adminToken);
+  assert.equal(withGif.status, 200, JSON.stringify(withGif.body));
+  assert.equal((await rest(`wearables?id=eq.${ID}`)).body[0].display_url, gifUp.body.url);
+
   const bad = await call("admin", { action: "saveWearable", wearable: { ...wearable, price_currency: "eur" } }, adminToken);
   assert.equal(bad.status, 400);
 });
