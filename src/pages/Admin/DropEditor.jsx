@@ -7,6 +7,9 @@ import ImageUpload from "./ImageUpload";
 import { packs, getPack } from "../../data/packs";
 import { adminDeleteDrop, adminSaveDrop } from "../../services/backend/content";
 import { backdropFor, dropTiming } from "../../utils/drops";
+import { useNow } from "../../hooks/useNow";
+import DropSlide from "../../components/home/DropSlide";
+import "../../home.css";
 
 // datetime-local works in the admin's local time; the database stores UTC.
 const toLocal = (iso) => {
@@ -22,6 +25,8 @@ const fromLocal = (v) => (v ? new Date(v).toISOString() : null);
 function DropEditor({ initial, characters, session, onSaved, onDeleted, onClose }) {
   const [draft, setDraft] = useState(initial);
   const [state, setState] = useState({ saving: false, error: null, errors: [], ok: null });
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const now = useNow();
   const isNew = !initial.saved;
   const set = (patch) => setDraft((d) => ({ ...d, ...patch }));
 
@@ -164,7 +169,7 @@ function DropEditor({ initial, characters, session, onSaved, onDeleted, onClose 
 
           <SaveError message={state.error} errors={state.errors} />
           {state.ok && <p className="admin-ok">{state.ok}</p>}
-          <div className="admin-actions">
+          <div className="admin-actions"><div className="admin-actions-row">
             <button type="button" className="primary-button" onClick={save} disabled={state.saving}>
               <Save size={16} /> {state.saving ? "Saving…" : "Save drop"}
             </button>
@@ -173,7 +178,7 @@ function DropEditor({ initial, characters, session, onSaved, onDeleted, onClose 
                 <Trash2 size={15} /> Delete
               </button>
             )}
-          </div>
+          </div></div>
         </div>
 
         <aside className="admin-preview admin-drop-preview">
@@ -192,7 +197,16 @@ function DropEditor({ initial, characters, session, onSaved, onDeleted, onClose 
             </span>
             <span className="admin-banner-time">{timing.text}</span>
           </div>
-          <p className="admin-hint">The hero slide uses the same scene, headline and capsule.</p>
+          <span className="admin-label admin-preview-gap">Hero slide preview</span>
+          <div className="admin-hero-preview">
+            <div className="admin-hero-scale hm-home">
+              <DropSlide drop={draft} now={now} open={previewOpen} onOpen={() => setPreviewOpen(true)} />
+            </div>
+          </div>
+          <button type="button" className="ghost-button" onClick={() => setPreviewOpen((v) => !v)}>
+            {previewOpen ? "Show sealed" : "Show revealed"}
+          </button>
+          <p className="admin-hint">Exactly what visitors see once the drop is live. Nothing here is public until you switch Live on.</p>
         </aside>
       </div>
     </div>

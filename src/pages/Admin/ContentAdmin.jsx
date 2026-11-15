@@ -198,14 +198,14 @@ function SlideEditor({ slide, session, onSaved, onCancel }) {
         )}
       </Section>
       <SaveError message={state.error} errors={state.errors} />
-      <div className="admin-actions">
+      <div className="admin-actions"><div className="admin-actions-row">
         <button type="button" className="primary-button" onClick={save} disabled={state.saving}>
           <Save size={16} /> {state.saving ? "Saving…" : "Save slide"}
         </button>
         <button type="button" className="ghost-button" onClick={onCancel}>
           Cancel
         </button>
-      </div>
+      </div></div>
     </div>
   );
 }
@@ -328,7 +328,7 @@ export function HomeAdmin({ session, characters, onChange }) {
           />
         )}
 
-        <div className="admin-actions">
+        <div className="admin-actions"><div className="admin-actions-row">
           {unslotted.map((d) => (
             <button key={d.id} type="button" className="ghost-button" disabled={busy} onClick={() => addSlide("drop", d.id)}>
               <Plus size={15} /> Add “{d.title}”
@@ -342,7 +342,7 @@ export function HomeAdmin({ session, characters, onChange }) {
           <button type="button" className="ghost-button" disabled={busy} onClick={() => addSlide("custom")}>
             <Plus size={15} /> Add custom slide
           </button>
-        </div>
+        </div></div>
       </section>
 
       <Section title="Home page">
@@ -373,11 +373,11 @@ export function HomeAdmin({ session, characters, onChange }) {
       </Section>
       <SaveError message={settingsState.error} />
       {settingsState.ok && <p className="admin-ok">{settingsState.ok}</p>}
-      <div className="admin-actions">
+      <div className="admin-actions"><div className="admin-actions-row">
         <button type="button" className="primary-button" onClick={saveSettings} disabled={settingsState.saving}>
           <Save size={16} /> {settingsState.saving ? "Saving…" : "Save home settings"}
         </button>
-      </div>
+      </div></div>
     </div>
   );
 }

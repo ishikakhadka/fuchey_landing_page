@@ -1,12 +1,14 @@
 import { useMemo } from "react";
-import { useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { RefreshCw, Search, X } from "lucide-react";
 
-import PageHeader from "../../components/marketplace/PageHeader";
 import CategoryTabs from "../../components/marketplace/CategoryTabs";
 import CollectibleCard from "../../components/marketplace/CollectibleCard";
 import EmptyState from "../../components/collection/EmptyState";
 import NetworkBadge from "../../components/wallet/NetworkBadge";
+import ItemArt from "../../components/marketplace/ItemArt";
+import DropBanner from "../../components/drops/DropBanner";
+import PackCarousel from "../../components/marketplace/PackCarousel";
 
 import { useCatalog } from "../../context/CatalogContext";
 import { useMarketplace } from "../../context/MarketplaceContext";
@@ -117,22 +119,50 @@ function Marketplace() {
     .sort((a, b) => a.rank - b.rank)
     .filter((a) => a.id === availability || entries.some((e) => e.availability.id === a.id));
 
+  // The rarest character with revealed art, for the intro.
+  const spotlight = [...characters]
+    .filter((c) => !c.art.locked)
+    .sort((a, b) => getRarity(b.rarity).rank - getRarity(a.rarity).rank)[0];
+
   const owned = (e) => (e.kind === "character" ? ownsCharacter(e.item.id) : ownsWearable(e.item.id));
 
   return (
-    <div className="container market-page market-browse">
-      <PageHeader
-        eyebrow="MARKETPLACE"
-        title="The collection."
-        aside={
+    <div className="container market-page market-browse rd-page mk-page">
+      <section className="mk-intro">
+        <div className="mk-intro-side">
+          <h1 className="rd-title">
+            Discover <span className="accent">Collectibles</span>
+          </h1>
+          <p className="rd-lede">Own unique characters, wearables and more. Every piece shows its live availability.</p>
+          {spotlight && (
+            <div className="mk-spotlight">
+              <span className="rd-plat-glow" />
+              <span className="rd-plat-ring" />
+              <ItemArt art={spotlight.art} alt={spotlight.title ?? spotlight.name} itemId={spotlight.id} size="lg" />
+            </div>
+          )}
+          <a href="#browse" className="rd-btn is-ghost">
+            Explore Marketplace
+          </a>
+          <Link to="/#waitlist" className="mk-community rd-glass">
+            <img src="/fuchey-mark.png" alt="" width="40" height="38" />
+            <span>
+              <b>Join the Fuchey Community</b>
+              <small>Get drop news on the waitlist.</small>
+            </span>
+          </Link>
           <div className="browse-network">
             <NetworkBadge />
             {!NETWORK.isMainnet && <span>Test network: prices are in {NETWORK.label} SOL.</span>}
           </div>
-        }>
-        Every Fuchey character and wearable, with live availability. Open any piece to see its
-        details, on-chain record and what it pairs with.
-      </PageHeader>
+        </div>
+        <div className="mk-intro-main">
+          <DropBanner />
+          <PackCarousel />
+        </div>
+      </section>
+
+      <span id="browse" />
 
       <div className="browse-toolbar">
         <CategoryTabs label="Collectible type" options={tabs} value={kind} onChange={(id) => update("kind", id)} />
