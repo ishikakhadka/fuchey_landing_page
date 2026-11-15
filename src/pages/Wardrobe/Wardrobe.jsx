@@ -1,13 +1,29 @@
 import { useState } from "react";
 import { Link, Navigate, useParams, useSearchParams } from "react-router";
-import { ArrowLeft, Compass } from "lucide-react";
+import {
+  ArrowLeft,
+  Backpack,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Compass,
+  Crown,
+  Glasses,
+  Hand,
+  HardHat,
+  LayoutGrid,
+  RotateCcw,
+  Shirt,
+  Sparkles,
+  Star,
+} from "lucide-react";
 
 import ItemArt from "../../components/marketplace/ItemArt";
-import CategoryTabs from "../../components/marketplace/CategoryTabs";
-import WearableCard from "../../components/wardrobe/WearableCard";
-import FittingRoom from "../../components/wardrobe/FittingRoom";
+import CharacterRender from "../../components/characters/CharacterRender";
+import RarityBadge from "../../components/marketplace/RarityBadge";
+import PriceTag from "../../components/marketplace/PriceTag";
+import WalletButton from "../../components/wallet/WalletButton";
 import EmptyState from "../../components/collection/EmptyState";
-import NetworkBadge from "../../components/wallet/NetworkBadge";
 
 import { useCatalog } from "../../context/CatalogContext";
 import { useCharacters } from "../../hooks/useCharacters";
@@ -19,6 +35,17 @@ import { fitsCharacter, getWearableTypes, isDressable } from "../../services/mar
 import { fetchLoadout, saveLoadout } from "../../services/backend/loadouts";
 import { getSession } from "../../services/backend/session";
 import { packBackdrop, packs } from "../../data/packs";
+import { detailPath } from "../../utils/routes";
+
+const TYPE_ICONS = {
+  hat: Crown,
+  headwear: HardHat,
+  outfit: Shirt,
+  accessory: Glasses,
+  backpack: Backpack,
+  held: Hand,
+  special: Star,
+};
 
 const sameSlots = (a = {}, b = {}) =>
   JSON.stringify(Object.entries(a).sort()) === JSON.stringify(Object.entries(b).sort());
@@ -244,7 +271,6 @@ function FittingRoomPage({ pack }) {
   };
 
   const racked = wearables.filter((w) => (w.pack ?? "wild") === pack.id);
-  const racks = packs.filter((p) => wearables.some((w) => (w.pack ?? "wild") === p.id));
   const rail = mineView
     ? racked.filter((w) => ownsWearable(w.id) && fitsCharacter(w, character?.id))
     : racked;
@@ -274,123 +300,195 @@ function FittingRoomPage({ pack }) {
     </button>
   );
 
+  const typeIcon = (id) => TYPE_ICONS[id] ?? Sparkles;
+  const roomTabs = tabs.map((t) => ({ ...t, label: t.id ? t.label : "Everything" }));
+  const at = dressable.findIndex((c) => c.id === character?.id);
+  const cycleCharacter = (dir) => {
+    if (dressable.length < 2) return;
+    setCharacterId(dressable[(at + dir + dressable.length) % dressable.length].id);
+  };
+  const reset = () => character && setSlots(() => ({}));
+
   return (
-    <div className="rd-page wr-page">
+    <div className="rd-page wr-page wr-room">
       <div className="wr-backdrop" aria-hidden="true">
         <img src={packBackdrop(pack)} alt="" />
       </div>
 
-      <section className="container wr-head">
-        <div className="wr-head-copy">
-          <Link to="/wardrobe" className="back-link">
-            <ArrowLeft size={16} /> All racks
+      <div className="container wr-room-grid">
+        {/* Left: title and categories */}
+        <aside className="wr-side">
+          <Link to="/wardrobe" className="wr-back">
+            <ArrowLeft size={15} /> {pack.name}
           </Link>
-          <h1 className="rd-title">{pack.wardrobe?.tagline ?? "Dress the part."}</h1>
-          <p className="rd-lede">
-            {pack.wardrobe?.description ??
-              "Try anything on, then make it yours. Every piece is an NFT, and each one lists the characters it fits."}
-          </p>
-        </div>
-        <div className="wr-head-side">
-          <NetworkBadge />
-          <nav className="ch-chips" aria-label="Wardrobe packs">
-            {racks.map((p) => (
-              <Link key={p.id} to={`/wardrobe/packs/${p.id}`} role="tab" aria-selected={p.id === pack.id} className="wr-chip">
-                {p.name.replace(/ (Pack|Reimagined)$/, "")}
-              </Link>
-            ))}
+          <h1 className="rd-title">
+            Your <span className="accent">Wardrobe</span>
+          </h1>
+          <p className="wr-sub">Dress up, express and make it yours.</p>
+
+          <nav className="wr-cats" aria-label="Wearable type">
+            {roomTabs.map((t) => {
+              const Icon = t.id ? typeIcon(t.id) : LayoutGrid;
+              const on = (type ?? null) === t.id;
+              return (
+                <button key={t.id ?? "all"} type="button" className={on ? "is-on" : ""} aria-pressed={on} onClick={() => update("type", t.id)}>
+                  <Icon size={20} aria-hidden="true" />
+                  <span>{t.label}</span>
+                  {on && <ChevronRight size={18} className="wr-cats-chev" aria-hidden="true" />}
+                </button>
+              );
+            })}
           </nav>
-        </div>
-      </section>
 
-      <div className="container wardrobe-layout">
-        {character && (
-          <FittingRoom
-            characters={dressable}
-            character={character}
-            onCharacter={setCharacterId}
-            worn={worn}
-            onRemove={toggle}
-            focused={focused}
-            ownedCount={focused ? countOwned(focused.id) : 0}
-            loadout={
-              connected
-                ? { onSave: save, dirty, status: status.status, message: status.message }
-                : null
-            }
-          />
-        )}
-
-        <section className="wardrobe-rack" aria-label="Wearables">
-          {mineView && (
-            <div className="wardrobe-mine-head">
-              <div>
-                <h2 className="details-heading">Your wardrobe</h2>
-                <p className="muted">Wearables you own that fit {character?.name ?? "this character"}.</p>
-              </div>
-              {exploreMore}
-            </div>
+          {connected && !mineView && (
+            <label className="owned-toggle wr-owned">
+              <input type="checkbox" checked={ownedOnly} onChange={(e) => update("owned", e.target.checked ? "1" : null)} />
+              <span className="owned-toggle-track" aria-hidden="true" />
+              Only what I own
+            </label>
           )}
+        </aside>
 
-          <div className="filter-bar">
-            <CategoryTabs
-              label="Wearable type"
-              options={tabs}
-              value={type}
-              onChange={(id) => update("type", id)}
+        {/* Middle: the character on its stage */}
+        <section className="wr-stage" aria-label="Fitting room">
+          <span className="wr-stage-ring is-outer" aria-hidden="true" />
+          <span className="wr-stage-ring" aria-hidden="true" />
+          <span className="wr-stage-base" aria-hidden="true" />
+          <span className="wr-stage-glow" aria-hidden="true" />
+          {character && (
+            <CharacterRender
+              dressing
+              art={character.art}
+              characterId={character.id}
+              equipped={worn}
+              alt={`${character.name} wearing ${worn.map((w) => w.name).join(", ") || "nothing extra"}`}
+              className="wr-stage-art"
             />
-
-            {!mineView && (
-              <label
-                className={`owned-toggle ${connected ? "" : "is-disabled"}`}
-                title={connected ? undefined : "Connect a wallet first"}>
-                <input
-                  type="checkbox"
-                  checked={ownedOnly}
-                  disabled={!connected}
-                  onChange={(e) => update("owned", e.target.checked ? "1" : null)}
-                />
-                <span className="owned-toggle-track" aria-hidden="true" />
-                Owned
-              </label>
-            )}
-          </div>
-
-          {error && <p className="market-error">Couldn’t load the wardrobe. Try refreshing.</p>}
-
-          {!loading && !(mineView && ownedLoading) && visible.length === 0 ? (
-            mineView ? (
-              <EmptyState
-                title={
-                  rail.length
-                    ? "Nothing of this type in your wardrobe."
-                    : `Nothing in your wardrobe fits ${character?.name ?? "this character"} yet.`
-                }
-                action={exploreMore}>
-                Browse the full wardrobe to try pieces on and pick some up.
-              </EmptyState>
-            ) : (
-              <EmptyState title="Nothing on this rail yet.">
-                {ownedOnly
-                  ? "You don’t own anything in this category yet."
-                  : "New pieces drop regularly — check back soon."}
-              </EmptyState>
-            )
-          ) : (
-            <div className="wearable-grid" aria-busy={loading || (mineView && ownedLoading)}>
-              {visible.map((w) => (
-                <WearableCard
-                  key={w.id}
-                  wearable={w}
-                  owned={ownsWearable(w.id)}
-                  selected={slots[w.type] === w.id && fitsCharacter(w, character?.id)}
-                  incompatible={character && !fitsCharacter(w, character.id) ? character.name : null}
-                  onSelect={toggle}
-                />
-              ))}
+          )}
+          {character && (
+            <div className="wr-who">
+              {dressable.length > 1 && (
+                <button type="button" aria-label="Previous character" onClick={() => cycleCharacter(-1)}>
+                  <ChevronLeft size={16} />
+                </button>
+              )}
+              <Star size={16} className="wr-who-star" aria-hidden="true" />
+              <b>{character.name}</b>
+              <span className="wr-who-sep" aria-hidden="true" />
+              <RarityBadge rarity={character.rarity} />
+              {dressable.length > 1 && (
+                <button type="button" aria-label="Next character" onClick={() => cycleCharacter(1)}>
+                  <ChevronRight size={16} />
+                </button>
+              )}
             </div>
           )}
         </section>
+
+        {/* Right: the rack */}
+        <section className="wr-rack-grid" aria-label="Wearables" aria-busy={loading || (mineView && ownedLoading)}>
+          {mineView && (
+            <div className="wr-mine-head">
+              <span>Wearables you own that fit {character?.name ?? "this character"}.</span>
+              {exploreMore}
+            </div>
+          )}
+          {error && <p className="market-error">Couldn’t load the wardrobe. Try refreshing.</p>}
+
+          {!loading && !(mineView && ownedLoading) && visible.length === 0 ? (
+            <EmptyState title={mineView ? "Nothing here fits yet." : "Nothing on this rail yet."} action={mineView ? exploreMore : null}>
+              {mineView
+                ? "Browse the full wardrobe to try pieces on and pick some up."
+                : ownedOnly
+                  ? "You don’t own anything in this category yet."
+                  : "New pieces drop regularly — check back soon."}
+            </EmptyState>
+          ) : (
+            <div className="wr-tiles">
+              {visible.map((w) => {
+                const fits = !character || fitsCharacter(w, character.id);
+                const on = slots[w.type] === w.id && fits;
+                return (
+                  <button
+                    key={w.id}
+                    type="button"
+                    className={`wr-tile rarity-${w.rarity} ${on ? "is-on" : ""} ${fits ? "" : "is-off"}`}
+                    aria-pressed={on}
+                    title={fits ? undefined : `Doesn’t fit ${character.name}`}
+                    onClick={() => toggle(w)}>
+                    {on && (
+                      <span className="wr-tile-check" aria-hidden="true">
+                        <Check size={14} strokeWidth={3} />
+                      </span>
+                    )}
+                    {ownsWearable(w.id) && <span className="wr-tile-owned">Owned</span>}
+                    <span className="wr-tile-art">
+                      <ItemArt art={w.art} alt="" itemId={w.id} item={w} size="md" />
+                    </span>
+                    <span className="wr-tile-name">{w.name}</span>
+                    <RarityBadge rarity={w.rarity} />
+                    {on && (
+                      <span className="wr-tile-equipped">
+                        <Check size={14} strokeWidth={3} /> Equipped
+                      </span>
+                    )}
+                    {!fits && <span className="wr-tile-nofit">Doesn’t fit {character.name}</span>}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {focused && (
+            <div className="wr-focus">
+              <span>
+                <b>{focused.name}</b>
+                <PriceTag listing={focused.listing} size="sm" />
+                {countOwned(focused.id) > 0 && <small>You own {countOwned(focused.id)}</small>}
+              </span>
+              <Link to={detailPath(focused, "wearable")} className="rd-link">
+                View &amp; get it <ChevronRight size={15} />
+              </Link>
+            </div>
+          )}
+        </section>
+      </div>
+
+      {/* Bottom: what's on, reset, save */}
+      <div className="container">
+        <div className="wr-bar">
+          <span className="wr-bar-label">Equipped Items:</span>
+          <ul className="wr-bar-items">
+            {worn.length === 0 && <li className="wr-bar-empty">Tap an item to try it on.</li>}
+            {worn.map((w) => (
+              <li key={w.id}>
+                <button type="button" onClick={() => toggle(w)} aria-label={`Take off ${w.name}`}>
+                  <span className="wr-bar-art">
+                    <ItemArt art={w.art} alt="" itemId={w.id} item={w} size="sm" />
+                  </span>
+                  <span className="wr-bar-text">
+                    <b>{w.name}</b>
+                    <RarityBadge rarity={w.rarity} />
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="wr-bar-actions">
+            <button type="button" className="rd-btn is-ghost" onClick={reset} disabled={!worn.length}>
+              <RotateCcw size={17} /> Reset
+            </button>
+            {connected ? (
+              <button type="button" className="rd-btn is-primary" onClick={save} disabled={!dirty || status.status === "saving"}>
+                <Check size={18} /> {status.status === "saving" ? "Saving…" : status.status === "saved" && !dirty ? "Saved" : "Save Outfit"}
+              </button>
+            ) : (
+              <WalletButton />
+            )}
+          </div>
+          {status.status === "error" && <p className="wr-bar-error">{status.message}</p>}
+          {!connected && <p className="wr-bar-note">Connect a wallet to save this outfit. Trying things on is free.</p>}
+        </div>
       </div>
     </div>
   );
