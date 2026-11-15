@@ -165,6 +165,10 @@ test("admin uploads a layer, creates and publishes a wearable; it appears in the
   assert.equal(Number(priced.price), 4.99);
   assert.equal(priced.price_currency, "usd");
 
+  const shown = await call("admin", { action: "saveWearable", wearable: { ...wearable, image_url: up.body.url, show_nft_art: true, published: true } }, adminToken);
+  assert.equal(shown.status, 200, JSON.stringify(shown.body));
+  assert.equal((await rest(`wearables?id=eq.${ID}`)).body[0].show_nft_art, true, "the site can show the NFT artwork");
+
   const bad = await call("admin", { action: "saveWearable", wearable: { ...wearable, price_currency: "eur" } }, adminToken);
   assert.equal(bad.status, 400);
 });

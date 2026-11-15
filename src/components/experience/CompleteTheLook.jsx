@@ -191,6 +191,7 @@ function CompleteTheLook({ unlocked, onRevealMore }) {
 
               <div className="look-figure" key={`${character.id}-${lastOn?.at ?? 0}`}>
                 <CharacterRender
+                  dressing
                   art={character.art}
                   characterId={character.id}
                   equipped={worn}

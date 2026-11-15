@@ -27,8 +27,17 @@ function SpriteBase({ sprite }) {
 // vector shapes ({ kind: "vector", shapes }). Locked art (a character still
 // under wraps) draws no base, only what's worn.
 // Purely visual: what's equipped is app state, never written into the NFT.
-function CharacterRender({ art, characterId, equipped = [], alt, className = "" }) {
+function CharacterRender({ art, characterId, equipped = [], alt, className = "", dressing = false }) {
   const layers = useMemo(() => stackLayers(equipped, characterId), [equipped, characterId]);
+
+  // The NFT artwork, when the admin chose to show it, for an undressed view.
+  if (art.displayImage && !dressing && !equipped.length) {
+    return (
+      <svg className={`character-render is-display ${className}`} viewBox={CHARACTER_VIEW} role="img" aria-label={alt}>
+        <image href={art.displayImage} x="-14" y="-19" width="116" height="116" preserveAspectRatio="xMidYMid meet" />
+      </svg>
+    );
+  }
 
   return (
     <svg

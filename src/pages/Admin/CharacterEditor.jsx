@@ -7,7 +7,7 @@ import { editions } from "../../data/editions";
 import { packs } from "../../data/packs";
 import { fitsCharacter } from "../../services/marketplace/catalog";
 import { adminDelete, adminSaveCharacter } from "../../services/backend/admin";
-import { Checks, Field, NumberInput, Section, Select, TextInput, SaveError } from "./fields";
+import { Checks, Field, NumberInput, Section, Select, TextInput, SaveError, Toggle } from "./fields";
 import { CURRENCIES } from "./currencies";
 import ImageUpload from "./ImageUpload";
 import NftFields from "./NftFields";
@@ -191,8 +191,14 @@ function CharacterEditor({ initial, wearables, session, onSaved, onDeleted, onCl
               folder={draft.id ? `characters/${draft.id}` : null}
               session={session}
               onUploaded={(url) => set({ imageUrl: url })}
-              onClear={() => set({ imageUrl: null })}
+              onClear={() => set({ imageUrl: null, showNftArt: false })}
               hint="The image wallets and marketplaces show for this NFT (uploaded to IPFS when metadata is generated). The base art above is what Fuchey renders."
+            />
+            <Toggle
+              label="Show this artwork on the website"
+              checked={Boolean(draft.showNftArt) && Boolean(draft.imageUrl)}
+              onChange={(v) => set({ showNftArt: v })}
+              hint={draft.imageUrl ? "Cards, stages, carousels and pages use this picture. The dressing room keeps the base art above, so wearables still line up." : "Upload the NFT artwork first."}
             />
           </Section>
 

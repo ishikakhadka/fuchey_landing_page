@@ -30,7 +30,10 @@ export async function fetchCatalog() {
     const listing = sale
       ? { ...item.listing, price: usd ? item.listing.price : sale.price, solPrice: sale.price, limitPerWallet: sale.limitPerWallet }
       : { ...item.listing, solPrice: usd ? null : item.listing.price };
-    return { ...item, listing, sale };
+    // "Show the NFT artwork on the site": the picture everywhere except the
+    // dressing room, which keeps the base art wearables line up with.
+    const art = item.showNftArt && item.imageUrl && !item.art.locked ? { ...item.art, displayImage: item.imageUrl } : item.art;
+    return { ...item, art, listing, sale };
   };
   return {
     characters: characters.map(rowToCharacter).map(withSale("character")),

@@ -32,6 +32,7 @@ function FittingRoom({ characters, character, onCharacter, worn, onRemove, focus
         </div>
 
         <CharacterRender
+                  dressing
           art={character.art}
           characterId={character.id}
           equipped={worn}

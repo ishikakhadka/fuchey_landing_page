@@ -13,7 +13,10 @@ function ItemArt({ art, alt, itemId, item, equipped = [], size = "md" }) {
   const locked = Boolean(art.locked);
 
   let content;
-  if (art.kind === "character" || art.kind === "vector") {
+  if (art.displayImage && !equipped.length) {
+    // The NFT artwork, when the admin chose to show it on the site.
+    content = <img className="item-art-display" src={art.displayImage} alt={alt} />;
+  } else if (art.kind === "character" || art.kind === "vector") {
     content = <CharacterRender art={art} characterId={itemId} equipped={equipped} alt={alt} />;
   } else if (art.kind === "wearable") {
     content = <WearableIcon id={itemId} wearable={item} alt={alt} />;

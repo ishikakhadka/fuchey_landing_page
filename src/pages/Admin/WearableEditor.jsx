@@ -8,7 +8,7 @@ import { packs } from "../../data/packs";
 import { CHARACTER_VIEW, resolveVisual, visualBounds } from "../../render/visual";
 import { fitsCharacter, isDressable } from "../../services/marketplace/catalog";
 import { adminDelete, adminSaveWearable } from "../../services/backend/admin";
-import { Checks, NumberInput, Section, Select, TextInput, SaveError } from "./fields";
+import { Checks, NumberInput, Section, Select, TextInput, SaveError, Toggle } from "./fields";
 import { CURRENCIES } from "./currencies";
 import ImageUpload from "./ImageUpload";
 import NftFields from "./NftFields";
@@ -299,8 +299,14 @@ function WearableEditor({ initial, characters, wearables, session, onSaved, onDe
               folder={draft.id ? `wearables/${draft.id}` : null}
               session={session}
               onUploaded={(url) => set({ imageUrl: url })}
-              onClear={() => set({ imageUrl: null })}
+              onClear={() => set({ imageUrl: null, showNftArt: false })}
               hint="The image wallets and marketplaces show for this NFT (uploaded to IPFS when metadata is generated). Required before minting. Cards and the character preview use the layers above."
+            />
+            <Toggle
+              label="Show this artwork on the website"
+              checked={Boolean(draft.showNftArt) && Boolean(draft.imageUrl)}
+              onChange={(v) => set({ showNftArt: v })}
+              hint={draft.imageUrl ? "Cards, the rack and pages use this picture. On a character, the layers above are still what’s drawn." : "Upload the NFT artwork first."}
             />
           </Section>
 
@@ -324,6 +330,7 @@ function WearableEditor({ initial, characters, wearables, session, onSaved, onDe
                 onKeyDown={onPreviewKey}
                 aria-label="Preview — use arrow keys to nudge (shift = 4 px)">
                 <CharacterRender
+                  dressing
                   art={preview.art}
                   characterId={preview.id}
                   equipped={equipped}
