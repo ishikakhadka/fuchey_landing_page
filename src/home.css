@@ -1443,3 +1443,43 @@
     transition: none;
   }
 }
+
+/* Pedestal like /characters, sized for the hero line-up. */
+.hm-lineup .rd-plat {
+  left: 22%;
+  right: 22%;
+  bottom: 6px;
+  height: 48px;
+}
+
+.hm-lineup .rd-plat::after {
+  content: "";
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  top: 30%;
+  height: 34%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.45), transparent);
+}
+
+/* The one in front is alive: a small hop and sway on a loop. The rest idle. */
+.hm-mate.is-center .item-art {
+  animation: hm-alive 2.6s ease-in-out 0.9s infinite;
+  transform-origin: 50% 100%;
+}
+
+@keyframes hm-alive {
+  0%, 100% { transform: translateY(0) rotate(0) scale(1, 1); }
+  12% { transform: translateY(0) scale(1.04, 0.96); }
+  30% { transform: translateY(-14px) rotate(-2deg) scale(0.98, 1.03); }
+  48% { transform: translateY(0) scale(1.03, 0.97); }
+  62% { transform: translateY(-6px) rotate(1.5deg); }
+  78% { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hm-mate.is-center .item-art {
+    animation: none;
+  }
+}

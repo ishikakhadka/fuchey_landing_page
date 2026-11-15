@@ -5,8 +5,8 @@ import RarityBadge from "../marketplace/RarityBadge";
 
 const STEP_MS = 3200;
 
-// A drop's characters standing together; every few seconds the next one
-// steps into the middle, larger, while the rest move round to the sides.
+// A drop's characters on a pedestal; every few seconds the next one steps
+// into the middle, larger and animated, while the rest stand idle at the sides.
 // It starts with the drop's middle pick (the admin puts the star there).
 function CrewLineup({ characters, paused = false }) {
   const n = characters.length;
@@ -24,9 +24,12 @@ function CrewLineup({ characters, paused = false }) {
 
   return (
     <div className={`hm-lineup count-${Math.min(n, 5)}`}>
+      <span className="rd-plat-glow" aria-hidden="true" />
+      <span className="rd-plat" aria-hidden="true" />
+
       {characters.map((c, i) => (
         <figure key={c.id} className={`hm-mate ${slotOf(i, active, n)}`} aria-hidden={i !== active}>
-          <ItemArt art={c.art} alt={i === active ? c.title ?? c.name : ""} itemId={c.id} size="lg" />
+          <ItemArt art={i === active ? c.art : still(c.art)} alt={i === active ? c.title ?? c.name : ""} itemId={c.id} size="lg" />
         </figure>
       ))}
 
@@ -37,6 +40,12 @@ function CrewLineup({ characters, paused = false }) {
       )}
     </div>
   );
+}
+
+// Off-centre characters stay idle: an animated GIF website picture only
+// plays for the one in front; the others show their still art.
+function still(art) {
+  return /\.gif(\?|$)/i.test(art.displayImage ?? "") ? { ...art, displayImage: undefined } : art;
 }
 
 // Position relative to the one in the middle: 0 → centre, +1 → right,
