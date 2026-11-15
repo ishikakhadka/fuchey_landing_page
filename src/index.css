@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=DM+Sans:opsz,wght@9..40,400..700&family=JetBrains+Mono:wght@400;500&family=Michroma&family=Silkscreen&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=DM+Sans:opsz,wght@9..40,400..700&family=JetBrains+Mono:wght@400;500&family=Michroma&family=Silkscreen&display=swap");
 
 /* =====================================================
    BRAND TOKENS
@@ -10,9 +10,9 @@
   /* Friendly type: a characterful grotesque for headings, a warm sans for
      text and for the small uppercase labels. Monospace is only for code and
      addresses (admin); the device's own screen draws with Michroma. */
-  --font-display: "Bricolage Grotesque", "DM Sans", system-ui, sans-serif;
-  --font-main: "DM Sans", "Segoe UI", system-ui, sans-serif;
-  --font-label: "DM Sans", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Manrope", "DM Sans", system-ui, sans-serif;
+  --font-main: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-label: "Manrope", "Segoe UI", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
   --font-pixel: "Silkscreen", var(--font-label);
 
@@ -30,38 +30,41 @@
 .theme-companion {
   color-scheme: dark;
 
-  /* Fuchey midnight palette */
-  --c-midnight: #010716;
-  --c-deep: #162e3e;
-  --c-steel: #346083;
+  /* Fuchey petrol palette, sampled from the logo: deep petrol ground, pastel
+     cyan for interaction, Fuchey orange for brand moments and selection. */
+  --c-midnight: #011a26;
+  --c-deep: #023047;
+  --c-steel: #219ebc;
   --c-slate: #5c86a2;
-  --c-ice: #89adbb;
-  --c-teal: #3e6971;
-  --c-frost: #bad0dd;
-  --c-snow: #f6f8f8;
+  --c-ice: #8ecae6;
+  --c-teal: #0d4e66;
+  --c-frost: #bdebfa;
+  --c-snow: #f4f8fb;
+  --c-orange: #fb8500;
+  --c-orange-soft: #ffb257;
 
-  --bg: #010716;
-  --bg-deep: #050f1f;
-  --surface: #081525;
-  --surface-2: #0d1d2d;
+  --bg: #03202e;
+  --bg-deep: #011a26;
+  --surface: #062a3a;
+  --surface-2: #0b3a4e;
 
-  --ink: #f6f8f8;
-  --ink-soft: #a9c1cd;
-  --ink-faint: #6f93aa;
+  --ink: #f4f8fb;
+  --ink-soft: #c9d9e0;
+  --ink-faint: #8fa9b5;
 
-  --line: rgba(137, 173, 187, 0.12);
-  --line-strong: rgba(137, 173, 187, 0.26);
+  --line: rgba(142, 202, 230, 0.14);
+  --line-strong: rgba(142, 202, 230, 0.3);
 
-  --brand: #89adbb;
-  --brand-strong: #bad0dd;
-  --brand-2: #346083;
-  --pop: #e3a774;
-  --good: #6cc3a0;
-  --on-brand: #010716;
+  --brand: #8ecae6;
+  --brand-strong: #bdebfa;
+  --brand-2: #219ebc;
+  --pop: #fb8500;
+  --good: #8fe3c9;
+  --on-brand: #05283a;
 
-  --accent-grad: linear-gradient(100deg, #f6f8f8 0%, #bad0dd 40%, #5c86a2 100%);
-  --orb: radial-gradient(circle, rgba(52, 96, 131, 0.45), rgba(52, 96, 131, 0) 65%);
-  --grid-color: rgba(137, 173, 187, 0.035);
+  --accent-grad: linear-gradient(100deg, #f4f8fb 0%, #bdebfa 40%, #8ecae6 100%);
+  --orb: radial-gradient(circle, rgba(33, 158, 188, 0.4), rgba(33, 158, 188, 0) 65%);
+  --grid-color: rgba(142, 202, 230, 0.05);
 
   --shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.7);
   --shadow-lg: 0 40px 90px -30px rgba(0, 0, 0, 0.85);
@@ -326,52 +329,62 @@ section {
   gap: 24px;
 }
 
-/* The logo PNG has a lot of padding — crop it to the wordmark. */
-.logo {
-  display: block;
+/* The official mark (public/fuchey-mark.png) next to the name, as in the
+   brand references. The mark is shown as supplied: no filters or effects. */
+.logo,
+.footer-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
   flex-shrink: 0;
-  width: 140px;
-  height: 36px;
-  overflow: hidden;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-decoration: none;
 }
 
 .logo img,
 .footer-logo img {
-  width: 196px;
-  height: 36px;
-  max-width: none;
-  margin-left: -28px;
-  object-fit: cover;
-  transition: filter var(--transition);
-}
-
-/* The logo file is dark-on-white: invert it and let the (now black)
-   background drop out against the dark themes. */
-.logo img,
-.footer-logo img {
-  filter: invert(1) brightness(1.15);
-  mix-blend-mode: screen;
+  width: 40px;
+  height: auto;
 }
 
 .navbar nav {
   display: flex;
-  gap: 6px;
-  font-size: 14px;
-  font-weight: 500;
+  gap: 40px;
+  height: 100%;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .navbar nav a {
-  padding: 8px 14px;
-  border-radius: 999px;
+  position: relative;
+  display: flex;
+  align-items: center;
   color: var(--ink-soft);
-  transition:
-    color 200ms ease,
-    background-color 200ms ease;
+  transition: color 200ms ease;
 }
 
 .navbar nav a:hover {
   color: var(--ink);
-  background: color-mix(in srgb, var(--brand) 10%, transparent);
+}
+
+.navbar nav a.active {
+  color: var(--ink);
+}
+
+.navbar nav a.active::after {
+  content: "";
+  position: absolute;
+  left: -10px;
+  right: -10px;
+  bottom: 14px;
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, rgba(251, 133, 0, 0.2), var(--c-orange), rgba(251, 133, 0, 0.2));
+  box-shadow: 0 2px 12px rgba(251, 133, 0, 0.9);
 }
 
 /* Dev / Companion toggle with sliding thumb (device showcase) */
@@ -1233,13 +1246,11 @@ section {
   }
 
   .logo {
-    width: 120px;
+    font-size: 21px;
   }
 
   .logo img {
-    width: 168px;
-    height: 36px;
-    margin-left: -24px;
+    width: 34px;
   }
 
   .hero-description {

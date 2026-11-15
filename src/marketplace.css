@@ -8,11 +8,11 @@
 
 .theme-companion,
 .theme-dev {
-  --rarity-common: #8aa3b3;
-  --rarity-uncommon: #2fb67a;
-  --rarity-rare: #3b8bff;
-  --rarity-epic: #9b5cff;
-  --rarity-legendary: #f2a93b;
+  --rarity-common: #c9d6dd;
+  --rarity-uncommon: #8fe3c9;
+  --rarity-rare: #4fb4f5;
+  --rarity-epic: #b48cff;
+  --rarity-legendary: #ffb020;
   --devnet: #f2a93b;
 }
 
@@ -20,10 +20,6 @@
    NAVBAR ADDITIONS
 ===================================================== */
 
-.navbar nav a.active {
-  color: var(--ink);
-  background: color-mix(in srgb, var(--brand) 14%, transparent);
-}
 
 .navbar-actions {
   display: flex;
@@ -39,10 +35,10 @@
   padding: 0 18px;
   border: 1px solid transparent;
   border-radius: 999px;
-  background: var(--ink);
-  color: var(--bg);
-  font-size: 13px;
-  font-weight: 600;
+  background: linear-gradient(180deg, #bdebfa, #7cc8e8);
+  color: var(--on-brand);
+  font-size: 14px;
+  font-weight: 700;
   white-space: nowrap;
   transition:
     transform 250ms var(--ease-spring),
@@ -102,9 +98,23 @@
     animation: rise 300ms var(--ease-out) both;
   }
 
+  .navbar.menu-open nav {
+    height: auto;
+  }
+
   .navbar.menu-open nav a {
     padding: 14px 16px;
-    font-size: 16px;
+    font-size: 17px;
+    border-radius: 14px;
+  }
+
+  .navbar.menu-open nav a.active {
+    background: rgba(251, 133, 0, 0.1);
+    box-shadow: inset 3px 0 0 var(--c-orange);
+  }
+
+  .navbar.menu-open nav a.active::after {
+    display: none;
   }
 }
 

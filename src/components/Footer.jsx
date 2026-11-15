@@ -7,7 +7,8 @@ function Footer() {
         <div className="footer-main">
           <div className="footer-brand">
             <Link to="/" className="footer-logo" aria-label="Fuchey home">
-              <img src="/fuchey_logo.png" alt="Fuchey" />
+              <img src="/fuchey-mark.png" alt="" width="40" height="38" />
+              Fuchey
             </Link>
 
             <p>Interactive on-chain collectibles, with a companion that brings them off the screen.</p>

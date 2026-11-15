@@ -652,3 +652,230 @@
 .admin-ok svg {
   vertical-align: -2px;
 }
+
+/* ---------- Drops and Home tabs ---------- */
+
+.admin-toolbar.is-sub {
+  margin-bottom: 18px;
+}
+
+.admin-drop-thumb {
+  width: 96px;
+  overflow: hidden;
+}
+
+.admin-drop-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-crew-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-crew {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 104px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font: 600 13px var(--font-main);
+  cursor: pointer;
+}
+
+.admin-crew .item-art {
+  width: 80px;
+  height: 80px;
+}
+
+.admin-crew.is-on {
+  border-color: var(--c-orange, #fb8500);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px rgba(251, 133, 0, 0.3);
+}
+
+.admin-crew-order {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: crew;
+}
+
+.admin-crew-order li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 13px;
+}
+
+.admin-drop-preview {
+  align-self: start;
+}
+
+.admin-banner {
+  position: relative;
+  height: 84px;
+  margin-top: 8px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+
+.admin-banner img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-banner-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(251, 140, 20, 0.92), rgba(251, 140, 20, 0.5) 25%, transparent 45%, transparent 60%, rgba(3, 32, 46, 0.9));
+}
+
+.admin-banner-art {
+  position: absolute;
+  left: 8px;
+  bottom: -6px;
+  width: 70px;
+}
+
+.admin-banner-art .item-art {
+  width: 70px;
+  height: 70px;
+}
+
+.admin-banner-text {
+  position: absolute;
+  left: 86px;
+  top: 18px;
+  display: flex;
+  flex-direction: column;
+  color: #1a0d00;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-banner-text b {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.admin-banner-time {
+  position: absolute;
+  right: 12px;
+  top: 32px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.admin-slides {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-slides li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.admin-slides li.is-off {
+  opacity: 0.55;
+}
+
+.admin-slide-n {
+  color: var(--c-orange, #fb8500);
+  font-weight: 800;
+}
+
+.admin-slide-art {
+  position: relative;
+  width: 110px;
+  height: 56px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface-2);
+  display: grid;
+  place-items: center;
+  flex: 0 0 110px;
+}
+
+.admin-slide-art img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-slide-art .item-art {
+  position: absolute;
+  right: 4px;
+  bottom: -4px;
+  width: 48px;
+  height: 48px;
+}
+
+.admin-slide-kind {
+  color: var(--brand);
+}
+
+.admin-slide-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-slide-actions .admin-toggle {
+  margin-right: 6px;
+}
+
+.admin-slide-editor {
+  margin-top: 16px;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid var(--line-strong);
+}
+
+.admin-home .admin-actions {
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 720px) {
+  .admin-slides li {
+    flex-wrap: wrap;
+  }
+
+  .admin-slide-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+}

@@ -3,11 +3,11 @@ import { Link, NavLink, useLocation } from "react-router";
 import { Menu, X } from "lucide-react";
 import WalletButton from "./wallet/WalletButton";
 
+// The logo goes home; the bar lists the four places to explore.
 const LINKS = [
-  { to: "/", label: "Home", end: true },
-  { to: "/marketplace", label: "Marketplace" },
   { to: "/characters", label: "Characters" },
   { to: "/wardrobe", label: "Wardrobe" },
+  { to: "/marketplace", label: "Marketplace" },
   { to: "/collection", label: "My Collection" },
 ];
 
@@ -33,7 +33,8 @@ function Navbar() {
     <header className={`navbar ${menuOpen ? "menu-open" : ""}`}>
       <div className="container navbar-inner">
         <Link to="/" className="logo" aria-label="Fuchey home">
-          <img src="/fuchey_logo.png" alt="Fuchey" />
+          <img src="/fuchey-mark.png" alt="" width="40" height="38" />
+          Fuchey
         </Link>
 
         <nav aria-label="Primary" id="primary-nav">

@@ -338,4 +338,103 @@ export function validateCharacter(input: unknown) {
   return row;
 }
 
+// ---------------------------------------------------------------------------
+// Home content: drops, hero slides, home settings
+// ---------------------------------------------------------------------------
+
+const ID = /^[a-z0-9][a-z0-9-]{1,47}$/;
+const SLIDE_KINDS = ["drop", "scratch", "custom"];
+export const HOME_SECTIONS = ["stats", "parade", "reveal", "howItWorks", "upcoming", "onSale", "completeTheLook", "companion", "waitlist"];
+
+// A link the site may point a button at: an in-site path, an in-page anchor,
+// or an http(s) URL.
+function href(c: Checker, o: Obj, key: string) {
+  const v = o[key];
+  if (v == null || v === "") return "";
+  const s = String(v).trim();
+  if (s.length > 200) c.fail(key, "must be at most 200 characters");
+  else if (!/^(\/|#)/.test(s) && c.url(s, key) == null) return "";
+  return s;
+}
+
+function when(c: Checker, o: Obj, key: string) {
+  const v = o[key];
+  if (v == null || v === "") return null;
+  const t = new Date(String(v));
+  if (Number.isNaN(t.getTime())) return c.fail(key, "must be a date and time"), null;
+  return t.toISOString();
+}
+
+export function validateDrop(input: unknown, characterIds: string[]) {
+  const c = new Checker();
+  if (!isObj(input)) throw new HttpError(400, "Missing drop.");
+  const id = c.str(input, "id", { min: 2, max: 48 });
+  if (id && !ID.test(id)) c.fail("id", "lowercase letters, numbers and dashes");
+  const ids = Array.isArray(input.character_ids) ? [...new Set(input.character_ids.map(String))] : [];
+  ids.forEach((x) => characterIds.includes(x) || c.fail("character_ids", `unknown character “${x}”`));
+  if (ids.length > 6) c.fail("character_ids", "at most 6 characters");
+  const starts_at = when(c, input, "starts_at");
+  const ends_at = when(c, input, "ends_at");
+  if (starts_at && ends_at && ends_at <= starts_at) c.fail("ends_at", "must be after the start");
+  const row = {
+    id,
+    pack: c.oneOf(input, "pack", PACKS),
+    title: c.str(input, "title", { min: 1, max: 80 }),
+    label: c.str(input, "label", { max: 40 }),
+    headline: c.str(input, "headline", { max: 80 }),
+    headline_accent: c.str(input, "headline_accent", { max: 80 }),
+    tagline: c.str(input, "tagline", { max: 160 }),
+    description: c.str(input, "description", { max: 600 }),
+    backdrop_url: c.url(input.backdrop_url, "backdrop_url"),
+    character_ids: ids,
+    starts_at,
+    ends_at,
+    live: input.live === true,
+    show_in_hero: input.show_in_hero !== false,
+    show_in_upcoming: input.show_in_upcoming !== false,
+    show_banner: input.show_banner !== false,
+    cta_label: c.str(input, "cta_label", { max: 40 }),
+    cta_href: href(c, input, "cta_href"),
+    sort_order: c.num(input, "sort_order", { min: -10000, max: 10000, int: true }) ?? 0,
+  };
+  c.done();
+  return row;
+}
+
+export function validateSlide(input: unknown, dropIds: string[]) {
+  const c = new Checker();
+  if (!isObj(input)) throw new HttpError(400, "Missing slide.");
+  const id = c.str(input, "id", { min: 2, max: 48 });
+  if (id && !ID.test(id)) c.fail("id", "lowercase letters, numbers and dashes");
+  const kind = c.oneOf(input, "kind", SLIDE_KINDS);
+  const drop_id = kind === "drop" ? String(input.drop_id ?? "") : null;
+  if (kind === "drop" && !dropIds.includes(drop_id ?? "")) c.fail("drop_id", "pick a drop");
+  const row = {
+    id,
+    kind,
+    drop_id,
+    eyebrow: c.str(input, "eyebrow", { max: 60 }),
+    title: c.str(input, "title", { max: 80, required: kind === "custom" }),
+    title_accent: c.str(input, "title_accent", { max: 80 }),
+    body: c.str(input, "body", { max: 400 }),
+    image_url: c.url(input.image_url, "image_url"),
+    cta_label: c.str(input, "cta_label", { max: 40 }),
+    cta_href: href(c, input, "cta_href"),
+    enabled: input.enabled !== false,
+    sort_order: c.num(input, "sort_order", { min: -10000, max: 10000, int: true }) ?? 0,
+  };
+  c.done();
+  return row;
+}
+
+export function validateHomeSettings(input: unknown) {
+  const c = new Checker();
+  if (!isObj(input)) throw new HttpError(400, "Missing settings.");
+  const autoplaySeconds = c.num(input, "autoplaySeconds", { min: 0, max: 60, int: true }) ?? 7;
+  const s = isObj(input.sections) ? input.sections : {};
+  const sections = Object.fromEntries(HOME_SECTIONS.map((k) => [k, s[k] !== false]));
+  c.done();
+  return { autoplaySeconds, sections };
+}
+
 export { Checker };

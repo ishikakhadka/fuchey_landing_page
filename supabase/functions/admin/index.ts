@@ -11,13 +11,17 @@
 //   nftStatus / previewMetadata / generateMetadata / prepareMint / confirmMint /
 //   prepareSale / confirmSale { kind, id, network, … }   (see nft.ts)
 //   nftList / nftDetail / nftSync / nftSyncAll            (see registry.ts)
+//   listContent                   → { drops, slides, settings }  (drafts and off slides included)
+//   saveDrop { drop } / deleteDrop { id }
+//   saveSlide { slide } / deleteSlide { id } / orderSlides { ids }
+//   saveHomeSettings { settings } → { settings }
 //
 // Saving an asset never touches its `nft` field: that only changes through the
 // NFT actions, after the chain has confirmed each step.
 
 import { handler, HttpError, json, serviceClient } from "../_shared/http.ts";
 import { verifySession } from "../_shared/session.ts";
-import { validateCharacter, validateWearable } from "../_shared/validate.ts";
+import { validateCharacter, validateDrop, validateHomeSettings, validateSlide, validateWearable } from "../_shared/validate.ts";
 import { nftAction } from "./nft.ts";
 import { REGISTRY_ACTIONS, registryAction } from "./registry.ts";
 
@@ -96,9 +100,66 @@ Deno.serve(
         return json({ ok: true });
       }
 
+      case "listContent": {
+        const [d, s, h] = await Promise.all([
+          db.from("drops").select("*").order("sort_order"),
+          db.from("home_slides").select("*").order("sort_order"),
+          db.from("site_settings").select("value").eq("key", "home").maybeSingle(),
+        ]);
+        fail(d.error);
+        fail(s.error);
+        fail(h.error);
+        return json({ drops: d.data, slides: s.data, settings: h.data?.value ?? null });
+      }
+
+      case "saveDrop": {
+        const { data: chars } = await db.from("characters").select("id");
+        const row = validateDrop(body.drop, (chars ?? []).map((c) => c.id));
+        const { data, error } = await db.from("drops").upsert(row).select().single();
+        fail(error);
+        return json({ drop: data });
+      }
+
+      case "deleteDrop": {
+        // Its hero slide goes with it (on delete cascade).
+        const { error } = await db.from("drops").delete().eq("id", String(body.id ?? ""));
+        fail(error);
+        return json({ ok: true });
+      }
+
+      case "saveSlide": {
+        const { data: drops } = await db.from("drops").select("id");
+        const row = validateSlide(body.slide, (drops ?? []).map((d) => d.id));
+        const { data, error } = await db.from("home_slides").upsert(row).select().single();
+        fail(error);
+        return json({ slide: data });
+      }
+
+      case "deleteSlide": {
+        const { error } = await db.from("home_slides").delete().eq("id", String(body.id ?? ""));
+        fail(error);
+        return json({ ok: true });
+      }
+
+      case "orderSlides": {
+        const ids = Array.isArray(body.ids) ? body.ids.map(String) : [];
+        for (const [i, id] of ids.entries()) {
+          const { error } = await db.from("home_slides").update({ sort_order: i }).eq("id", id);
+          fail(error);
+        }
+        return json({ ok: true });
+      }
+
+      case "saveHomeSettings": {
+        const value = validateHomeSettings(body.settings);
+        const { error } = await db.from("site_settings").upsert({ key: "home", value });
+        fail(error);
+        return json({ settings: value });
+      }
+
       case "upload": {
         const folder = String(body.folder ?? "");
-        if (!/^(wearables|characters)\/[a-z0-9-]{2,48}$/.test(folder)) throw new HttpError(400, "Bad upload folder.");
+        if (!/^(wearables|characters|drops|slides)\/[a-z0-9-]{2,48}$/.test(folder)) throw new HttpError(400, "Bad upload folder.");
         let bytes: Uint8Array;
         try {
           bytes = Uint8Array.from(atob(String(body.data ?? "")), (ch) => ch.charCodeAt(0));

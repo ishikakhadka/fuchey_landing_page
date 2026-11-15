@@ -19,6 +19,8 @@ import WearableEditor from "./WearableEditor";
 import CharacterEditor from "./CharacterEditor";
 import NftRegistry from "./NftRegistry";
 import NftDetail from "./NftDetail";
+import { DropsAdmin, HomeAdmin } from "./ContentAdmin";
+import { useContent } from "../../context/ContentContext";
 import { newCharacter, newWearable } from "./drafts";
 import "./admin.css";
 
@@ -29,6 +31,7 @@ import "./admin.css";
 function Admin() {
   const { connected, address, signer } = useWallet();
   const catalog = useCatalog();
+  const content = useContent();
 
   const [auth, setAuth] = useState({ wallet: null, session: null, status: "idle", error: null });
   const [data, setData] = useState(null);
@@ -188,13 +191,15 @@ function Admin() {
             ["wearables", `Wearables (${data.wearables.length})`],
             ["characters", `Characters (${data.characters.length})`],
             ["nfts", "NFTs"],
+            ["drops", "Drops"],
+            ["home", "Home"],
           ].map(([id, label]) => (
             <button key={id} type="button" role="tab" aria-selected={tab === id} aria-pressed={tab === id} onClick={() => setTab(id)}>
               {label}
             </button>
           ))}
         </div>
-        {tab !== "nfts" && (
+        {(tab === "wearables" || tab === "characters") && (
           <button
             type="button"
             className="primary-button"
@@ -212,6 +217,10 @@ function Admin() {
 
       {tab === "nfts" ? (
         <NftRegistry session={session} onOpen={setOpenNft} />
+      ) : tab === "drops" ? (
+        <DropsAdmin session={session} characters={data.characters} onChange={content.reload} />
+      ) : tab === "home" ? (
+        <HomeAdmin session={session} characters={data.characters} onChange={content.reload} />
       ) : (
         <ul className="admin-list">
           {items.map((item) => (

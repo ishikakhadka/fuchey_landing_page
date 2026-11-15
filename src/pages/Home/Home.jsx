@@ -1,36 +1,41 @@
 import { useRef } from "react";
 import { useEdition } from "../../context/EditionContext";
+import { useContent } from "../../context/ContentContext";
 import { useStoredState } from "../../hooks/useStoredState";
 
-import ExperienceHero from "../../components/experience/ExperienceHero.jsx";
+import HeroCarousel from "../../components/home/HeroCarousel.jsx";
+import { CastParade, HowItWorks, OnSaleNow, StatsStrip, UpcomingDrops } from "../../components/home/HomeSections.jsx";
 import CharacterDiscovery from "../../components/experience/CharacterDiscovery.jsx";
 import CompleteTheLook from "../../components/experience/CompleteTheLook.jsx";
 import CompanionSection from "../../components/experience/CompanionSection.jsx";
 import Waitlist from "../../components/Waitlist.jsx";
+import "../../home.css";
 
-// Characters first (a scratch card, then sealed capsules), then dressing the
-// ones you've revealed, then the device that takes them off the screen, then
-// the waitlist. `revealed` is shared: a character revealed anywhere is revealed
-// everywhere on the page, and it's remembered for this session, so nothing
-// seals itself again when the visitor leaves and comes back.
+// The home page. The hero carousel and Upcoming Drops come from the admin
+// (Drops + Home tabs), and so does which sections show. `revealed` is shared:
+// a character revealed anywhere on the page (scratch card or capsules) is
+// revealed everywhere, and it's remembered for this session.
 function Home() {
   const { current, setEdition } = useEdition();
+  const { settings } = useContent();
+  const on = settings.sections;
   const discovery = useRef(null);
   const [revealed, setRevealed] = useStoredState("fuchey:home:revealed", []);
   const revealOne = () => discovery.current?.reveal();
   const markRevealed = (id) => setRevealed((ids) => (ids.includes(id) ? ids : [...ids, id]));
 
   return (
-    <div className="xp-home">
-      <ExperienceHero revealedIds={revealed} onCardReveal={markRevealed} />
-
-      <CharacterDiscovery ref={discovery} revealed={revealed} setRevealed={setRevealed} />
-
-      <CompleteTheLook unlocked={revealed} onRevealMore={revealOne} />
-
-      <CompanionSection edition={current.id} onEditionChange={setEdition} />
-
-      <Waitlist edition={current} />
+    <div className="xp-home hm-home">
+      <HeroCarousel revealedIds={revealed} onCardReveal={markRevealed} />
+      {on.stats && <StatsStrip />}
+      {on.parade && <CastParade />}
+      {on.reveal && <CharacterDiscovery ref={discovery} revealed={revealed} setRevealed={setRevealed} />}
+      {on.howItWorks && <HowItWorks />}
+      {on.upcoming && <UpcomingDrops />}
+      {on.onSale && <OnSaleNow />}
+      {on.completeTheLook && <CompleteTheLook unlocked={revealed} onRevealMore={revealOne} />}
+      {on.companion && <CompanionSection edition={current.id} onEditionChange={setEdition} />}
+      {on.waitlist && <Waitlist edition={current} />}
     </div>
   );
 }
