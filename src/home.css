@@ -1319,3 +1319,127 @@
     transition: none !important;
   }
 }
+
+
+/* =====================================================
+   HERO CREW LINE-UP — no capsule, no reveal: the drop's
+   characters take turns stepping into the middle.
+===================================================== */
+
+.hm-lineup {
+  position: relative;
+  width: min(680px, 100%);
+  height: 470px;
+}
+
+.hm-lineup .hm-plat-glow {
+  background: radial-gradient(closest-side, rgba(170, 220, 240, 0.22), transparent);
+}
+
+.hm-lineup .hm-plat {
+  left: 18%;
+  right: 18%;
+  height: 52px;
+  background: radial-gradient(ellipse at 50% 28%, #1f6f8a 0%, #0c3d51 58%, #072b3a 100%);
+  box-shadow: 0 9px 0 #041e2a, 0 26px 40px rgba(0, 0, 0, 0.5), inset 0 2px 0 rgba(255, 255, 255, 0.12);
+}
+
+.hm-mate {
+  position: absolute;
+  margin: 0;
+  left: 50%;
+  bottom: 30px;
+  width: 30%;
+  transform: translateX(-50%);
+  transition:
+    left 0.9s var(--ease-out),
+    width 0.9s var(--ease-out),
+    bottom 0.9s var(--ease-out),
+    opacity 0.9s ease,
+    filter 0.9s ease;
+  filter: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.45));
+}
+
+.hm-mate .item-art {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.hm-mate.is-center {
+  left: 50%;
+  width: 56%;
+  bottom: 26px;
+  z-index: 3;
+}
+
+.hm-mate.is-left-1,
+.hm-mate.is-right-1 {
+  width: 32%;
+  bottom: 56px;
+  z-index: 2;
+  opacity: 0.85;
+  filter: drop-shadow(0 14px 14px rgba(0, 0, 0, 0.4)) saturate(0.85);
+}
+
+.hm-mate.is-left-1 { left: 17%; }
+.hm-mate.is-right-1 { left: 83%; }
+
+.hm-mate.is-left-2,
+.hm-mate.is-right-2 {
+  width: 22%;
+  bottom: 78px;
+  z-index: 1;
+  opacity: 0.45;
+  filter: saturate(0.6) brightness(0.85);
+}
+
+.hm-mate.is-left-2 { left: 2%; }
+.hm-mate.is-right-2 { left: 98%; }
+
+.hm-mate.is-hidden {
+  width: 16%;
+  bottom: 90px;
+  opacity: 0;
+  z-index: 0;
+}
+
+.hm-mate-name {
+  position: absolute;
+  left: 50%;
+  bottom: -38px;
+  transform: translateX(-50%);
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(3, 32, 46, 0.8);
+  border: 1px solid var(--line-strong);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  animation: hm-fade 0.5s ease-out both;
+}
+
+@media (max-width: 760px) {
+  .hm-lineup {
+    height: 340px;
+  }
+
+  .hm-mate.is-center {
+    width: 60%;
+  }
+
+  .hm-mate.is-left-2,
+  .hm-mate.is-right-2 {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hm-mate {
+    transition: none;
+  }
+}

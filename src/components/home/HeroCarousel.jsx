@@ -28,7 +28,6 @@ function HeroCarousel({ revealedIds, onCardReveal }) {
     .filter((s) => s.kind !== "drop" || s.drop);
 
   const [{ index, elapsed }, setPos] = useState({ index: 0, elapsed: 0 });
-  const [opened, setOpened] = useState({}); // drop id → revealed in this visit
   const pauseLeft = useRef(0);
   const hovering = useRef(false);
 
@@ -58,13 +57,6 @@ function HeroCarousel({ revealedIds, onCardReveal }) {
     return () => clearInterval(id);
   }, [reduced, count, seconds]);
 
-  // A drop comes back round sealed, ready to reveal again.
-  const [shownIndex, setShownIndex] = useState(index);
-  if (shownIndex !== index) {
-    setShownIndex(index);
-    setOpened({});
-  }
-
   if (loading) return <section className="hm-hero is-loading" aria-busy="true" />;
   if (!count) return null;
 
@@ -83,15 +75,7 @@ function HeroCarousel({ revealedIds, onCardReveal }) {
       onBlur={() => (hovering.current = false)}>
       <div className="hm-hero-slide" key={slide.id} aria-roledescription="slide" aria-label={`${current + 1} of ${count}`}>
         {slide.kind === "drop" ? (
-          <DropSlide
-            drop={slide.drop}
-            now={now}
-            open={Boolean(opened[slide.drop.id])}
-            onOpen={() => {
-              interact();
-              setOpened((o) => ({ ...o, [slide.drop.id]: true }));
-            }}
-          />
+          <DropSlide drop={slide.drop} now={now} />
         ) : slide.kind === "scratch" ? (
           <ScratchSlide slide={slide} revealedIds={revealedIds} onCardReveal={onCardReveal} onInteract={interact} />
         ) : (

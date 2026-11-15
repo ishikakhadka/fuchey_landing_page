@@ -8,7 +8,6 @@ import { NETWORK } from "../../config/network";
 export const HOME_SECTIONS = [
   ["stats", "Stats strip"],
   ["parade", "Character parade"],
-  ["reveal", "Reveal capsules"],
   ["howItWorks", "How Fuchey works"],
   ["upcoming", "Upcoming drops"],
   ["onSale", "On sale now"],

@@ -352,7 +352,7 @@ export function validateCharacter(input: unknown) {
 
 const ID = /^[a-z0-9][a-z0-9-]{1,47}$/;
 const SLIDE_KINDS = ["drop", "scratch", "custom"];
-export const HOME_SECTIONS = ["stats", "parade", "reveal", "howItWorks", "upcoming", "onSale", "companion", "waitlist"];
+export const HOME_SECTIONS = ["stats", "parade", "howItWorks", "upcoming", "onSale", "companion", "waitlist"];
 
 // A link the site may point a button at: an in-site path, an in-page anchor,
 // or an http(s) URL.
