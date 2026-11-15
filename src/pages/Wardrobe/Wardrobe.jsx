@@ -104,10 +104,11 @@ function WardrobePacks() {
             <Link key={p.id} to={`/wardrobe/packs/${p.id}`} className="wr-rack">
               <img className="wr-rack-bg" src={packBackdrop(p)} alt="" />
               <span className="wr-rack-shade" aria-hidden="true" />
-              <span className="wr-rack-ring" aria-hidden="true" />
               <span className="wr-rack-items">
                 {shown.map((w) => (
-                  <ItemArt key={w.id} art={w.art} alt="" itemId={w.id} item={w} size="sm" />
+                  <span key={w.id} className="wr-rack-tile">
+                    <ItemArt art={w.art} alt="" itemId={w.id} item={w} size="sm" />
+                  </span>
                 ))}
               </span>
               <span className="wr-rack-meta">

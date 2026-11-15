@@ -1717,3 +1717,164 @@ main {
     height: 64px;
   }
 }
+
+/* =====================================================
+   GROUNDED STAGES — no neon halos. Characters stand on a
+   low pedestal under a soft spotlight; pack scenes get a
+   contact shadow.
+===================================================== */
+
+.rd-plat-ring,
+.rd-plat-core {
+  display: none;
+}
+
+.rd-plat-glow {
+  left: 15%;
+  right: 15%;
+  top: 0;
+  bottom: 20px;
+  height: auto;
+  border-radius: 0;
+  background: radial-gradient(ellipse 50% 75% at 50% 100%, rgba(170, 220, 240, 0.16), transparent 72%);
+}
+
+.rd-plat {
+  left: 24%;
+  right: 24%;
+  bottom: 8px;
+  height: 40px;
+  background: radial-gradient(ellipse at 50% 28%, #1f6f8a 0%, #0c3d51 58%, #072b3a 100%);
+  box-shadow: 0 9px 0 #041e2a, 0 26px 40px rgba(0, 0, 0, 0.5), inset 0 2px 0 rgba(255, 255, 255, 0.12);
+}
+
+.ch-stage .rd-plat::after {
+  content: "";
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  top: 30%;
+  height: 34%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.45), transparent);
+}
+
+.pack-slide-ring,
+.pk-hero-ring {
+  height: 34px;
+  border: 0;
+  box-shadow: none;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.18) 60%, transparent);
+}
+
+.pack-slide-ring {
+  bottom: 108px;
+  width: 60%;
+}
+
+.stage-floor {
+  border: 0 !important;
+  box-shadow: none;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.42), transparent) !important;
+}
+
+/* marketplace carousel: one pack at a time, full width */
+.pack-slide.is-main {
+  width: 100%;
+  max-width: none;
+}
+
+.pack-carousel-arrow.is-prev { left: 16px; }
+.pack-carousel-arrow.is-next { right: 16px; }
+
+/* wardrobe rack cards: the pieces sit on a tidy shelf */
+.wr-rack-ring {
+  display: none;
+}
+
+.wr-rack-items {
+  left: 20px;
+  right: 20px;
+  bottom: 84px;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.wr-rack-tile {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  background: rgba(3, 32, 46, 0.55);
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 18px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s var(--ease-out);
+}
+
+.wr-rack-tile .item-art {
+  width: 56px;
+  height: 56px;
+  filter: none;
+}
+
+.wr-rack:hover .wr-rack-items .item-art:nth-child(odd) {
+  transform: none;
+}
+
+.wr-rack:hover .wr-rack-tile:nth-child(odd) {
+  transform: translateY(-4px);
+}
+
+/* home reveal: before it opens, a soft grey blur instead of a black silhouette */
+.hm-capsule.is-sealed .hm-crewmate .item-art,
+.is-sealed .xp-rc-inside .item-art,
+.is-opening .xp-rc-inside .item-art {
+  filter: grayscale(1) brightness(0.8) contrast(0.85) blur(7px);
+  opacity: 0.75;
+}
+
+.xp-token.is-sealed .item-art {
+  filter: grayscale(1) brightness(0.8) contrast(0.85) blur(3px);
+  opacity: 0.75;
+}
+
+@keyframes xpUnveil {
+  from {
+    filter: grayscale(1) blur(6px);
+  }
+}
+
+@media (max-width: 760px) {
+  .wr-rack-tile {
+    width: 60px;
+    height: 60px;
+  }
+
+  .wr-rack-tile .item-art {
+    width: 46px;
+    height: 46px;
+  }
+}
+
+@media (min-width: 761px) {
+  .pack-carousel-track {
+    height: 460px;
+  }
+
+  .pack-slide.is-main {
+    height: 450px;
+  }
+
+  .pack-slide.is-main .pack-slide-line .item-art {
+    width: 210px;
+    height: 210px;
+    margin: 0 -10px;
+  }
+
+  .pack-slide.is-main .pack-slide-line .item-art:nth-child(2) {
+    width: 250px;
+    height: 250px;
+  }
+}

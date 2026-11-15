@@ -559,12 +559,14 @@
   animation: hm-fade 0.5s 0.8s both;
 }
 
+/* Sealed: a soft grey blur of the crew, sharpening into colour on reveal. */
 .hm-capsule.is-sealed .hm-crewmate .item-art {
-  filter: brightness(0) drop-shadow(0 0 14px rgba(142, 202, 230, 0.75)) drop-shadow(0 0 2px rgba(190, 235, 250, 0.9));
+  filter: grayscale(1) brightness(0.85) contrast(0.85) blur(7px);
+  opacity: 0.8;
 }
 
 .hm-crewmate .item-art {
-  transition: filter 0.9s ease;
+  transition: filter 0.9s ease, opacity 0.9s ease;
 }
 
 .hm-glass {

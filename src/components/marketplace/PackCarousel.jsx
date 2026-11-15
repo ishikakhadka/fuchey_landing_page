@@ -16,7 +16,7 @@ import { usePriceFormat } from "../../hooks/usePrice";
 // peeking in at the sides. Arrows, dots, ← → keys and swipe all move it.
 // Everything shown comes from the catalogue (characters, counts, rarity,
 // what's actually on sale and from what price).
-function PackCarousel({ autoplay = false, seconds = 6 }) {
+function PackCarousel({ autoplay = false, seconds = 5 }) {
   const { characters, wearables, loading } = useCatalog();
   const market = useMarketplace();
   const packs = groupByPack(characters);
@@ -124,9 +124,7 @@ function PackCarousel({ autoplay = false, seconds = 6 }) {
         </span>
       </header>
       <div className="pack-carousel-track">
-        {n > 2 && card(at(index - 1), "side")}
         {card(at(index), "main")}
-        {n > 1 && card(at(index + 1), "side")}
         {n > 1 && (
           <>
             <button type="button" className="pack-carousel-arrow is-prev" aria-label="Previous pack" onClick={() => go(index - 1)}>
