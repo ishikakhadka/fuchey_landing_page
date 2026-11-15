@@ -22,27 +22,30 @@ function CollectibleCard({ item, kind, owned = false }) {
       <span
         className={`collectible-art character-stage stage-${item.edition ?? "companion"}`}
         style={{ viewTransitionName: artTransitionName(item, kind) }}>
-        {owned && (
-          <span className="stage-chip is-owned">
-            <Check size={12} strokeWidth={3} /> Owned
-          </span>
-        )}
+        <span className="collectible-tags">
+          <RarityBadge rarity={item.rarity} />
+          {owned && (
+            <span className="stage-chip is-owned">
+              <Check size={12} strokeWidth={3} /> Owned
+            </span>
+          )}
+        </span>
         <span className="collectible-art-inner">
           <ItemArt art={item.art} alt="" itemId={item.id} item={kind === "wearable" ? item : undefined} size="md" />
         </span>
-        <span className="stage-floor" aria-hidden="true" />
       </span>
 
       <span className="collectible-body">
-        <span className="collectible-kicker">
-          {getPack(item.pack).name} · {typeLabel}
-        </span>
-        <span className="collectible-name">{item.name}</span>
         <span className="collectible-row">
-          <RarityBadge rarity={item.rarity} />
+          <span className="collectible-name">{item.name}</span>
           <PriceTag listing={item.listing} />
         </span>
-        <AvailabilityBadge item={item} />
+        <span className="collectible-row">
+          <span className="collectible-kicker">
+            {getPack(item.pack).name} · {typeLabel}
+          </span>
+          <AvailabilityBadge item={item} />
+        </span>
       </span>
     </Link>
   );

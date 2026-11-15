@@ -33,16 +33,22 @@ export function StatsStrip() {
   );
 }
 
-// Every character with revealed art, marching slowly past.
+// Characters marching slowly past. The admin picks who's in it and how fast
+// (Admin → Home → Character parade); no picks means every revealed character.
 export function CastParade() {
   const { characters } = useCatalog();
-  const cast = characters.filter((c) => !c.art.locked);
-  if (cast.length < 4) return null;
+  const { settings } = useContent();
+  const picked = settings.parade?.characterIds ?? [];
+  const revealed = characters.filter((c) => !c.art.locked);
+  const cast = picked.length ? picked.map((id) => revealed.find((c) => c.id === id)).filter(Boolean) : revealed;
+  if (!cast.length) return null;
+  // Repeat short lists so the loop always fills the screen.
+  const loop = Array.from({ length: Math.max(1, Math.ceil(12 / cast.length)) }, () => cast).flat();
   return (
     <section className="hm-parade" aria-label="The Fuchey characters">
       <span className="tx-dots" aria-hidden="true" style={{ inset: 0 }} />
-      <div className="hm-parade-track">
-        {[...cast, ...cast].map((c, i) => (
+      <div className="hm-parade-track" style={{ animationDuration: `${settings.parade?.seconds ?? 60}s` }}>
+        {[...loop, ...loop].map((c, i) => (
           <Link key={`${c.id}-${i}`} to={detailPath(c, "character")} className="hm-parade-item" tabIndex={i < cast.length ? 0 : -1} aria-hidden={i >= cast.length}>
             <ItemArt art={c.art} alt="" itemId={c.id} size="sm" />
             <span>{c.name}</span>

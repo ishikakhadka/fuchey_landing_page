@@ -1,6 +1,7 @@
-export function formatPrice(price) {
+export function formatPrice(price, currency = "sol") {
   if (price == null) return "no price";
-  return price === 0 ? "free" : `${price} SOL`;
+  if (price === 0) return "free";
+  return currency === "usd" ? `$${price}` : `${price} SOL`;
 }
 
 // "just now", "2 min ago", "3 hours ago"

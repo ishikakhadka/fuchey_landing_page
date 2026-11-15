@@ -245,7 +245,7 @@ function Admin() {
               <span className="admin-list-meta">
                 <span className={`admin-chip ${item.published ? "is-live" : ""}`}>{item.published ? "Published" : "Draft"}</span>
                 <span className="admin-hint">
-                  {item.listing.status} · {formatPrice(item.listing.price)}
+                  {item.listing.status} · {formatPrice(item.listing.price, item.listing.currency)}
                 </span>
               </span>
               <button

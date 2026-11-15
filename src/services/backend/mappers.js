@@ -11,6 +11,7 @@ const n = (v) => (v == null ? null : Number(v));
 const listingFrom = (r) => ({
   status: r.status,
   price: n(r.price),
+  currency: r.price_currency === "usd" ? "usd" : "sol",
   supply: n(r.supply),
   limitPerWallet: n(r.limit_per_wallet),
 });
@@ -18,6 +19,7 @@ const listingFrom = (r) => ({
 const listingTo = (listing = {}) => ({
   status: listing.status ?? "coming-soon",
   price: listing.price ?? null,
+  price_currency: listing.currency === "usd" ? "usd" : "sol",
   supply: listing.supply ?? null,
   limit_per_wallet: listing.limitPerWallet ?? null,
 });

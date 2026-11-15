@@ -75,11 +75,12 @@ function listing(c: Checker, o: Obj) {
   const price = c.num(o, "price", { min: 0, max: 1_000_000 });
   const supply = c.num(o, "supply", { min: 1, max: 100_000_000, int: true });
   const limit_per_wallet = c.num(o, "limit_per_wallet", { min: 1, max: 1_000_000, int: true });
+  const price_currency = c.oneOf(o, "price_currency", ["sol", "usd"], "sol");
   if (status === "available") {
     if (price == null) c.fail("price", "required for items on sale (0 = free claim)");
     if (supply == null) c.fail("supply", "required for items on sale");
   }
-  return { status, price, supply, limit_per_wallet };
+  return { status, price, price_currency, supply, limit_per_wallet };
 }
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
@@ -344,7 +345,7 @@ export function validateCharacter(input: unknown) {
 
 const ID = /^[a-z0-9][a-z0-9-]{1,47}$/;
 const SLIDE_KINDS = ["drop", "scratch", "custom"];
-export const HOME_SECTIONS = ["stats", "parade", "reveal", "howItWorks", "upcoming", "onSale", "completeTheLook", "companion", "waitlist"];
+export const HOME_SECTIONS = ["stats", "parade", "reveal", "howItWorks", "upcoming", "onSale", "companion", "waitlist"];
 
 // A link the site may point a button at: an in-site path, an in-page anchor,
 // or an http(s) URL.
@@ -427,14 +428,45 @@ export function validateSlide(input: unknown, dropIds: string[]) {
   return row;
 }
 
-export function validateHomeSettings(input: unknown) {
+// Home + page settings. Character lists hold ids only; names, art and
+// rarity always come from the characters table, so an edit there shows
+// everywhere. An empty list means "every character" (parade) or "the whole
+// pack in catalogue order" (Characters page).
+export function validateHomeSettings(input: unknown, characterIds: string[] = [], packIds: string[] = []) {
   const c = new Checker();
   if (!isObj(input)) throw new HttpError(400, "Missing settings.");
   const autoplaySeconds = c.num(input, "autoplaySeconds", { min: 0, max: 60, int: true }) ?? 7;
   const s = isObj(input.sections) ? input.sections : {};
   const sections = Object.fromEntries(HOME_SECTIONS.map((k) => [k, s[k] !== false]));
+
+  const idList = (v: unknown, path: string, max: number) => {
+    const ids = Array.isArray(v) ? [...new Set(v.map(String))] : [];
+    ids.forEach((x) => characterIds.includes(x) || c.fail(path, `unknown character “${x}”`));
+    if (ids.length > max) c.fail(path, `at most ${max} characters`);
+    return ids;
+  };
+
+  const p = isObj(input.parade) ? input.parade : {};
+  const parade = {
+    characterIds: idList(p.characterIds, "parade.characterIds", 60),
+    seconds: c.num(p, "seconds", { min: 10, max: 300, int: true, path: "parade.seconds" }) ?? 60,
+  };
+
+  const sh = isObj(input.showcase) ? input.showcase : {};
+  const defaultPack = typeof sh.defaultPack === "string" ? sh.defaultPack : "";
+  if (defaultPack && !packIds.includes(defaultPack)) c.fail("showcase.defaultPack", `unknown pack “${defaultPack}”`);
+  const rawPacks = isObj(sh.packs) ? sh.packs : {};
+  const packs: Record<string, string[]> = {};
+  for (const [pack, ids] of Object.entries(rawPacks)) {
+    if (!packIds.includes(pack)) {
+      c.fail("showcase.packs", `unknown pack “${pack}”`);
+      continue;
+    }
+    const list = idList(ids, `showcase.packs.${pack}`, 30);
+    if (list.length) packs[pack] = list;
+  }
   c.done();
-  return { autoplaySeconds, sections };
+  return { autoplaySeconds, sections, parade, showcase: { defaultPack, packs } };
 }
 
 export { Checker };

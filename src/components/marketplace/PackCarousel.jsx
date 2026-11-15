@@ -10,7 +10,7 @@ import { liveListing } from "../../hooks/useListing";
 import { getAvailability } from "../../utils/listing";
 import { getRarity } from "../../services/marketplace/catalog";
 import { groupByPack } from "../../data/packs";
-import { formatSol } from "../../utils/format";
+import { formatPrice } from "../../utils/format";
 
 // "Explore Character Packs": one pack at a time, large, with its neighbours
 // peeking in at the sides. Arrows, dots, ← → keys and swipe all move it.
@@ -31,13 +31,14 @@ function PackCarousel() {
   const describe = (pack) => {
     const items = [...pack.items, ...wearables.filter((w) => w.pack === pack.id)];
     const onSale = items.filter((i) => getAvailability(i, liveListing(market, i)).id === "on-sale");
-    const prices = onSale.map((i) => i.listing.price).filter((p) => p != null);
+    // Cheapest by what the sale charges in SOL, shown in its own currency.
+    const cheapest = onSale.filter((i) => i.listing.price != null).sort((a, b) => (a.listing.solPrice ?? a.listing.price) - (b.listing.solPrice ?? b.listing.price))[0];
     const top = pack.items.reduce((best, c) => (getRarity(c.rarity).rank > getRarity(best).rank ? c.rarity : best), "common");
     return {
       wearableCount: items.length - pack.items.length,
       status: onSale.length ? `${onSale.length} on sale` : "Coming soon",
       live: onSale.length > 0,
-      price: prices.length ? (Math.min(...prices) === 0 ? "From free" : `From ${formatSol(Math.min(...prices))}`) : "Prices at launch",
+      price: cheapest ? (cheapest.listing.price === 0 ? "From free" : `From ${formatPrice(cheapest.listing)}`) : "Prices at launch",
       top,
     };
   };

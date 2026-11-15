@@ -6,6 +6,7 @@ import { useWallet } from "../../hooks/useWallet";
 import { adminNft } from "../../services/backend/admin";
 import { deployProduct, updateMetadata, updateSale } from "../../services/nft/deploy";
 import { Section } from "./fields";
+import { fetchSolUsd, usdToSol } from "../../services/solPrice";
 
 // The NFT side of an asset, on the network the site runs on:
 //
@@ -57,13 +58,26 @@ async function confirmWithRetry(call, attempts = 6) {
   }
 }
 
-function NftFields({ kind, id, isNew, dirty, session }) {
+function NftFields({ kind, id, isNew, dirty, session, catalogPrice }) {
   const wallet = useWallet();
   const [data, setData] = useState(null);
   const [busy, setBusy] = useState(null); // progress text while an action runs
   const [error, setError] = useState(null); // { message, details }
   const [json, setJson] = useState(null); // metadata shown in the preview
   const [sale, setSale] = useState({ price: "", limit: "" });
+  const [rate, setRate] = useState({ busy: false, value: null, error: null });
+  const usdPrice = catalogPrice?.currency === "usd" && catalogPrice.price > 0 ? catalogPrice.price : null;
+
+  const convert = async () => {
+    setRate({ busy: true, value: null, error: null });
+    try {
+      const value = await fetchSolUsd();
+      setRate({ busy: false, value, error: null });
+      setSale((s) => ({ ...s, price: String(usdToSol(usdPrice, value)) }));
+    } catch (e) {
+      setRate({ busy: false, value: null, error: e.message });
+    }
+  };
 
   const base = { kind, id, network: NETWORK.id };
 
@@ -329,6 +343,18 @@ function NftFields({ kind, id, isNew, dirty, session }) {
               <input type="number" min="1" step="1" placeholder="none" value={sale.limit} onChange={(e) => setSale((s) => ({ ...s, limit: e.target.value }))} />
             </label>
           </div>
+          {usdPrice != null && (
+            <div className="admin-inline nft-usd">
+              <span className="admin-hint">
+                Catalogue price is ${usdPrice}. Buyers pay in SOL, so set the SOL amount before opening or updating the sale.
+                {rate.value && ` Filled at $${rate.value.toLocaleString()} per SOL.`}
+              </span>
+              <button type="button" className="ghost-button" onClick={convert} disabled={rate.busy}>
+                {rate.busy ? "Getting today’s rate…" : "Convert at today’s rate"}
+              </button>
+              {rate.error && <p className="admin-error">{rate.error}</p>}
+            </div>
+          )}
           <div className="admin-inline">
             {listing?.status !== "active" && (
               <button type="button" className="primary-button" onClick={() => setSaleState("active")} disabled={disabled || wrongWallet}>

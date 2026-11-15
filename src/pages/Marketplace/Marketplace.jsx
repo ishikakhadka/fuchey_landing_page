@@ -1,12 +1,11 @@
-import { useMemo } from "react";
-import { Link, useSearchParams } from "react-router";
+import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 import { RefreshCw, Search, X } from "lucide-react";
 
 import CategoryTabs from "../../components/marketplace/CategoryTabs";
 import CollectibleCard from "../../components/marketplace/CollectibleCard";
 import EmptyState from "../../components/collection/EmptyState";
 import NetworkBadge from "../../components/wallet/NetworkBadge";
-import ItemArt from "../../components/marketplace/ItemArt";
 import DropBanner from "../../components/drops/DropBanner";
 import PackCarousel from "../../components/marketplace/PackCarousel";
 
@@ -21,10 +20,11 @@ import { getPack, packs } from "../../data/packs";
 import { NETWORK } from "../../config/network";
 
 const KINDS = [
-  { id: null, label: "All Collectibles" },
   { id: "characters", label: "Characters" },
   { id: "wearables", label: "Wearables" },
+  { id: "all", label: "Everything" },
 ];
+const PAGE = 12;
 
 const SORTS = [
   { id: "featured", label: "Featured" },
@@ -61,7 +61,8 @@ function Marketplace() {
   const market = useMarketplace();
   const { ownsCharacter, ownsWearable } = useCollection();
 
-  const kind = KINDS.some((k) => k.id === params.get("kind")) ? params.get("kind") : null;
+  const kind = KINDS.some((k) => k.id === params.get("kind")) ? params.get("kind") : "characters";
+  const [limit, setLimit] = useState(PAGE);
   const sort = SORTS.some((s) => s.id === params.get("sort")) ? params.get("sort") : "featured";
   const q = params.get("q") ?? "";
   const availability = AVAILABILITY[params.get("availability")] ? params.get("availability") : "";
@@ -106,12 +107,12 @@ function Marketplace() {
   const groups = [
     { id: "characters", title: "Characters", items: filtered.filter((e) => e.kind === "character") },
     { id: "wearables", title: "Wearables", items: filtered.filter((e) => e.kind === "wearable") },
-  ].filter((g) => !kind || g.id === kind);
+  ].filter((g) => kind === "all" || g.id === kind);
   const shown = groups.reduce((n, g) => n + g.items.length, 0);
 
   const tabs = KINDS.map((k) => ({
     ...k,
-    count: loading ? null : entries.filter(matches).filter((e) => !k.id || `${e.kind}s` === k.id).length,
+    count: loading ? null : entries.filter(matches).filter((e) => k.id === "all" || `${e.kind}s` === k.id).length,
   }));
 
   // Only offer availability options that some item actually has.
@@ -119,53 +120,36 @@ function Marketplace() {
     .sort((a, b) => a.rank - b.rank)
     .filter((a) => a.id === availability || entries.some((e) => e.availability.id === a.id));
 
-  // The rarest character with revealed art, for the intro.
-  const spotlight = [...characters]
-    .filter((c) => !c.art.locked)
-    .sort((a, b) => getRarity(b.rarity).rank - getRarity(a.rarity).rank)[0];
-
   const owned = (e) => (e.kind === "character" ? ownsCharacter(e.item.id) : ownsWearable(e.item.id));
 
   return (
     <div className="container market-page market-browse rd-page mk-page">
       <section className="mk-intro">
-        <div className="mk-intro-side">
+        <header className="mk-head">
           <h1 className="rd-title">
             Discover <span className="accent">Collectibles</span>
           </h1>
-          <p className="rd-lede">Own unique characters, wearables and more. Every piece shows its live availability.</p>
-          {spotlight && (
-            <div className="mk-spotlight">
-              <span className="rd-plat-glow" />
-              <span className="rd-plat-ring" />
-              <ItemArt art={spotlight.art} alt={spotlight.title ?? spotlight.name} itemId={spotlight.id} size="lg" />
-            </div>
-          )}
-          <a href="#browse" className="rd-btn is-ghost">
-            Explore Marketplace
-          </a>
-          <Link to="/#waitlist" className="mk-community rd-glass">
-            <img src="/fuchey-mark.png" alt="" width="40" height="38" />
-            <span>
-              <b>Join the Fuchey Community</b>
-              <small>Get drop news on the waitlist.</small>
-            </span>
-          </Link>
           <div className="browse-network">
             <NetworkBadge />
             {!NETWORK.isMainnet && <span>Test network: prices are in {NETWORK.label} SOL.</span>}
           </div>
-        </div>
-        <div className="mk-intro-main">
-          <DropBanner />
-          <PackCarousel />
-        </div>
+        </header>
+        <DropBanner />
+        <PackCarousel />
       </section>
 
       <span id="browse" />
 
       <div className="browse-toolbar">
-        <CategoryTabs label="Collectible type" options={tabs} value={kind} onChange={(id) => update("kind", id)} />
+        <CategoryTabs
+          label="Collectible type"
+          options={tabs}
+          value={kind}
+          onChange={(id) => {
+            setLimit(PAGE);
+            update("kind", id === "characters" ? null : id);
+          }}
+        />
 
         <div className="browse-controls">
           <label className="browse-search">
@@ -284,16 +268,21 @@ function Marketplace() {
             .filter((g) => g.items.length)
             .map((group) => (
               <section key={group.id} className="browse-group" aria-label={group.title}>
-                {!kind && (
+                {kind === "all" && (
                   <h2 className="details-heading">
                     {group.title} <span className="muted">{group.items.length}</span>
                   </h2>
                 )}
                 <div className="collectible-grid">
-                  {group.items.map((e) => (
+                  {group.items.slice(0, limit).map((e) => (
                     <CollectibleCard key={`${e.kind}-${e.item.id}`} item={e.item} kind={e.kind} owned={owned(e)} />
                   ))}
                 </div>
+                {group.items.length > limit && (
+                  <button type="button" className="rd-btn is-ghost browse-more" onClick={() => setLimit((l) => l + PAGE)}>
+                    Show more {group.title.toLowerCase()} <span className="muted">{group.items.length - limit} left</span>
+                  </button>
+                )}
               </section>
             ))}
         </>

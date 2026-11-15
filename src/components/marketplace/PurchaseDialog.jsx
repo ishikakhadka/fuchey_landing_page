@@ -71,7 +71,7 @@ function PurchaseDialog() {
           </h2>
           <p>
             Review the transaction in your wallet.{" "}
-            {free ? "It’s free — you only pay a tiny network fee." : `You’ll pay ${formatSol(item.listing.price)} plus a small network fee.`}
+            {free ? "It’s free — you only pay a tiny network fee." : `You’ll pay ${formatSol(item.listing.solPrice ?? item.listing.price)} plus a small network fee.`}
           </p>
         </>
       );

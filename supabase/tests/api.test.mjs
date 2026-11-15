@@ -157,6 +157,16 @@ test("admin uploads a layer, creates and publishes a wearable; it appears in the
   assert.equal(live.name, "Test Cap");
   assert.deepEqual(live.visual, { ...wearable.visual, image: up.body.url });
   assert.deepEqual(live.compatible_characters, ["yeti"]);
+  assert.equal(live.price_currency, "sol", "SOL is the default currency");
+
+  const usd = await call("admin", { action: "saveWearable", wearable: { ...wearable, price: 4.99, price_currency: "usd", published: true } }, adminToken);
+  assert.equal(usd.status, 200, JSON.stringify(usd.body));
+  const priced = (await rest(`wearables?id=eq.${ID}`)).body[0];
+  assert.equal(Number(priced.price), 4.99);
+  assert.equal(priced.price_currency, "usd");
+
+  const bad = await call("admin", { action: "saveWearable", wearable: { ...wearable, price_currency: "eur" } }, adminToken);
+  assert.equal(bad.status, 400);
 });
 
 test("validation rejects bad visuals and unknown characters", async () => {

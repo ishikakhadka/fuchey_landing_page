@@ -151,7 +151,10 @@ Deno.serve(
       }
 
       case "saveHomeSettings": {
-        const value = validateHomeSettings(body.settings);
+        const { data: chars } = await db.from("characters").select("id, pack");
+        const ids = (chars ?? []).map((c) => c.id);
+        const packIds = [...new Set((chars ?? []).map((c) => c.pack).filter(Boolean))];
+        const value = validateHomeSettings(body.settings, ids, packIds);
         const { error } = await db.from("site_settings").upsert({ key: "home", value });
         fail(error);
         return json({ settings: value });

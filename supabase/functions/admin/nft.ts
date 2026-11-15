@@ -330,7 +330,8 @@ export async function nftAction(action: string, body: Record<string, unknown>, d
       });
       // Keep the catalogue price in step with the sale (what's on sale is read
       // from `listings`, not from the catalogue's status column).
-      await db.from(TABLE[kind]).update({ price: t.price }).eq("id", row.id);
+      // A USD catalogue price stays in USD; the SOL amount lives in `listings`.
+      if (row.price_currency !== "usd") await db.from(TABLE[kind]).update({ price: t.price }).eq("id", row.id);
       return status(db, kind, await load(db, kind, row.id), network);
     }
 

@@ -8,6 +8,7 @@ import { packs } from "../../data/packs";
 import { fitsCharacter } from "../../services/marketplace/catalog";
 import { adminDelete, adminSaveCharacter } from "../../services/backend/admin";
 import { Checks, Field, NumberInput, Section, Select, TextInput, SaveError } from "./fields";
+import { CURRENCIES } from "./currencies";
 import ImageUpload from "./ImageUpload";
 import NftFields from "./NftFields";
 
@@ -229,13 +230,28 @@ function CharacterEditor({ initial, wearables, session, onSaved, onDeleted, onCl
 
           <Section title="Listing">
             <Select label="Status" value={draft.listing.status} options={STATUSES} onChange={(v) => setListing({ status: v })} errors={errors} path="status" />
-            <NumberInput label="Price (SOL)" value={draft.listing.price} onChange={(v) => setListing({ price: v })} min="0" errors={errors} path="price" hint="0 = free claim." />
+            <NumberInput
+              label={`Price (${draft.listing.currency === "usd" ? "USD" : "SOL"})`}
+              value={draft.listing.price}
+              onChange={(v) => setListing({ price: v })}
+              min="0"
+              errors={errors}
+              path="price"
+              hint="0 = free claim."
+            />
+            <Select
+              label="Currency"
+              value={draft.listing.currency ?? "sol"}
+              onChange={(v) => setListing({ currency: v })}
+              options={CURRENCIES}
+              hint="Buyers always pay in SOL. With USD, you set the SOL amount at today’s rate when you open the sale."
+            />
             <NumberInput label="Supply" value={draft.listing.supply} onChange={(v) => setListing({ supply: v })} step="1" min="1" errors={errors} path="supply" />
             <NumberInput label="Limit per wallet" value={draft.listing.limitPerWallet} onChange={(v) => setListing({ limitPerWallet: v })} step="1" min="1" errors={errors} path="limit_per_wallet" />
             <NumberInput label="Sort order" value={draft.sortOrder} onChange={(v) => set({ sortOrder: v ?? 0 })} step="1" errors={errors} path="sort_order" />
           </Section>
 
-          <NftFields kind="character" id={saved.id} isNew={!saved.id} dirty={dirty} session={session} />
+          <NftFields catalogPrice={draft.listing} kind="character" id={saved.id} isNew={!saved.id} dirty={dirty} session={session} />
         </div>
 
         <aside className="admin-preview" aria-label="Preview">

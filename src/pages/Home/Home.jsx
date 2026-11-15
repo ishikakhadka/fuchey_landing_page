@@ -6,7 +6,6 @@ import { useStoredState } from "../../hooks/useStoredState";
 import HeroCarousel from "../../components/home/HeroCarousel.jsx";
 import { CastParade, HowItWorks, OnSaleNow, StatsStrip, UpcomingDrops } from "../../components/home/HomeSections.jsx";
 import CharacterDiscovery from "../../components/experience/CharacterDiscovery.jsx";
-import CompleteTheLook from "../../components/experience/CompleteTheLook.jsx";
 import CompanionSection from "../../components/experience/CompanionSection.jsx";
 import Waitlist from "../../components/Waitlist.jsx";
 import "../../home.css";
@@ -21,7 +20,6 @@ function Home() {
   const on = settings.sections;
   const discovery = useRef(null);
   const [revealed, setRevealed] = useStoredState("fuchey:home:revealed", []);
-  const revealOne = () => discovery.current?.reveal();
   const markRevealed = (id) => setRevealed((ids) => (ids.includes(id) ? ids : [...ids, id]));
 
   return (
@@ -33,7 +31,6 @@ function Home() {
       {on.howItWorks && <HowItWorks />}
       {on.upcoming && <UpcomingDrops />}
       {on.onSale && <OnSaleNow />}
-      {on.completeTheLook && <CompleteTheLook unlocked={revealed} onRevealMore={revealOne} />}
       {on.companion && <CompanionSection edition={current.id} onEditionChange={setEdition} />}
       {on.waitlist && <Waitlist edition={current} />}
     </div>

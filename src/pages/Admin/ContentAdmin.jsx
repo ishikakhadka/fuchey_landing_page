@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { ArrowDown, ArrowUp, Pencil, Plus, Save, Snowflake, Sparkles, Trash2 } from "lucide-react";
 
 import ItemArt from "../../components/marketplace/ItemArt";
-import { NumberInput, SaveError, Section, TextInput, Toggle } from "./fields";
+import { NumberInput, SaveError, Section, Select, TextInput, Toggle } from "./fields";
 import ImageUpload from "./ImageUpload";
 import DropEditor from "./DropEditor";
-import { getPack } from "../../data/packs";
+import CharacterPicker from "./CharacterPicker";
+import { getPack, packs } from "../../data/packs";
 import {
   HOME_SECTIONS,
   adminDeleteSlide,
@@ -215,6 +216,7 @@ export function HomeAdmin({ session, characters, onChange }) {
   const [editing, setEditing] = useState(null);
   const [settingsState, setSettingsState] = useState({ saving: false, error: null, ok: null });
   const [busy, setBusy] = useState(false);
+  const [showcasePack, setShowcasePack] = useState(packs[0].id);
 
   if (error) return <p className="admin-error">{error}</p>;
   if (!data) return <p className="admin-hint">Loading home content…</p>;
@@ -371,6 +373,52 @@ export function HomeAdmin({ session, characters, onChange }) {
           </div>
         </div>
       </Section>
+      <Section title="Character parade">
+        <CharacterPicker
+          label="Characters in the parade"
+          value={settings.parade.characterIds}
+          onChange={(ids) => setSettings({ parade: { ...settings.parade, characterIds: ids } })}
+          characters={characters}
+          emptyText="No picks: every revealed character marches past."
+          hint="The loop below the home hero, in this order. Characters whose art isn’t revealed yet are skipped on the site."
+        />
+        <NumberInput
+          label="Seconds for one lap"
+          value={settings.parade.seconds}
+          onChange={(v) => setSettings({ parade: { ...settings.parade, seconds: v ?? 60 } })}
+          step="5"
+          min="10"
+          max="300"
+          hint="Lower is faster."
+        />
+      </Section>
+
+      <Section title="Characters page">
+        <Select
+          label="Pack shown first"
+          value={settings.showcase.defaultPack}
+          onChange={(v) => setSettings({ showcase: { ...settings.showcase, defaultPack: v } })}
+          options={[{ id: "", label: "The live drop’s pack (or the first pack)" }, ...packs.map((p) => ({ id: p.id, label: p.name }))]}
+        />
+        <Select
+          label="Edit the carousel of"
+          value={showcasePack}
+          onChange={setShowcasePack}
+          options={packs.map((p) => ({ id: p.id, label: p.name }))}
+        />
+        <CharacterPicker
+          key={showcasePack}
+          label={`${getPack(showcasePack).name} carousel`}
+          value={settings.showcase.packs[showcasePack] ?? []}
+          onChange={(ids) => setSettings({ showcase: { ...settings.showcase, packs: { ...settings.showcase.packs, [showcasePack]: ids } } })}
+          characters={characters}
+          pool={characters.filter((c) => getPack(c.pack).id === showcasePack)}
+          max={30}
+          emptyText="No picks: the whole pack shows, in catalogue order."
+          hint="Visitors pick a pack on the Characters page and these characters rotate in the carousel, in this order."
+        />
+      </Section>
+
       <SaveError message={settingsState.error} />
       {settingsState.ok && <p className="admin-ok">{settingsState.ok}</p>}
       <div className="admin-actions"><div className="admin-actions-row">

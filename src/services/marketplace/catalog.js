@@ -20,8 +20,12 @@ export async function fetchCatalog() {
   const sales = new Map(listings.map((l) => [`${l.asset_kind}:${l.asset_id}`, rowToSale(l)]));
   const withSale = (kind) => (item) => {
     const sale = sales.get(`${kind}:${item.id}`) ?? null;
-    // Shown price / limit follow the live sale once there is one.
-    const listing = sale ? { ...item.listing, price: sale.price, limitPerWallet: sale.limitPerWallet } : item.listing;
+    // Shown price / limit follow the live sale once there is one. A USD price
+    // stays the headline; `solPrice` is what the sale actually charges.
+    const usd = item.listing.currency === "usd";
+    const listing = sale
+      ? { ...item.listing, price: usd ? item.listing.price : sale.price, solPrice: sale.price, limitPerWallet: sale.limitPerWallet }
+      : { ...item.listing, solPrice: usd ? null : item.listing.price };
     return { ...item, listing, sale };
   };
   return {

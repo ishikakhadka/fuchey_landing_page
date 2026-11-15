@@ -1057,3 +1057,45 @@
     height: 56px;
   }
 }
+
+/* ---------- character picker ---------- */
+
+.admin-pick-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-pick-list li {
+  display: grid;
+  grid-template-columns: 28px 48px minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: rgba(1, 26, 38, 0.45);
+}
+
+.admin-pick-list .item-art {
+  width: 48px;
+  height: 48px;
+}
+
+.admin-pick-n {
+  color: var(--ink-faint);
+  font-weight: 700;
+  text-align: center;
+}
+
+.admin-pick-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.admin-pick-name small {
+  color: var(--ink-faint);
+}

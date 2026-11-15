@@ -11,7 +11,6 @@ export const HOME_SECTIONS = [
   ["howItWorks", "How Fuchey works"],
   ["upcoming", "Upcoming drops"],
   ["onSale", "On sale now"],
-  ["completeTheLook", "Complete the Look"],
   ["companion", "Physical companion"],
   ["waitlist", "Waitlist"],
 ];
@@ -19,6 +18,9 @@ export const HOME_SECTIONS = [
 export const DEFAULT_HOME_SETTINGS = {
   autoplaySeconds: 7,
   sections: Object.fromEntries(HOME_SECTIONS.map(([id]) => [id, true])),
+  // Character lists are ids only; everything else comes from the catalogue.
+  parade: { characterIds: [], seconds: 60 },
+  showcase: { defaultPack: "", packs: {} },
 };
 
 export function rowToDrop(r) {
@@ -107,6 +109,8 @@ const withDefaults = (value) => ({
   ...DEFAULT_HOME_SETTINGS,
   ...(value ?? {}),
   sections: { ...DEFAULT_HOME_SETTINGS.sections, ...(value?.sections ?? {}) },
+  parade: { ...DEFAULT_HOME_SETTINGS.parade, ...(value?.parade ?? {}) },
+  showcase: { ...DEFAULT_HOME_SETTINGS.showcase, ...(value?.showcase ?? {}), packs: value?.showcase?.packs ?? {} },
 });
 
 // Public read. Each part fails soft, so a backend without these tables yet

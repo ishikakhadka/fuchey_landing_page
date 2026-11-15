@@ -174,3 +174,26 @@ test("home settings are validated and saved", async () => {
   const bad = await call({ action: "saveHomeSettings", settings: { autoplaySeconds: 500 } }, token);
   assert.equal(bad.status, 400);
 });
+
+test("parade and Characters-page picks are character ids checked against the table", async () => {
+  const settings = {
+    autoplaySeconds: 7,
+    parade: { characterIds: ["captain", "yeti", "captain"], seconds: 45 },
+    showcase: { defaultPack: "pirates", packs: { pirates: ["squidman", "captain"], wild: [] } },
+  };
+  const r = await call({ action: "saveHomeSettings", settings }, token);
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  assert.deepEqual(r.body.settings.parade, { characterIds: ["captain", "yeti"], seconds: 45 });
+  assert.deepEqual(r.body.settings.showcase, { defaultPack: "pirates", packs: { pirates: ["squidman", "captain"] } });
+  const pub = await rest("site_settings?key=eq.home", { key: ANON });
+  assert.deepEqual(pub.body[0].value.parade.characterIds, ["captain", "yeti"]);
+
+  const bad = await call({ action: "saveHomeSettings", settings: { parade: { characterIds: ["nobody"] }, showcase: { packs: { atlantis: [] } } } }, token);
+  assert.equal(bad.status, 400);
+  const text = JSON.stringify(bad.body);
+  assert.match(text, /nobody/);
+  assert.match(text, /atlantis/);
+
+  // Put the defaults back for the local site.
+  await call({ action: "saveHomeSettings", settings: { autoplaySeconds: 7 } }, token);
+});
