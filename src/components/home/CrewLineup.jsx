@@ -24,9 +24,6 @@ function CrewLineup({ characters, paused = false }) {
 
   return (
     <div className={`hm-lineup count-${Math.min(n, 5)}`}>
-      <span className="hm-plat-glow" aria-hidden="true" />
-      <span className="hm-plat" aria-hidden="true" />
-
       {characters.map((c, i) => (
         <figure key={c.id} className={`hm-mate ${slotOf(i, active, n)}`} aria-hidden={i !== active}>
           <ItemArt art={c.art} alt={i === active ? c.title ?? c.name : ""} itemId={c.id} size="lg" />
