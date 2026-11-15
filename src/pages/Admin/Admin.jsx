@@ -20,6 +20,7 @@ import CharacterEditor from "./CharacterEditor";
 import NftRegistry from "./NftRegistry";
 import NftDetail from "./NftDetail";
 import { DropsAdmin, HomeAdmin } from "./ContentAdmin";
+import PacksAdmin from "./PacksAdmin";
 import { useContent } from "../../context/ContentContext";
 import { newCharacter, newWearable } from "./drafts";
 import "./admin.css";
@@ -193,6 +194,7 @@ function Admin() {
             ["nfts", "NFTs"],
             ["drops", "Drops"],
             ["home", "Home"],
+            ["packs", "Packs"],
           ].map(([id, label]) => (
             <button key={id} type="button" role="tab" aria-selected={tab === id} aria-pressed={tab === id} onClick={() => setTab(id)}>
               {label}
@@ -219,6 +221,8 @@ function Admin() {
         <NftRegistry session={session} onOpen={setOpenNft} />
       ) : tab === "drops" ? (
         <DropsAdmin session={session} characters={data.characters} onChange={content.reload} />
+      ) : tab === "packs" ? (
+        <PacksAdmin session={session} characters={data.characters} wearables={data.wearables} onChange={refresh} />
       ) : tab === "home" ? (
         <HomeAdmin session={session} characters={data.characters} onChange={content.reload} />
       ) : (

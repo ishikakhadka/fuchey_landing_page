@@ -9,7 +9,7 @@ import { useMarketplace } from "../../context/MarketplaceContext";
 import { liveListing } from "../../hooks/useListing";
 import { getAvailability } from "../../utils/listing";
 import { getRarity } from "../../services/marketplace/catalog";
-import { groupByPack } from "../../data/packs";
+import { groupByPack, packBackdrop } from "../../data/packs";
 import { usePriceFormat } from "../../hooks/usePrice";
 
 // "Explore Character Packs": one pack at a time, large, with its neighbours
@@ -60,7 +60,7 @@ function PackCarousel({ autoplay = false, seconds = 6 }) {
     const lineup = pack.items.filter((c) => !c.art.locked).slice(0, 3);
     return (
       <article key={`${role}-${pack.id}`} className={`pack-slide is-${role}`} aria-hidden={role !== "main"}>
-        <img className="pack-slide-bg" src={`/backdrops/${pack.id}.svg`} alt="" />
+        <img className="pack-slide-bg" src={packBackdrop(pack)} alt="" />
         <span className="pack-slide-shade" />
         {role === "main" && (
           <span className="pack-slide-tags">

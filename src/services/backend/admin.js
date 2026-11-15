@@ -1,5 +1,6 @@
 import { callFunction } from "./client";
 import { characterToRow, rowToCharacter, rowToWearable, wearableToRow } from "./mappers";
+import { applyPackRows } from "../../data/packs";
 
 // Admin dashboard API (supabase/functions/admin). Every call carries a wallet
 // sign-in for purpose "admin"; the function checks the wallet is on the
@@ -8,7 +9,12 @@ import { characterToRow, rowToCharacter, rowToWearable, wearableToRow } from "./
 export const adminSession = (session) => callFunction("admin", { action: "session" }, session);
 
 export async function adminList(session) {
-  const { characters, wearables } = await callFunction("admin", { action: "list" }, session);
+  const [{ characters, wearables }, packs] = await Promise.all([
+    callFunction("admin", { action: "list" }, session),
+    callFunction("admin", { action: "listPacks" }, session).then((r) => r.packs, () => []),
+  ]);
+  // Every pack, published or not, so the editors can pick any of them.
+  applyPackRows(packs);
   return { characters: characters.map(rowToCharacter), wearables: wearables.map(rowToWearable) };
 }
 

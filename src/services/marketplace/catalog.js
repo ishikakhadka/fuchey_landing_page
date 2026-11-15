@@ -2,6 +2,7 @@ import { RARITIES, WEARABLE_TYPES } from "../../data/taxonomy";
 import { NETWORK } from "../../config/network";
 import { select } from "../backend/client";
 import { rowToCharacter, rowToSale, rowToWearable } from "../backend/mappers";
+import { applyPackRows } from "../../data/packs";
 
 // Read access to the marketplace catalogue, from the Supabase database
 // (published rows only — drafts are visible in the admin dashboard alone).
@@ -12,11 +13,14 @@ import { rowToCharacter, rowToSale, rowToWearable } from "../backend/mappers";
 // deployed / listed here. What can be bought is decided by `sale`, never by
 // the catalogue's own status field.
 export async function fetchCatalog() {
-  const [characters, wearables, listings] = await Promise.all([
+  const [characters, wearables, listings, packRows] = await Promise.all([
     select("characters", { order: "sort_order.asc,id.asc" }),
     select("wearables", { order: "sort_order.asc,id.asc" }),
     select("listings", { network: `eq.${NETWORK.id}` }),
+    // Published packs only (RLS); a backend without the table yet keeps the built-ins.
+    select("packs", { order: "sort_order.asc,id.asc" }).catch(() => []),
   ]);
+  applyPackRows(packRows);
   const sales = new Map(listings.map((l) => [`${l.asset_kind}:${l.asset_id}`, rowToSale(l)]));
   const withSale = (kind) => (item) => {
     const sale = sales.get(`${kind}:${item.id}`) ?? null;

@@ -1,3 +1,4 @@
+import { packBackdrop } from "../data/packs";
 // Where a drop is in its window, and the countdown text the site shows.
 // Dates only drive display; sales open from the on-chain listing.
 
@@ -54,4 +55,4 @@ export function dropTiming(drop, now = Date.now()) {
 export const visibleDrops = (drops, now = Date.now()) => drops.filter((d) => d.live && dropPhase(d, now) !== DROP_PHASE.ENDED);
 
 // Built-in scene for each pack (public/backdrops/<pack>.svg).
-export const backdropFor = (drop) => drop.backdropUrl || `/backdrops/${drop.pack}.svg`;
+export const backdropFor = (drop) => drop.backdropUrl || packBackdrop(drop.pack);

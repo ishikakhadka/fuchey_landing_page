@@ -9,8 +9,13 @@ export const SLOTS = ["hat", "headwear", "outfit", "accessory", "backpack", "hel
 const RARITIES = ["common", "uncommon", "rare", "epic", "legendary"];
 const STATUSES = ["available", "coming-soon", "sold-out"];
 const EDITIONS = ["companion", "dev"];
-// Mirrors src/data/packs.js.
-const PACKS = ["wild", "pirates", "tribal", "rogues", "cartoon", "anime", "myths", "legends", "heroes", "brainrot"];
+// Pack ids come from the packs table; the admin function loads them before
+// validating anything that names a pack (setPackIds). These are the built-in
+// ones, used until then.
+let PACKS = ["wild", "pirates", "tribal", "rogues", "cartoon", "anime", "myths", "legends", "heroes", "brainrot"];
+export function setPackIds(ids: string[]) {
+  if (ids.length) PACKS = ids;
+}
 const BUILT_IN_IMAGES = ["yeti"];
 
 type Obj = Record<string, unknown>;
@@ -468,6 +473,33 @@ export function validateHomeSettings(input: unknown, characterIds: string[] = []
   const priceDisplay = c.oneOf(input, "priceDisplay", ["sol", "usd"], "sol");
   c.done();
   return { autoplaySeconds, sections, parade, showcase: { defaultPack, packs }, priceDisplay };
+}
+
+const PACK_ID = /^[a-z0-9][a-z0-9-]{1,31}$/;
+
+// A pack: the parent of characters and wearables. Empty text falls back to
+// the site's built-in copy for that pack.
+export function validatePack(input: unknown) {
+  const c = new Checker();
+  if (!isObj(input)) throw new HttpError(400, "Missing pack.");
+  const id = String(input.id ?? "");
+  if (!PACK_ID.test(id)) c.fail("id", "lowercase letters, digits and dashes, 2–32 characters");
+  const name = c.str(input, "name", { max: 80, min: 1, required: true });
+  const opt = (key: string, max: number) => c.str(input, key, { max }) || null;
+  const row = {
+    id,
+    name,
+    tagline: opt("tagline", 160),
+    description: opt("description", 600),
+    wardrobe_tagline: opt("wardrobe_tagline", 160),
+    wardrobe_description: opt("wardrobe_description", 600),
+    backdrop_url: input.backdrop_url ? c.url(input.backdrop_url, "backdrop_url") : null,
+    published: input.published !== false,
+    sort_order: c.num(input, "sort_order", { min: -1000, max: 1000, int: true }) ?? 0,
+    updated_at: new Date().toISOString(),
+  };
+  c.done();
+  return row;
 }
 
 export { Checker };

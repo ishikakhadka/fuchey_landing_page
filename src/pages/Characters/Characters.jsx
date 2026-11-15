@@ -11,6 +11,7 @@ import { useCollection } from "../../hooks/useCollection";
 import { useCatalog } from "../../context/CatalogContext";
 import { useContent } from "../../context/ContentContext";
 import { visibleDrops } from "../../utils/drops";
+import { packBackdrop } from "../../data/packs";
 import { detailPath } from "../../utils/routes";
 
 const AUTOPLAY_MS = 5000;
@@ -64,7 +65,7 @@ function Characters() {
     <div className="rd-page ch-page">
       {pack && (
         <div className="ch-backdrop" key={pack.id} aria-hidden="true">
-          <img src={`/backdrops/${pack.id}.svg`} alt="" />
+          <img src={packBackdrop(pack)} alt="" />
         </div>
       )}
 

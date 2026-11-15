@@ -18,7 +18,7 @@ import { useWallet } from "../../hooks/useWallet";
 import { fitsCharacter, getWearableTypes, isDressable } from "../../services/marketplace/catalog";
 import { fetchLoadout, saveLoadout } from "../../services/backend/loadouts";
 import { getSession } from "../../services/backend/session";
-import { packs } from "../../data/packs";
+import { packBackdrop, packs } from "../../data/packs";
 
 const sameSlots = (a = {}, b = {}) =>
   JSON.stringify(Object.entries(a).sort()) === JSON.stringify(Object.entries(b).sort());
@@ -102,7 +102,7 @@ function WardrobePacks() {
           const owned = p.items.filter((w) => ownsWearable(w.id)).length;
           return (
             <Link key={p.id} to={`/wardrobe/packs/${p.id}`} className="wr-rack">
-              <img className="wr-rack-bg" src={`/backdrops/${p.id}.svg`} alt="" />
+              <img className="wr-rack-bg" src={packBackdrop(p)} alt="" />
               <span className="wr-rack-shade" aria-hidden="true" />
               <span className="wr-rack-ring" aria-hidden="true" />
               <span className="wr-rack-items">
@@ -276,7 +276,7 @@ function FittingRoomPage({ pack }) {
   return (
     <div className="rd-page wr-page">
       <div className="wr-backdrop" aria-hidden="true">
-        <img src={`/backdrops/${pack.id}.svg`} alt="" />
+        <img src={packBackdrop(pack)} alt="" />
       </div>
 
       <section className="container wr-head">

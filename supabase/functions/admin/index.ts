@@ -21,7 +21,7 @@
 
 import { handler, HttpError, json, serviceClient } from "../_shared/http.ts";
 import { verifySession } from "../_shared/session.ts";
-import { validateCharacter, validateDrop, validateHomeSettings, validateSlide, validateWearable } from "../_shared/validate.ts";
+import { setPackIds, validateCharacter, validateDrop, validateHomeSettings, validatePack, validateSlide, validateWearable } from "../_shared/validate.ts";
 import { nftAction } from "./nft.ts";
 import { allowedNetworks, type Network } from "../_shared/nft/config.ts";
 import { REGISTRY_ACTIONS, registryAction } from "./registry.ts";
@@ -55,6 +55,17 @@ Deno.serve(
     if (NFT_ACTIONS.includes(body.action)) return json(await nftAction(body.action, body, db, wallet));
     if (REGISTRY_ACTIONS.includes(body.action)) return json(await registryAction(body.action, body, db));
 
+    // Packs are the parents: their ids validate every row that names one,
+    // and a character or wearable can only be published inside a published pack.
+    const { data: packRows } = await db.from("packs").select("id, name, published");
+    setPackIds((packRows ?? []).map((p) => p.id));
+    const requirePublishedPack = (row: { pack: string; published: boolean }) => {
+      const pack = (packRows ?? []).find((p) => p.id === row.pack);
+      if (row.published && pack && !pack.published) {
+        throw new HttpError(400, `${pack.name} is unpublished. Publish the pack first, or save this as a draft.`);
+      }
+    };
+
     // Deleting a deployed asset would orphan NFTs people own.
     const deployed = async (table: string, id: string) => {
       const { data } = await db.from(table).select("nft").eq("id", id).maybeSingle();
@@ -78,6 +89,7 @@ Deno.serve(
       case "saveWearable": {
         const { data: chars } = await db.from("characters").select("id");
         const row = validateWearable(body.wearable, (chars ?? []).map((c) => c.id));
+        await requirePublishedPack(row);
         const { data, error } = await db.from("wearables").upsert(row).select().single();
         fail(error);
         return json({ wearable: data });
@@ -85,6 +97,7 @@ Deno.serve(
 
       case "saveCharacter": {
         const row = validateCharacter(body.character);
+        await requirePublishedPack(row);
         const { data, error } = await db.from("characters").upsert(row).select().single();
         fail(error);
         return json({ character: data });
@@ -97,6 +110,44 @@ Deno.serve(
           throw new HttpError(409, "This item is deployed on-chain and people may own it. End its listing instead of deleting it.");
         }
         const { error } = await db.from(table).delete().eq("id", String(body.id ?? ""));
+        fail(error);
+        return json({ ok: true });
+      }
+
+      case "listPacks": {
+        const { data, error } = await db.from("packs").select("*").order("sort_order").order("id");
+        fail(error);
+        return json({ packs: data });
+      }
+
+      // Saves a pack. Unpublishing it also unpublishes every character and
+      // wearable in it; `publishItems` publishes them all along with it.
+      case "savePack": {
+        const row = validatePack(body.pack);
+        const { data, error } = await db.from("packs").upsert(row).select().single();
+        fail(error);
+        let changed = { characters: 0, wearables: 0 };
+        const cascade = !row.published ? false : body.publishItems === true ? true : null;
+        if (cascade !== null) {
+          const [ch, we] = await Promise.all([
+            db.from("characters").update({ published: cascade }).eq("pack", row.id).neq("published", cascade).select("id"),
+            db.from("wearables").update({ published: cascade }).eq("pack", row.id).neq("published", cascade).select("id"),
+          ]);
+          fail(ch.error);
+          fail(we.error);
+          changed = { characters: ch.data?.length ?? 0, wearables: we.data?.length ?? 0 };
+        }
+        return json({ pack: data, changed });
+      }
+
+      case "deletePack": {
+        const id = String(body.id ?? "");
+        const [{ count: c1 }, { count: c2 }] = await Promise.all([
+          db.from("characters").select("id", { count: "exact", head: true }).eq("pack", id),
+          db.from("wearables").select("id", { count: "exact", head: true }).eq("pack", id),
+        ]);
+        if ((c1 ?? 0) + (c2 ?? 0) > 0) throw new HttpError(409, "Move or delete this pack’s characters and wearables first, or just unpublish it.");
+        const { error } = await db.from("packs").delete().eq("id", id);
         fail(error);
         return json({ ok: true });
       }
@@ -179,7 +230,7 @@ Deno.serve(
 
       case "upload": {
         const folder = String(body.folder ?? "");
-        if (!/^(wearables|characters|drops|slides)\/[a-z0-9-]{2,48}$/.test(folder)) throw new HttpError(400, "Bad upload folder.");
+        if (!/^(wearables|characters|drops|slides|packs)\/[a-z0-9-]{2,48}$/.test(folder)) throw new HttpError(400, "Bad upload folder.");
         let bytes: Uint8Array;
         try {
           bytes = Uint8Array.from(atob(String(body.data ?? "")), (ch) => ch.charCodeAt(0));

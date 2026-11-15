@@ -131,3 +131,43 @@ export function groupByPack(items) {
     .map((pack) => ({ ...pack, items: items.filter((item) => getPack(item.pack).id === pack.id) }))
     .filter((pack) => pack.items.length);
 }
+
+// ---------------------------------------------------------------------------
+// The packs table (Admin → Packs) is the source of truth for which packs
+// exist, their order and whether they're published; text and backdrop set
+// there override the built-in copy above. applyPackRows merges rows into
+// `packs` in place, so every import sees the same list.
+
+const BUILT_IN = new Set(packs.map((p) => p.id));
+
+export function applyPackRows(rows = []) {
+  if (!rows.length) return;
+  const text = (v) => (v == null || v === "" ? undefined : v);
+  for (const r of rows) {
+    let pack = packs.find((p) => p.id === r.id);
+    if (!pack) {
+      pack = { id: r.id, name: r.name, tagline: "", description: "", wardrobe: {} };
+      packs.push(pack);
+    }
+    pack.name = r.name ?? pack.name;
+    pack.tagline = text(r.tagline) ?? pack.tagline;
+    pack.description = text(r.description) ?? pack.description;
+    pack.wardrobe = {
+      ...pack.wardrobe,
+      ...(text(r.wardrobe_tagline) && { tagline: r.wardrobe_tagline }),
+      ...(text(r.wardrobe_description) && { description: r.wardrobe_description }),
+    };
+    pack.backdropUrl = r.backdrop_url ?? null;
+    pack.published = r.published !== false;
+    pack.sortOrder = r.sort_order ?? 0;
+  }
+  const order = new Map(rows.map((r) => [r.id, r.sort_order ?? 0]));
+  packs.sort((a, b) => (order.get(a.id) ?? 999) - (order.get(b.id) ?? 999));
+}
+
+// The pack's scene: its uploaded backdrop, else the built-in one.
+export function packBackdrop(pack) {
+  const p = typeof pack === "string" ? getPack(pack) : pack;
+  if (p?.backdropUrl) return p.backdropUrl;
+  return `/backdrops/${BUILT_IN.has(p?.id) ? p.id : DEFAULT_PACK}.svg`;
+}

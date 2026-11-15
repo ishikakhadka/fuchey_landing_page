@@ -1140,3 +1140,25 @@
   color: #ffc27a;
   line-height: 1.6;
 }
+
+/* ---------- packs ---------- */
+
+.admin-pack-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.admin-list li.is-off {
+  opacity: 0.7;
+}
+
+.admin-list li:has(.admin-pack-actions) {
+  grid-template-columns: 112px minmax(0, 1fr) auto auto;
+}
+
+.admin-list-meta .item-art {
+  width: 44px;
+  height: 44px;
+}

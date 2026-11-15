@@ -202,3 +202,43 @@ test("parade and Characters-page picks are character ids checked against the tab
   // Put the defaults back for the local site.
   await call({ action: "saveHomeSettings", settings: { autoplaySeconds: 7 } }, token);
 });
+
+test("packs are the parent: unpublishing one hides and unpublishes everything in it", async () => {
+  const pack = "tribal";
+  const before = (await rest(`characters?pack=eq.${pack}&select=id,published`, { key: SERVICE })).body;
+  const wBefore = (await rest(`wearables?pack=eq.${pack}&select=id,published`, { key: SERVICE })).body;
+  const row = (await rest(`packs?id=eq.${pack}`, { key: SERVICE })).body[0];
+  assert.ok(row, "the tribal pack is seeded");
+
+  try {
+    const off = await call({ action: "savePack", pack: { ...row, published: false } }, token);
+    assert.equal(off.status, 200, JSON.stringify(off.body));
+    assert.equal((await rest(`packs?id=eq.${pack}`)).body.length, 0, "unpublished pack is hidden");
+    assert.equal((await rest(`characters?pack=eq.${pack}`)).body.length, 0, "its characters are hidden");
+    const after = (await rest(`characters?pack=eq.${pack}&select=published`, { key: SERVICE })).body;
+    assert.ok(after.every((c) => !c.published), "its characters are unpublished");
+
+    const char = (await call({ action: "list" }, token)).body.characters.find((c) => c.pack === pack);
+    if (char) {
+      const refused = await call({ action: "saveCharacter", character: { ...char, published: true } }, token);
+      assert.equal(refused.status, 400, "can't publish a character inside an unpublished pack");
+      assert.match(refused.body.error ?? JSON.stringify(refused.body), /Publish the pack first/);
+    }
+
+    const on = await call({ action: "savePack", pack: { ...row, published: true }, publishItems: true }, token);
+    assert.equal(on.status, 200);
+    assert.equal(on.body.changed.characters, before.length);
+  } finally {
+    // Put the local data back exactly as it was.
+    await rest(`packs?id=eq.${pack}`, { key: SERVICE, method: "PATCH", body: JSON.stringify({ published: row.published }) });
+    for (const c of before) await rest(`characters?id=eq.${c.id}`, { key: SERVICE, method: "PATCH", body: JSON.stringify({ published: c.published }) });
+    for (const w of wBefore) await rest(`wearables?id=eq.${w.id}`, { key: SERVICE, method: "PATCH", body: JSON.stringify({ published: w.published }) });
+  }
+});
+
+test("packs: bad ids are refused and a pack with items can't be deleted", async () => {
+  const bad = await call({ action: "savePack", pack: { id: "Bad Id", name: "" } }, token);
+  assert.equal(bad.status, 400);
+  const del = await call({ action: "deletePack", id: "wild" }, token);
+  assert.equal(del.status, 409);
+});
