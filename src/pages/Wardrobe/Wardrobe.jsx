@@ -2,11 +2,10 @@ import { useState } from "react";
 import { Link, Navigate, useParams, useSearchParams } from "react-router";
 import { ArrowLeft, Compass } from "lucide-react";
 
-import PageHeader from "../../components/marketplace/PageHeader";
+import ItemArt from "../../components/marketplace/ItemArt";
 import CategoryTabs from "../../components/marketplace/CategoryTabs";
 import WearableCard from "../../components/wardrobe/WearableCard";
 import FittingRoom from "../../components/wardrobe/FittingRoom";
-import PackCard from "../../components/characters/PackCard";
 import EmptyState from "../../components/collection/EmptyState";
 import NetworkBadge from "../../components/wallet/NetworkBadge";
 
@@ -86,23 +85,44 @@ function WardrobePacks() {
   const { ownsWearable } = useCollection();
 
   return (
-    <div className="container market-page">
-      <PageHeader eyebrow="WARDROBE" title="Pick a rack." aside={<NetworkBadge />}>
-        Every pack has its own wardrobe. Open one to try its pieces on — each one is an NFT that
-        lists the characters it fits.
-      </PageHeader>
+    <div className="rd-page wr-page">
+      <section className="container wr-intro">
+        <span className="eyebrow">Wardrobe</span>
+        <h1 className="rd-title">
+          Dress Your <span className="accent">Fuchey</span>
+        </h1>
+        <p className="rd-lede">Every pack has its own rack. Pick one, try pieces on your character and save the look to your wallet.</p>
+      </section>
 
-      {error && <p className="market-error">Couldn’t load the wardrobe. Try refreshing.</p>}
+      {error && <p className="market-error container">Couldn’t load the wardrobe. Try refreshing.</p>}
 
-      <div className="pack-grid" aria-busy={loading}>
-        {grouped.map((pack) => (
-          <PackCard
-            key={pack.id}
-            pack={pack}
-            kind="wearables"
-            ownedCount={pack.items.filter((w) => ownsWearable(w.id)).length}
-          />
-        ))}
+      <div className="container wr-racks" aria-busy={loading}>
+        {grouped.map((p) => {
+          const shown = p.items.filter((w) => !w.art.locked).slice(0, 4);
+          const owned = p.items.filter((w) => ownsWearable(w.id)).length;
+          return (
+            <Link key={p.id} to={`/wardrobe/packs/${p.id}`} className="wr-rack">
+              <img className="wr-rack-bg" src={`/backdrops/${p.id}.svg`} alt="" />
+              <span className="wr-rack-shade" aria-hidden="true" />
+              <span className="wr-rack-ring" aria-hidden="true" />
+              <span className="wr-rack-items">
+                {shown.map((w) => (
+                  <ItemArt key={w.id} art={w.art} alt="" itemId={w.id} item={w} size="sm" />
+                ))}
+              </span>
+              <span className="wr-rack-meta">
+                <span>
+                  <b>{p.name}</b>
+                  <small>
+                    {p.items.length} {p.items.length === 1 ? "piece" : "pieces"}
+                    {owned ? ` · ${owned} owned` : ""}
+                  </small>
+                </span>
+                <span className="wr-rack-cta">Open rack</span>
+              </span>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
@@ -223,6 +243,7 @@ function FittingRoomPage({ pack }) {
   };
 
   const racked = wearables.filter((w) => (w.pack ?? "wild") === pack.id);
+  const racks = packs.filter((p) => wearables.some((w) => (w.pack ?? "wild") === p.id));
   const rail = mineView
     ? racked.filter((w) => ownsWearable(w.id) && fitsCharacter(w, character?.id))
     : racked;
@@ -253,20 +274,35 @@ function FittingRoomPage({ pack }) {
   );
 
   return (
-    <div className="container market-page">
-      <Link to="/wardrobe" className="back-link">
-        <ArrowLeft size={16} /> All packs
-      </Link>
+    <div className="rd-page wr-page">
+      <div className="wr-backdrop" aria-hidden="true">
+        <img src={`/backdrops/${pack.id}.svg`} alt="" />
+      </div>
 
-      <PageHeader
-        eyebrow={`WARDROBE · ${pack.name.toUpperCase()}`}
-        title={pack.wardrobe?.tagline ?? "Dress the part."}
-        aside={<NetworkBadge />}>
-        {pack.wardrobe?.description ??
-          "Try anything on, then make it yours. Every piece is an NFT, and each one lists the characters it fits."}
-      </PageHeader>
+      <section className="container wr-head">
+        <div className="wr-head-copy">
+          <Link to="/wardrobe" className="back-link">
+            <ArrowLeft size={16} /> All racks
+          </Link>
+          <h1 className="rd-title">{pack.wardrobe?.tagline ?? "Dress the part."}</h1>
+          <p className="rd-lede">
+            {pack.wardrobe?.description ??
+              "Try anything on, then make it yours. Every piece is an NFT, and each one lists the characters it fits."}
+          </p>
+        </div>
+        <div className="wr-head-side">
+          <NetworkBadge />
+          <nav className="ch-chips" aria-label="Wardrobe packs">
+            {racks.map((p) => (
+              <Link key={p.id} to={`/wardrobe/packs/${p.id}`} role="tab" aria-selected={p.id === pack.id} className="wr-chip">
+                {p.name.replace(/ (Pack|Reimagined)$/, "")}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      </section>
 
-      <div className="wardrobe-layout">
+      <div className="container wardrobe-layout">
         {character && (
           <FittingRoom
             characters={dressable}

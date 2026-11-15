@@ -6,6 +6,7 @@ import { useWallet } from "../../hooks/useWallet";
 import { adminNft } from "../../services/backend/admin";
 import { deployProduct, updateMetadata, updateSale } from "../../services/nft/deploy";
 import { Section } from "./fields";
+import { confirmWithRetry } from "./onchain";
 import { fetchSolUsd, usdToSol } from "../../services/solPrice";
 
 // The NFT side of an asset, on the network the site runs on:
@@ -46,17 +47,6 @@ function Addr({ label, value, tx }) {
   );
 }
 
-// Retries a confirm call while the chain catches up with what we just sent.
-async function confirmWithRetry(call, attempts = 6) {
-  for (let i = 0; ; i++) {
-    try {
-      return await call(i === attempts - 1);
-    } catch (error) {
-      if (error.status !== 409 || i === attempts - 1) throw error;
-      await new Promise((r) => setTimeout(r, 1500 * (i + 1)));
-    }
-  }
-}
 
 function NftFields({ kind, id, isNew, dirty, session, catalogPrice }) {
   const wallet = useWallet();

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 
-import PackCard from "../../components/characters/PackCard";
 import ItemArt from "../../components/marketplace/ItemArt";
 import RarityBadge from "../../components/marketplace/RarityBadge";
 import DropBanner from "../../components/drops/DropBanner";
@@ -19,7 +18,8 @@ const AUTOPLAY_MS = 5000;
 // /characters — pick a pack, and its characters rotate on the stage one at a
 // time. Which characters (and in what order) each pack shows, and which pack
 // opens first, come from Admin → Home → Characters page; with no picks the
-// whole pack shows. Then the visitor's collection, the drop banner and packs.
+// whole pack shows. The pack's scene sits behind the stage and changes with
+// it. Then the visitor's collection and the drop banner.
 function Characters() {
   const { packs, loading, error } = usePacks();
   const { findItem } = useCatalog();
@@ -62,7 +62,11 @@ function Characters() {
 
   return (
     <div className="rd-page ch-page">
-      <span className="ch-sweep" aria-hidden="true" />
+      {pack && (
+        <div className="ch-backdrop" key={pack.id} aria-hidden="true">
+          <img src={`/backdrops/${pack.id}.svg`} alt="" />
+        </div>
+      )}
 
       {error && <p className="market-error container">Couldn’t load characters. Try refreshing.</p>}
 
@@ -204,17 +208,6 @@ function Characters() {
         <DropBanner />
       </div>
 
-      <section className="container ch-packs">
-        <header className="section-title-row">
-          <h2 className="section-title">All Packs</h2>
-          <span className="rd-muted">Open a pack to meet its whole crew</span>
-        </header>
-        <div className="pack-grid" aria-busy={loading}>
-          {packs.map((p) => (
-            <PackCard key={p.id} pack={p} ownedCount={p.items.filter((c) => collection.ownsCharacter(c.id)).length} />
-          ))}
-        </div>
-      </section>
     </div>
   );
 }

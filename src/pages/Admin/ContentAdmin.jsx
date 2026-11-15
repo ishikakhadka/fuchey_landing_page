@@ -373,6 +373,19 @@ export function HomeAdmin({ session, characters, onChange }) {
           </div>
         </div>
       </Section>
+      <Section title="Prices">
+        <Select
+          label="Show prices in"
+          value={settings.priceDisplay}
+          onChange={(v) => setSettings({ priceDisplay: v })}
+          options={[
+            { id: "sol", label: "SOL" },
+            { id: "usd", label: "USD ($)" },
+          ]}
+          hint="Every price on the site shows in this currency. Prices set in the other one are converted at today’s rate (marked ≈). Buyers always pay in SOL."
+        />
+      </Section>
+
       <Section title="Character parade">
         <CharacterPicker
           label="Characters in the parade"

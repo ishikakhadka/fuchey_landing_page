@@ -465,8 +465,9 @@ export function validateHomeSettings(input: unknown, characterIds: string[] = []
     const list = idList(ids, `showcase.packs.${pack}`, 30);
     if (list.length) packs[pack] = list;
   }
+  const priceDisplay = c.oneOf(input, "priceDisplay", ["sol", "usd"], "sol");
   c.done();
-  return { autoplaySeconds, sections, parade, showcase: { defaultPack, packs } };
+  return { autoplaySeconds, sections, parade, showcase: { defaultPack, packs }, priceDisplay };
 }
 
 export { Checker };

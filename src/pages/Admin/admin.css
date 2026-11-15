@@ -1099,3 +1099,44 @@
 .admin-pick-name small {
   color: var(--ink-faint);
 }
+
+/* ---------- drop: character sales ---------- */
+
+.admin-sales {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-sales li {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px 8px 8px;
+  border-radius: 14px;
+  background: rgba(1, 26, 38, 0.45);
+}
+
+.admin-sales .item-art {
+  width: 48px;
+  height: 48px;
+}
+
+.admin-ok-icon {
+  color: #8fe3c9;
+}
+
+.admin-warn-icon {
+  color: var(--pop);
+}
+
+.admin-blockers {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  color: #ffc27a;
+  line-height: 1.6;
+}

@@ -23,6 +23,7 @@ import { handler, HttpError, json, serviceClient } from "../_shared/http.ts";
 import { verifySession } from "../_shared/session.ts";
 import { validateCharacter, validateDrop, validateHomeSettings, validateSlide, validateWearable } from "../_shared/validate.ts";
 import { nftAction } from "./nft.ts";
+import { allowedNetworks, type Network } from "../_shared/nft/config.ts";
 import { REGISTRY_ACTIONS, registryAction } from "./registry.ts";
 
 const BUCKET = "catalog-art";
@@ -115,6 +116,22 @@ Deno.serve(
       case "saveDrop": {
         const { data: chars } = await db.from("characters").select("id");
         const row = validateDrop(body.drop, (chars ?? []).map((c) => c.id));
+        // Scheduling (live + a start date) needs every character in the
+        // capsule minted on this network, so their sales can open with it.
+        if (row.live && row.starts_at) {
+          const network = String(body.network ?? "");
+          if (!allowedNetworks().includes(network as Network)) throw new HttpError(400, "Pick the network the drop is scheduled on.");
+          const { data: crew } = await db.from("characters").select("id, name, nft").in("id", row.character_ids);
+          const unminted = (crew ?? []).filter((c) => c.nft?.[network]?.status !== "minted");
+          if (!row.character_ids.length) throw new HttpError(400, "Add the characters before scheduling the drop.");
+          if (unminted.length) {
+            throw new HttpError(
+              400,
+              "Mint every character in the drop before scheduling it.",
+              unminted.map((c) => `${c.name}: not minted on ${network} yet`),
+            );
+          }
+        }
         const { data, error } = await db.from("drops").upsert(row).select().single();
         fail(error);
         return json({ drop: data });

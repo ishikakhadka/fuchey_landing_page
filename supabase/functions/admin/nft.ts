@@ -273,7 +273,11 @@ export async function nftAction(action: string, body: Record<string, unknown>, d
       const state = String(body.state) as SaleState;
       if (!["draft", "active", "paused", "ended"].includes(state)) throw new HttpError(400, "Unknown listing state.");
       const listing = await listingOf(db, kind, row.id, network);
-      const price = body.price == null || body.price === "" ? Number(listing?.price ?? row.price) : Number(body.price);
+      const fallback = listing?.price ?? (row.price_currency === "usd" ? null : row.price);
+      if ((body.price == null || body.price === "") && fallback == null) {
+        throw new HttpError(400, `${row.name} is priced in USD: set its SOL price on its listing first.`);
+      }
+      const price = body.price == null || body.price === "" ? Number(fallback) : Number(body.price);
       if (!Number.isFinite(price) || price < 0) throw new HttpError(400, "price: must be 0 or more");
       const limitPerWallet =
         body.limitPerWallet === undefined ? (listing?.limit_per_wallet ?? row.limit_per_wallet ?? null) : body.limitPerWallet ? Number(body.limitPerWallet) : null;

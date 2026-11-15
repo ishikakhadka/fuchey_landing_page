@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -10,18 +10,30 @@ import { liveListing } from "../../hooks/useListing";
 import { getAvailability } from "../../utils/listing";
 import { getRarity } from "../../services/marketplace/catalog";
 import { groupByPack } from "../../data/packs";
-import { formatPrice } from "../../utils/format";
+import { usePriceFormat } from "../../hooks/usePrice";
 
 // "Explore Character Packs": one pack at a time, large, with its neighbours
 // peeking in at the sides. Arrows, dots, ← → keys and swipe all move it.
 // Everything shown comes from the catalogue (characters, counts, rarity,
 // what's actually on sale and from what price).
-function PackCarousel() {
+function PackCarousel({ autoplay = false, seconds = 6 }) {
   const { characters, wearables, loading } = useCatalog();
   const market = useMarketplace();
   const packs = groupByPack(characters);
   const [index, setIndex] = useState(0);
   const touch = useRef(null);
+  const formatPrice = usePriceFormat();
+  const paused = useRef(false);
+  const count = packs.length;
+
+  // Moves on its own; hovering, focusing or touching it holds it still.
+  useEffect(() => {
+    if (!autoplay || count < 2 || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = setInterval(() => {
+      if (!paused.current) setIndex((i) => (i + 1) % count);
+    }, seconds * 1000);
+    return () => clearInterval(timer);
+  }, [autoplay, count, seconds]);
 
   if (loading || !packs.length) return null;
   const n = packs.length;
@@ -94,6 +106,10 @@ function PackCarousel() {
         if (e.key === "ArrowLeft") go(index - 1);
         if (e.key === "ArrowRight") go(index + 1);
       }}
+      onMouseEnter={() => (paused.current = true)}
+      onMouseLeave={() => (paused.current = false)}
+      onFocus={() => (paused.current = true)}
+      onBlur={() => (paused.current = false)}
       onPointerDown={(e) => (touch.current = e.clientX)}
       onPointerUp={(e) => {
         if (touch.current == null) return;

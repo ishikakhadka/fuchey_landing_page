@@ -1,4 +1,5 @@
 import { callFunction, select } from "./client";
+import { NETWORK } from "../../config/network";
 
 // Home page content managed in the admin: pack drops, the hero carousel and
 // home settings (supabase/migrations/20261115000000_home_content.sql).
@@ -21,6 +22,7 @@ export const DEFAULT_HOME_SETTINGS = {
   // Character lists are ids only; everything else comes from the catalogue.
   parade: { characterIds: [], seconds: 60 },
   showcase: { defaultPack: "", packs: {} },
+  priceDisplay: "sol",
 };
 
 export function rowToDrop(r) {
@@ -137,7 +139,7 @@ export async function adminListContent(session) {
 }
 
 export async function adminSaveDrop(session, drop) {
-  const { drop: row } = await callFunction("admin", { action: "saveDrop", drop: dropToRow(drop) }, session);
+  const { drop: row } = await callFunction("admin", { action: "saveDrop", drop: dropToRow(drop), network: NETWORK.id }, session);
   return rowToDrop(row);
 }
 

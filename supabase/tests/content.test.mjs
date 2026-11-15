@@ -131,8 +131,13 @@ test("a draft drop is saved but hidden until it goes live", async () => {
   const listed = await call({ action: "listContent" }, token);
   assert.ok(listed.body.drops.some((d) => d.id === DROP), "admin sees the draft");
 
-  const live = await call({ action: "saveDrop", drop: drop({ live: true }) }, token);
-  assert.equal(live.status, 200);
+  const scheduled = await call({ action: "saveDrop", drop: drop({ live: true }), network: "devnet" }, token);
+  assert.equal(scheduled.status, 400, "can't schedule before the characters are minted");
+  assert.match(scheduled.body.details.join("\n"), /Warrior: not minted on devnet/);
+
+  // Live without a date is a "coming soon" teaser: allowed.
+  const live = await call({ action: "saveDrop", drop: drop({ live: true, starts_at: null, ends_at: null }), network: "devnet" }, token);
+  assert.equal(live.status, 200, JSON.stringify(live.body));
   const pub = await rest(`drops?id=eq.${DROP}`);
   assert.equal(pub.body.length, 1, "live drop is public");
   assert.equal(pub.body[0].pack, "tribal");

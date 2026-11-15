@@ -4,6 +4,7 @@ import { ArrowLeft, Save, Trash2 } from "lucide-react";
 import ItemArt from "../../components/marketplace/ItemArt";
 import { Field, NumberInput, SaveError, Section, Select, TextInput, Toggle } from "./fields";
 import ImageUpload from "./ImageUpload";
+import DropSales from "./DropSales";
 import { packs, getPack } from "../../data/packs";
 import { adminDeleteDrop, adminSaveDrop } from "../../services/backend/content";
 import { backdropFor, dropTiming } from "../../utils/drops";
@@ -84,7 +85,7 @@ function DropEditor({ initial, characters, session, onSaved, onDeleted, onClose 
               label="Live on the site"
               checked={draft.live}
               onChange={(v) => set({ live: v })}
-              hint="Master switch. Off hides this drop everywhere, whatever its dates."
+              hint="Master switch. Off hides this drop everywhere. Going live with a start date (scheduling) needs every character minted first."
             />
             <Toggle label="Show in the home hero" checked={draft.showInHero} onChange={(v) => set({ showInHero: v })} hint="Needs a drop slide in the Home tab (added for you when you create the drop)." />
             <Toggle label="Show in Upcoming Drops" checked={draft.showInUpcoming} onChange={(v) => set({ showInUpcoming: v })} />
@@ -150,6 +151,10 @@ function DropEditor({ initial, characters, session, onSaved, onDeleted, onClose 
             ) : (
               <p className="admin-note is-wide">This pack has no characters yet.</p>
             )}
+          </Section>
+
+          <Section title="Character sales">
+            <DropSales drop={draft} characters={characters} session={session} saved={!isNew && draft.startsAt === initial.startsAt && draft.endsAt === initial.endsAt} />
           </Section>
 
           <Section title="Look and button">
