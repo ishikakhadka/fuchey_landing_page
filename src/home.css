@@ -1483,3 +1483,41 @@
     animation: none;
   }
 }
+
+/* Everyone stands on the pedestal: a wide oval, the front one at its near
+   edge, the others further back on its surface. */
+.hm-lineup .rd-plat {
+  left: 4%;
+  right: 4%;
+  bottom: 6px;
+  height: 64px;
+}
+
+.hm-lineup .rd-plat-glow {
+  left: 0;
+  right: 0;
+}
+
+.hm-mate.is-center {
+  bottom: 18px;
+}
+
+.hm-mate.is-left-1,
+.hm-mate.is-right-1 {
+  bottom: 36px;
+}
+
+.hm-mate.is-left-1 { left: 22%; }
+.hm-mate.is-right-1 { left: 78%; }
+
+.hm-mate.is-left-2,
+.hm-mate.is-right-2 {
+  bottom: 46px;
+}
+
+.hm-mate.is-left-2 { left: 10%; }
+.hm-mate.is-right-2 { left: 90%; }
+
+.hm-mate.is-hidden {
+  bottom: 50px;
+}
