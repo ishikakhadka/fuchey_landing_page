@@ -12,6 +12,7 @@ import { CURRENCIES } from "./currencies";
 import ImageUpload from "./ImageUpload";
 import NftFields from "./NftFields";
 import StudioImport from "./StudioImport";
+import StudioPicture from "./StudioPicture";
 
 const STATUSES = [
   { id: "available", label: "Available" },
@@ -209,6 +210,7 @@ function CharacterEditor({ initial, wearables, session, onSaved, onDeleted, onCl
               onClear={() => set({ imageUrl: null, showNftArt: false })}
               hint="The image wallets and marketplaces show for this NFT (uploaded to IPFS when metadata is generated). The base art above is what Fuchey renders."
             />
+            <StudioPicture session={session} studioRef={draft.studio} value={draft.imageUrl} onPick={(url) => set({ imageUrl: url })} />
             <Toggle
               label="Show this artwork on the website"
               checked={Boolean(draft.showNftArt) && Boolean(draft.imageUrl)}

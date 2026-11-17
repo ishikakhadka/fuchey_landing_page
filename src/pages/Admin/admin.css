@@ -1301,3 +1301,34 @@
   align-items: center;
   gap: 10px;
 }
+
+.studio-picture-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.studio-picture-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+.studio-picture-pick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.studio-picture-thumb {
+  image-rendering: pixelated;
+  object-fit: contain;
+}
+
+.studio-picture-label {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
