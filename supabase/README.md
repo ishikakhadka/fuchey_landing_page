@@ -97,8 +97,11 @@ Then open `/admin`, connect that wallet and sign in.
 ```sh
 npx supabase link --project-ref <ref>
 npx supabase db push --include-seed      # schema + the original catalogue
-npx supabase functions deploy admin loadout inventory purchase-verify
+npx supabase functions deploy admin loadout inventory purchase-verify studio
 ```
+
+Run `db push` before deploying the functions or the site: the admin saves
+`characters.studio`, which only exists once the studio migration has run.
 
 Set `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` in the site's build
 environment. **Never** put the service-role key in a `VITE_*` variable: it
