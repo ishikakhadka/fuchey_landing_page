@@ -1162,3 +1162,142 @@
   width: 44px;
   height: 44px;
 }
+
+/* --- animator studio ------------------------------------------------------ */
+
+.studio-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.studio-filters select {
+  margin-left: 8px;
+}
+
+.studio-character h3 small {
+  font-weight: 400;
+}
+
+.studio-version {
+  display: grid;
+  grid-template-columns: minmax(160px, 300px) minmax(0, 1fr);
+  gap: 20px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+
+.studio-version:first-of-type {
+  border-top: 0;
+}
+
+@media (max-width: 720px) {
+  .studio-version {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.studio-player,
+.studio-import-preview {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  padding: 10px;
+  border-radius: 14px;
+  /* checkerboard so see-through GIFs read as see-through */
+  background: repeating-conic-gradient(rgba(255, 255, 255, 0.06) 0 25%, transparent 0 50%) 0 0 / 16px 16px, var(--surface-2);
+}
+
+.studio-import-preview {
+  justify-items: center;
+  gap: 14px;
+}
+
+.studio-gif {
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+.studio-version-main {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.studio-version-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.studio-picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.studio-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.studio-pick.is-on {
+  border-color: transparent;
+  background: linear-gradient(180deg, #bdebfa, #7cc8e8);
+  color: var(--on-brand);
+}
+
+.studio-review {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.studio-review input {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.studio-members {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.studio-members li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.studio-members code {
+  overflow-wrap: anywhere;
+}
+
+.studio-source {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}

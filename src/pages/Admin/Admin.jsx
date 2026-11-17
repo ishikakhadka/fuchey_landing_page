@@ -21,6 +21,7 @@ import NftRegistry from "./NftRegistry";
 import NftDetail from "./NftDetail";
 import { DropsAdmin, HomeAdmin } from "./ContentAdmin";
 import PacksAdmin from "./PacksAdmin";
+import StudioAdmin from "./StudioAdmin";
 import { useContent } from "../../context/ContentContext";
 import { newCharacter, newWearable } from "./drafts";
 import "./admin.css";
@@ -39,6 +40,7 @@ function Admin() {
   const [tab, setTab] = useState("wearables");
   const [editing, setEditing] = useState(null); // { kind, item }
   const [openNft, setOpenNft] = useState(null); // registry id
+  const [waiting, setWaiting] = useState(null); // animator characters waiting for review
 
   const session = auth.wallet === address ? auth.session : null;
 
@@ -195,6 +197,7 @@ function Admin() {
             ["drops", "Drops"],
             ["home", "Home"],
             ["packs", "Packs"],
+            ["animator", waiting ? `Animator (${waiting} to review)` : "Animator"],
           ].map(([id, label]) => (
             <button key={id} type="button" role="tab" aria-selected={tab === id} aria-pressed={tab === id} onClick={() => setTab(id)}>
               {label}
@@ -223,6 +226,8 @@ function Admin() {
         <DropsAdmin session={session} characters={data.characters} onChange={content.reload} />
       ) : tab === "packs" ? (
         <PacksAdmin session={session} characters={data.characters} wearables={data.wearables} onChange={refresh} />
+      ) : tab === "animator" ? (
+        <StudioAdmin session={session} onCount={setWaiting} />
       ) : tab === "home" ? (
         <HomeAdmin session={session} characters={data.characters} onChange={content.reload} />
       ) : (

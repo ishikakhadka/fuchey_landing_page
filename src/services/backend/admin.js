@@ -55,3 +55,14 @@ export const adminNftList = (session, network) => callFunction("admin", { action
 export const adminNftDetail = (session, id) => callFunction("admin", { action: "nftDetail", id }, session);
 export const adminNftSync = (session, id) => callFunction("admin", { action: "nftSync", id }, session);
 export const adminNftSyncAll = (session, network) => callFunction("admin", { action: "nftSyncAll", network }, session);
+
+// Animator studio (supabase/functions/admin/studio.ts): characters published
+// from the Fuchey Animator, their versions and rendered GIFs, and who may sign
+// in to the animator.
+export const adminStudioList = (session) => callFunction("admin", { action: "studioList" }, session);
+export const adminStudioReview = (session, versionId, decision, note) =>
+  callFunction("admin", { action: "studioReview", versionId, decision, note }, session);
+export const adminStudioAddMember = (session, wallet, note) =>
+  callFunction("admin", { action: "studioAddMember", wallet, note }, session);
+export const adminStudioRemoveMember = (session, wallet) =>
+  callFunction("admin", { action: "studioRemoveMember", wallet }, session);

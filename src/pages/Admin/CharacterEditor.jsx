@@ -11,6 +11,7 @@ import { Checks, Field, NumberInput, Section, Select, TextInput, SaveError, Togg
 import { CURRENCIES } from "./currencies";
 import ImageUpload from "./ImageUpload";
 import NftFields from "./NftFields";
+import StudioImport from "./StudioImport";
 
 const STATUSES = [
   { id: "available", label: "Available" },
@@ -85,6 +86,8 @@ function CharacterEditor({ initial, wearables, session, onSaved, onDeleted, onCl
 
       <div className="admin-editor-body">
         <div className="admin-form">
+          <StudioImport session={session} draft={draft} isNew={isNew} onApply={(patch) => set(patch)} />
+
           <Section title="Basics">
             <TextInput
               label="Id"

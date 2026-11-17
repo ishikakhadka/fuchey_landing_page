@@ -21,7 +21,7 @@ import { HttpError } from "./http.ts";
 const MAX_AGE_MS = 12 * 60 * 60 * 1000;
 const MAX_SKEW_MS = 5 * 60 * 1000;
 
-export type Purpose = "admin" | "loadout";
+export type Purpose = "admin" | "loadout" | "studio";
 
 function field(message: string, name: string) {
   const line = message.split("\n").find((l) => l.startsWith(`${name}: `));

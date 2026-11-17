@@ -11,6 +11,7 @@
 //   nftStatus / previewMetadata / generateMetadata / prepareMint / confirmMint /
 //   prepareSale / confirmSale { kind, id, network, … }   (see nft.ts)
 //   nftList / nftDetail / nftSync / nftSyncAll            (see registry.ts)
+//   studioList / studioReview / studioAddMember / studioRemoveMember (see studio.ts)
 //   listContent                   → { drops, slides, settings }  (drafts and off slides included)
 //   saveDrop { drop } / deleteDrop { id }
 //   saveSlide { slide } / deleteSlide { id } / orderSlides { ids }
@@ -25,6 +26,7 @@ import { setPackIds, validateCharacter, validateDrop, validateHomeSettings, vali
 import { nftAction } from "./nft.ts";
 import { allowedNetworks, type Network } from "../_shared/nft/config.ts";
 import { REGISTRY_ACTIONS, registryAction } from "./registry.ts";
+import { STUDIO_ACTIONS, studioAction } from "./studio.ts";
 
 const BUCKET = "catalog-art";
 
@@ -55,6 +57,7 @@ Deno.serve(
     const NFT_ACTIONS = ["nftStatus", "previewMetadata", "generateMetadata", "prepareMint", "confirmMint", "prepareSale", "confirmSale", "prepareMetadataUpdate", "confirmMetadataUpdate"];
     if (NFT_ACTIONS.includes(body.action)) return json(await nftAction(body.action, body, db, wallet));
     if (REGISTRY_ACTIONS.includes(body.action)) return json(await registryAction(body.action, body, db));
+    if (STUDIO_ACTIONS.includes(body.action)) return json(await studioAction(body.action, body, db, wallet));
 
     // Packs are the parents: their ids validate every row that names one,
     // and a character or wearable can only be published inside a published pack.

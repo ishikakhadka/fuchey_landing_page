@@ -342,10 +342,22 @@ export function validateCharacter(input: unknown) {
     show_nft_art: input.show_nft_art === true,
     display_url: c.url(input.display_url, "display_url"),
     image_url: c.url(input.image_url, "image_url"),
+    studio: studioRef(c, input.studio),
     ...listing(c, input),
   };
   c.done();
   return row;
+}
+
+// Which animator version a character was imported from (see admin/studio.ts).
+function studioRef(c: Checker, v: unknown) {
+  if (v == null) return null;
+  const id = /^[a-z0-9][a-z0-9_-]{0,47}$/;
+  if (!isObj(v) || typeof v.pack !== "string" || !id.test(v.pack) || typeof v.character !== "string" || !id.test(v.character) || !Number.isInteger(v.version) || (v.version as number) < 1) {
+    c.fail("studio", "must be { pack, character, version }");
+    return null;
+  }
+  return { pack: v.pack, character: v.character, version: v.version as number };
 }
 
 // ---------------------------------------------------------------------------
