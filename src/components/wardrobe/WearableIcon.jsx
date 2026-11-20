@@ -1,14 +1,18 @@
 import { useCatalog } from "../../context/CatalogContext";
-import { visualBounds } from "../../render/visual";
+import { resolveVisual, visualBounds } from "../../render/visual";
 import WearableLayer from "../characters/WearableLayer";
 
 // A wearable on its own: its icon layer, or its on-character layers, cropped
 // to their bounds. Pass `wearable` to draw one that isn't in the published
 // catalogue (the admin preview); otherwise it's looked up by `id`.
-function WearableIcon({ id, wearable, alt, className = "" }) {
+// `characterId`: the character being browsed. The icon then shows that
+// character's own version of the item (perCharacter art and placement), the
+// same one CharacterRender puts on it; items shared by every character, and
+// characters without a version of their own, use the shared art.
+function WearableIcon({ id, wearable, characterId = null, alt, className = "" }) {
   const { wearables } = useCatalog();
   const item = wearable ?? wearables.find((w) => w.id === id);
-  const visual = item?.visual;
+  const visual = resolveVisual(item, characterId);
   if (!visual) return null;
 
   const { x, y, w, h } = visualBounds(visual);

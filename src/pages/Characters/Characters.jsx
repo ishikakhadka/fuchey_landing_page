@@ -11,7 +11,7 @@ import { useCollection } from "../../hooks/useCollection";
 import { useCatalog } from "../../context/CatalogContext";
 import { useContent } from "../../context/ContentContext";
 import { visibleDrops } from "../../utils/drops";
-import { packBackdrop } from "../../data/packs";
+import { usePackScene } from "../../hooks/usePackScene";
 import { detailPath } from "../../utils/routes";
 
 const AUTOPLAY_MS = 5000;
@@ -25,6 +25,7 @@ function Characters() {
   const { packs, loading, error } = usePacks();
   const { findItem } = useCatalog();
   const { drops, settings } = useContent();
+  const sceneOf = usePackScene();
   const collection = useCollection();
 
   const showcase = settings.showcase ?? { defaultPack: "", packs: {} };
@@ -41,7 +42,6 @@ function Characters() {
   const picked = (pack && showcase.packs[pack.id]) || [];
   const roster = picked.length ? picked.map((id) => pack.items.find((c) => c.id === id)).filter(Boolean) : (pack?.items ?? []);
   const n = roster.length;
-  const at = (i) => roster[((i % n) + n) % n];
   const current = n ? ((index % n) + n) % n : 0;
   const featured = n ? roster[current] : null;
 
@@ -65,7 +65,7 @@ function Characters() {
     <div className="rd-page ch-page">
       {pack && (
         <div className="ch-backdrop" key={pack.id} aria-hidden="true">
-          <img src={packBackdrop(pack)} alt="" />
+          <img src={sceneOf(pack)} alt="" />
         </div>
       )}
 
@@ -124,20 +124,10 @@ function Characters() {
             <span className="rd-plat" />
             <span className="rd-plat-ring" />
             <span className="rd-plat-core" />
-            {n > 2 && (
-              <button type="button" className="ch-side is-prev" onClick={() => setIndex(current - 1)} aria-label={`Show ${at(current - 1).name}`}>
-                <ItemArt art={at(current - 1).art} alt="" itemId={at(current - 1).id} size="md" />
-              </button>
-            )}
             {featured && (
               <div className="ch-stage-art" key={featured.id}>
                 <ItemArt art={featured.art} alt={featured.title ?? featured.name} itemId={featured.id} size="lg" />
               </div>
-            )}
-            {n > 1 && (
-              <button type="button" className="ch-side is-next" onClick={() => setIndex(current + 1)} aria-label={`Show ${at(current + 1).name}`}>
-                <ItemArt art={at(current + 1).art} alt="" itemId={at(current + 1).id} size="md" />
-              </button>
             )}
           </div>
 

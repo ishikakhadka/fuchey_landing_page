@@ -546,31 +546,6 @@ main {
   min-width: 0;
 }
 
-.ch-side {
-  position: absolute;
-  bottom: 40px;
-  z-index: 1;
-  padding: 0;
-  border: 0;
-  background: none;
-  opacity: 0.38;
-  filter: saturate(0.6);
-  cursor: pointer;
-  transition: opacity 0.25s;
-}
-
-.ch-side:hover {
-  opacity: 0.75;
-}
-
-.ch-side.is-prev { left: 0; }
-.ch-side.is-next { right: 0; }
-
-.ch-side .item-art {
-  width: 150px;
-  height: 150px;
-}
-
 .ch-stage-art {
   z-index: 2;
 }
@@ -1052,9 +1027,6 @@ main {
     order: -1;
   }
 
-  .ch-side {
-    display: none;
-  }
 
   .ch-sweep {
     display: none;

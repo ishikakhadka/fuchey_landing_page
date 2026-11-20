@@ -1,4 +1,4 @@
-import { packBackdrop } from "../data/packs";
+import { getPack, packBackdrop } from "../data/packs";
 // Where a drop is in its window, and the countdown text the site shows.
 // Dates only drive display; sales open from the on-chain listing.
 
@@ -56,3 +56,14 @@ export const visibleDrops = (drops, now = Date.now()) => drops.filter((d) => d.l
 
 // Built-in scene for each pack (public/backdrops/<pack>.svg).
 export const backdropFor = (drop) => drop.backdropUrl || packBackdrop(drop.pack);
+
+// The scene a pack shows everywhere on the site (characters, wardrobe, pack
+// pages, carousels): the backdrop of the pack's drop that's on show now, the
+// same picture the home page and banners use; else the pack's own backdrop
+// (Admin → Packs); else the built-in one. So changing either backdrop in the
+// admin changes it on every page that shows the pack.
+export function packScene(pack, drops = [], now = Date.now()) {
+  const id = (typeof pack === "string" ? getPack(pack) : pack)?.id;
+  const shown = visibleDrops(drops, now).find((d) => d.backdropUrl && getPack(d.pack).id === id);
+  return shown?.backdropUrl ?? packBackdrop(pack);
+}

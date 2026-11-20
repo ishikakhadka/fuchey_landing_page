@@ -65,3 +65,51 @@ export async function studioCatalogue(db: SupabaseClient, { approvedOnly = false
     }))
     .filter((c) => c.versions.length);
 }
+
+// Wardrobe items with their versions, fits and files, newest version first.
+// Each fit carries `files: { front, back, preview }` as public URLs.
+export async function studioWardrobe(db: SupabaseClient) {
+  const { data: items, error } = await db.from("studio_wearables").select("*").order("pack_id").order("slot").order("name");
+  if (error) throw new HttpError(400, error.message);
+  const ids = (items ?? []).map((w) => w.id);
+  if (!ids.length) return [];
+  const { data: versions, error: verr } = await db
+    .from("studio_wearable_versions")
+    .select("*")
+    .in("wearable", ids)
+    .neq("status", "uploading")
+    .order("version", { ascending: false });
+  if (verr) throw new HttpError(400, verr.message);
+  const vids = (versions ?? []).map((v) => v.id);
+  const [fits, files] = vids.length
+    ? await Promise.all([
+        db.from("studio_wearable_fits").select("*").in("version_id", vids).order("character_id"),
+        db.from("studio_wearable_files").select("*").in("version_id", vids).order("kind"),
+      ])
+    : [{ data: [], error: null }, { data: [], error: null }];
+  if (fits.error) throw new HttpError(400, fits.error.message);
+  if (files.error) throw new HttpError(400, files.error.message);
+  const withUrl = (f: { path: string }) => ({ ...f, url: publicUrl(f.path) });
+
+  return (items ?? [])
+    .map((w) => ({
+      ...w,
+      versions: (versions ?? [])
+        .filter((v) => v.wearable === w.id)
+        .map((v) => {
+          const vfiles = (files.data ?? []).filter((f) => f.version_id === v.id).map(withUrl);
+          return {
+            ...v,
+            files: vfiles.filter((f) => f.fit_id == null),
+            fits: (fits.data ?? [])
+              .filter((f) => f.version_id === v.id)
+              .map((f) => {
+                const own = vfiles.filter((x) => x.fit_id === f.id);
+                const url = (kind: string) => own.find((x) => x.kind === kind)?.url ?? null;
+                return { ...f, files: { front: url("front"), back: url("back"), preview: url("preview") }, renders: own };
+              }),
+          };
+        }),
+    }))
+    .filter((w) => w.versions.length);
+}

@@ -23,12 +23,30 @@ export const CHARACTER_VIEW = "-14 -19 116 116";
 //   perCharacter  { [characterId]: overrides } — e.g. a different y on a
 //                 character with a taller head
 
+// Override keys that redraw the item rather than only move it.
+const ART_KEYS = ["image", "backImage", "front", "back", "icon"];
+const redraws = (override) => Boolean(override) && ART_KEYS.some((k) => k in override);
+
 // The visual for one character, with that character's overrides applied.
+// Everything that draws a wearable (the character render, wardrobe cards,
+// icons) goes through here, so a card shows exactly what the character wears.
 export function resolveVisual(wearable, characterId) {
   const visual = wearable?.visual;
   if (!visual) return null;
   const override = characterId ? visual.perCharacter?.[characterId] : null;
-  return override ? { ...visual, ...override } : visual;
+  if (!override) return visual;
+  const merged = { ...visual, ...override };
+  // A character that has its own drawing of the item must not keep the base
+  // character's card art.
+  if (redraws(override) && !("icon" in override)) delete merged.icon;
+  return merged;
+}
+
+// Does this wearable look different on some characters (its own drawing, not
+// only its own placement)? Then a single shared picture can't stand for it
+// while a character is being browsed.
+export function variesByCharacter(wearable) {
+  return Object.values(wearable?.visual?.perCharacter ?? {}).some(redraws);
 }
 
 export function layerRank(wearable, visual) {

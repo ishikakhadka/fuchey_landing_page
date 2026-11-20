@@ -241,7 +241,7 @@ function PackEditor({ initial, isNew, session, items, onClose, onSaved }) {
       <Section title="Backdrop">
         <ImageUpload
           label="Backdrop scene"
-          hint="Wide scene behind the pack’s pages, carousel card and drop (PNG, WebP or GIF, at least 1600 px wide). Empty uses the built-in scene."
+          hint="Wide scene behind the pack’s pages, wardrobe, carousel card and drop (PNG, WebP or GIF, at least 1600 px wide). Empty uses the built-in scene. While a live drop for this pack has its own backdrop (Drops tab), the whole site shows the drop’s instead."
           value={draft.backdrop_url}
           folder={draft.id ? `packs/${draft.id}` : null}
           session={session}

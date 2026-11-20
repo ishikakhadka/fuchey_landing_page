@@ -106,6 +106,7 @@ export function rowToWearable(r) {
     showNftArt: Boolean(r.show_nft_art),
     displayUrl: r.display_url ?? null,
     visual: r.visual,
+    studio: r.studio ?? null,
     nft: r.nft ?? {},
     published: r.published,
     sortOrder: r.sort_order,
@@ -127,6 +128,7 @@ export function wearableToRow(w) {
     display_url: w.displayUrl || null,
     nft: w.nft ?? {},
     visual: w.visual,
+    studio: w.studio ?? null,
     published: Boolean(w.published),
     sort_order: w.sortOrder ?? 0,
   };

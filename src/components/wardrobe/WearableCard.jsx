@@ -8,11 +8,12 @@ import PriceTag from "../marketplace/PriceTag";
 // `onSelect`, or a link into the wardrobe. `incompatible` names the current
 // character when this wearable doesn't fit it (still selectable, to see its
 // details, but it won't be put on).
-function WearableCard({ wearable, owned = false, selected = false, incompatible = null, onSelect }) {
+// `characterId`: the character being browsed; the tile shows its version of the item.
+function WearableCard({ wearable, characterId = null, owned = false, selected = false, incompatible = null, onSelect }) {
   const inner = (
     <>
       <span className="wearable-tile">
-        <ItemArt art={wearable.art} alt={wearable.name} itemId={wearable.id} item={wearable} size="sm" />
+        <ItemArt art={wearable.art} alt={wearable.name} itemId={wearable.id} item={wearable} forCharacter={characterId} size="sm" />
         {owned && (
           <span className="flag is-owned">
             <Check size={11} strokeWidth={3} /> Owned

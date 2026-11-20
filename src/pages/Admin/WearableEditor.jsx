@@ -4,7 +4,9 @@ import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Grid3x3, RotateCcw } from "l
 import CharacterRender from "../../components/characters/CharacterRender";
 import WearableCard from "../../components/wardrobe/WearableCard";
 import { RARITIES, WEARABLE_TYPES } from "../../data/taxonomy";
-import { packs } from "../../data/packs";
+import { getPack, packs } from "../../data/packs";
+import ListControls from "./ListControls";
+import { ALL, applyListView, emptyView, packOptions } from "./listView";
 import { CHARACTER_VIEW, resolveVisual, visualBounds } from "../../render/visual";
 import { fitsCharacter, isDressable } from "../../services/marketplace/catalog";
 import { adminDelete, adminSaveWearable } from "../../services/backend/admin";
@@ -12,6 +14,7 @@ import { Checks, NumberInput, Section, Select, TextInput, SaveError, Toggle } fr
 import { CURRENCIES } from "./currencies";
 import ImageUpload from "./ImageUpload";
 import NftFields from "./NftFields";
+import WardrobeImport from "./WardrobeImport";
 
 const STATUSES = [
   { id: "available", label: "Available" },
@@ -20,7 +23,8 @@ const STATUSES = [
 ];
 const RARITY_OPTIONS = Object.values(RARITIES);
 
-const drawable = (v) => v && (v.kind === "runs" || v.kind === "vector" ? v.front?.length : v.image && v.width && v.height);
+// An image wearable may have only a back layer (a cape or backpack from the animator).
+const drawable = (v) => v && (v.kind === "runs" || v.kind === "vector" ? v.front?.length : (v.image || v.backImage) && v.width && v.height);
 
 // Create / edit one wearable, with a live preview drawn by the same
 // CharacterRender the wardrobe uses.
@@ -38,6 +42,12 @@ function WearableEditor({ initial, characters, wearables, session, onSaved, onDe
     () => (dressable.find((c) => initial.compatibleCharacters.includes(c.id)) ?? dressable[0])?.id,
   );
   const preview = dressable.find((c) => c.id === previewId) ?? dressable[0];
+  // Which characters the preview switch lists: starts on the wearable's own pack when it has any.
+  const [pickView, setPickView] = useState(() => ({
+    ...emptyView,
+    pack: dressable.some((c) => getPack(c.pack).id === getPack(initial.pack).id) ? getPack(initial.pack).id : ALL,
+  }));
+  const pickable = applyListView(dressable, pickView, { pack: (c) => getPack(c.pack).id });
   const [alsoWearing, setAlsoWearing] = useState([]);
   const [grid, setGrid] = useState(true);
   // Placement edits apply to every character, or only the previewed one.
@@ -123,6 +133,7 @@ function WearableEditor({ initial, characters, wearables, session, onSaved, onDe
 
       <div className="admin-editor-body">
         <div className="admin-form">
+          <WardrobeImport session={session} draft={draft} isNew={isNew} onApply={(patch) => set(patch)} />
           <Section title="Basics">
             <TextInput
               label="Id"
@@ -328,12 +339,21 @@ function WearableEditor({ initial, characters, wearables, session, onSaved, onDe
         <aside className="admin-preview" aria-label="Preview">
           {preview ? (
             <>
-              <div className="fitting-switch admin-preview-switch" role="group" aria-label="Preview character">
-                {dressable.map((c) => (
-                  <button key={c.id} type="button" aria-pressed={c.id === preview.id} onClick={() => setPreviewId(c.id)}>
-                    {c.name}
-                  </button>
-                ))}
+              <div className="admin-preview-pick">
+                <ListControls
+                  view={pickView}
+                  onChange={setPickView}
+                  packs={packOptions(dressable, { pack: (c) => getPack(c.pack).id, label: (id) => getPack(id).name })}
+                  placeholder="Find a character"
+                />
+                <div className="fitting-switch admin-preview-switch" role="group" aria-label="Preview character">
+                  {pickable.map((c) => (
+                    <button key={c.id} type="button" aria-pressed={c.id === preview.id} onClick={() => setPreviewId(c.id)}>
+                      {c.name}
+                    </button>
+                  ))}
+                  {!pickable.length && <span className="admin-hint">No characters match.</span>}
+                </div>
               </div>
 
               <div
@@ -402,7 +422,7 @@ function WearableEditor({ initial, characters, wearables, session, onSaved, onDe
               {drawable(draft.visual) && (
                 <div className="admin-card-preview">
                   <span className="admin-label">Card</span>
-                  <WearableCard wearable={{ ...draft, name: draft.name || "Untitled", art: { kind: "wearable" } }} onSelect={() => {}} />
+                  <WearableCard wearable={{ ...draft, name: draft.name || "Untitled", art: { kind: "wearable" } }} characterId={preview?.id} onSelect={() => {}} />
                 </div>
               )}
             </>

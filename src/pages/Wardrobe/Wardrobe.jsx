@@ -34,7 +34,8 @@ import { useWallet } from "../../hooks/useWallet";
 import { fitsCharacter, getWearableTypes, isDressable } from "../../services/marketplace/catalog";
 import { fetchLoadout, saveLoadout } from "../../services/backend/loadouts";
 import { getSession } from "../../services/backend/session";
-import { packBackdrop, packs } from "../../data/packs";
+import { packs } from "../../data/packs";
+import { usePackScene } from "../../hooks/usePackScene";
 import { detailPath } from "../../utils/routes";
 
 const TYPE_ICONS = {
@@ -108,6 +109,7 @@ function ToPack() {
 }
 
 function WardrobePacks() {
+  const sceneOf = usePackScene();
   const { packs: grouped, loading, error } = useWearablePacks();
   const { ownsWearable } = useCollection();
 
@@ -129,7 +131,7 @@ function WardrobePacks() {
           const owned = p.items.filter((w) => ownsWearable(w.id)).length;
           return (
             <Link key={p.id} to={`/wardrobe/packs/${p.id}`} className="wr-rack">
-              <img className="wr-rack-bg" src={packBackdrop(p)} alt="" />
+              <img className="wr-rack-bg" src={sceneOf(p)} alt="" />
               <span className="wr-rack-shade" aria-hidden="true" />
               <span className="wr-rack-items">
                 {shown.map((w) => (
@@ -157,6 +159,7 @@ function WardrobePacks() {
 }
 
 function FittingRoomPage({ pack }) {
+  const sceneOf = usePackScene();
   const [params, setParams] = useSearchParams();
   const { characters } = useCharacters();
   const { wearables, loading, error } = useWearables();
@@ -312,7 +315,7 @@ function FittingRoomPage({ pack }) {
   return (
     <div className="rd-page wr-page wr-room">
       <div className="wr-backdrop" aria-hidden="true">
-        <img src={packBackdrop(pack)} alt="" />
+        <img src={sceneOf(pack)} alt="" />
       </div>
 
       <div className="container wr-room-grid">
@@ -423,7 +426,7 @@ function FittingRoomPage({ pack }) {
                     )}
                     {ownsWearable(w.id) && <span className="wr-tile-owned">Owned</span>}
                     <span className="wr-tile-art">
-                      <ItemArt art={w.art} alt="" itemId={w.id} item={w} size="md" />
+                      <ItemArt art={w.art} alt="" itemId={w.id} item={w} forCharacter={character?.id} size="md" />
                     </span>
                     <span className="wr-tile-name">{w.name}</span>
                     <RarityBadge rarity={w.rarity} />
@@ -464,7 +467,7 @@ function FittingRoomPage({ pack }) {
               <li key={w.id}>
                 <button type="button" onClick={() => toggle(w)} aria-label={`Take off ${w.name}`}>
                   <span className="wr-bar-art">
-                    <ItemArt art={w.art} alt="" itemId={w.id} item={w} size="sm" />
+                    <ItemArt art={w.art} alt="" itemId={w.id} item={w} forCharacter={character?.id} size="sm" />
                   </span>
                   <span className="wr-bar-text">
                     <b>{w.name}</b>

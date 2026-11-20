@@ -169,7 +169,7 @@ function CharacterDetails() {
                 <li key={w.id}>
                   <button type="button" className={`xp-piece ${on ? "is-on" : ""}`} aria-pressed={on} onClick={() => toggle(w)}>
                     <span className="xp-piece-art">
-                      <WearableIcon id={w.id} />
+                      <WearableIcon id={w.id} characterId={character.id} />
                       {on && (
                         <span className="xp-piece-check" aria-hidden="true">
                           <Check size={12} strokeWidth={3} />

@@ -18,3 +18,9 @@ export const previewOf = (version, scale = 2) => {
 
 // Animator ids use underscores (new_bandit); marketplace ids use dashes.
 export const siteId = (id) => id.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/^-+|-+$/g, "");
+
+// A wardrobe item's version that "Import from animator" may use: its current
+// approved version (studio_wearables.approved_version), and only while that
+// version really is approved. Pending, rejected and older versions never are.
+export const approvedWearableVersion = (w) =>
+  w?.versions?.find((v) => v.version === w.approved_version && v.status === "approved") ?? null;

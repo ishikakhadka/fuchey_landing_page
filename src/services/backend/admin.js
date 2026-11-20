@@ -66,3 +66,12 @@ export const adminStudioAddMember = (session, wallet, note) =>
   callFunction("admin", { action: "studioAddMember", wallet, note }, session);
 export const adminStudioRemoveMember = (session, wallet) =>
   callFunction("admin", { action: "studioRemoveMember", wallet }, session);
+
+// Animator wardrobe (same file): wardrobe items published from the animator
+// with how they sit on each character, their review, and the website visual
+// built from an approved version for the Wearable editor's import.
+export const adminStudioWearableList = (session) => callFunction("admin", { action: "studioWearableList" }, session);
+export const adminStudioWearableReview = (session, versionId, decision, note) =>
+  callFunction("admin", { action: "studioWearableReview", versionId, decision, note }, session);
+export const adminStudioWearableVisual = (session, versionId) =>
+  callFunction("admin", { action: "studioWearableVisual", versionId }, session);

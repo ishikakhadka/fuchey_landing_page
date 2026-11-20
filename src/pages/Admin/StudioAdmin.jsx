@@ -9,12 +9,16 @@ import {
 } from "../../services/backend/admin";
 import { Section, TextInput } from "./fields";
 import { gifsByAnimation, kb } from "./studio";
+import StudioWardrobe from "./StudioWardrobe";
+import ListControls from "./ListControls";
+import { ALL, applyListView, emptyView, packOptions } from "./listView";
 
 // Admin → Animator. Characters published from the Fuchey Animator, newest
 // version first: watch every animation at every size, then approve or send
 // back with a note. Approved versions can be imported into the marketplace
 // from the Character editor ("Import from animator"). Below the queue: the
 // wallets allowed to sign in to the animator (admins always can).
+// The Wardrobe view (StudioWardrobe.jsx) does the same for wardrobe items.
 
 const STATUS_LABEL = { in_review: "Waiting for review", approved: "Approved", rejected: "Sent back" };
 const STATUS_CLASS = { in_review: "", approved: "is-live", rejected: "is-bad" };
@@ -171,10 +175,32 @@ function Members({ session, members, onChanged }) {
 }
 
 function StudioAdmin({ session, onCount }) {
+  const [area, setArea] = useState("characters");
+  const [wardrobeWaiting, setWardrobeWaiting] = useState(0);
+  return (
+    <>
+      <div className="admin-tabs studio-area" role="group" aria-label="Animator">
+        <button type="button" aria-pressed={area === "characters"} onClick={() => setArea("characters")}>
+          Characters
+        </button>
+        <button type="button" aria-pressed={area === "wardrobe"} onClick={() => setArea("wardrobe")}>
+          Wardrobe{wardrobeWaiting ? ` (${wardrobeWaiting})` : ""}
+        </button>
+      </div>
+      {area === "wardrobe" ? (
+        <StudioWardrobe session={session} onCount={setWardrobeWaiting} />
+      ) : (
+        <StudioCharacters session={session} onCount={onCount} />
+      )}
+    </>
+  );
+}
+
+function StudioCharacters({ session, onCount }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [version, setVersion] = useState(0);
-  const [pack, setPack] = useState("all");
+  const [view, setView] = useState(emptyView);
   const [show, setShow] = useState("waiting");
 
   useEffect(() => {
@@ -196,29 +222,17 @@ function StudioAdmin({ session, onCount }) {
   if (!data) return <p className="admin-hint">Loading the animator…</p>;
 
   const reload = () => setVersion((v) => v + 1);
-  const packs = [...new Map(data.characters.map((c) => [c.pack_id, c.pack_name])).entries()];
-  const list = data.characters.filter(
-    (c) =>
-      (pack === "all" || c.pack_id === pack) &&
-      (show === "all" || (show === "waiting" ? c.versions[0]?.status === "in_review" : c.approved_version)),
+  const packName = (id) => data.characters.find((c) => c.pack_id === id)?.pack_name ?? id;
+  const byStatus = data.characters.filter(
+    (c) => show === "all" || (show === "waiting" ? c.versions[0]?.status === "in_review" : c.approved_version),
   );
+  const list = applyListView(byStatus, view, { pack: (c) => c.pack_id, also: (c) => [c.character_id] });
   const linkedTo = (c, v) =>
     data.linked.filter((m) => m.studio?.pack === c.pack_id && m.studio?.character === c.character_id && m.studio?.version === v.version);
 
   return (
     <div className="studio-admin">
       <div className="studio-filters">
-        <label>
-          Pack{" "}
-          <select value={pack} onChange={(e) => setPack(e.target.value)}>
-            <option value="all">All packs</option>
-            {packs.map(([id, name]) => (
-              <option key={id} value={id}>
-                {name}
-              </option>
-            ))}
-          </select>
-        </label>
         <div className="admin-tabs" role="group" aria-label="Show">
           {[
             ["waiting", "Waiting for review"],
@@ -232,11 +246,23 @@ function StudioAdmin({ session, onCount }) {
         </div>
       </div>
 
+      <ListControls
+        view={view}
+        onChange={setView}
+        packs={packOptions(data.characters, { pack: (c) => c.pack_id, label: packName })}
+        placeholder="Search characters by name"
+        noun={`${list.length} of ${byStatus.length}`}
+      />
+
       {!list.length && (
         <p className="admin-hint">
-          {data.characters.length
-            ? "Nothing here. Try another filter."
-            : "Nothing published yet. In the Fuchey Animator, sign in and press Publish to Fuchey on a character."}
+          {!data.characters.length
+            ? "Nothing published yet. In the Fuchey Animator, sign in and press Publish to Fuchey on a character."
+            : view.query
+              ? `No characters match “${view.query}”${view.pack !== ALL ? ` in ${packName(view.pack)}` : ""}.`
+              : view.pack !== ALL
+                ? `No characters in ${packName(view.pack)} for this filter.`
+                : "Nothing here. Try another filter."}
         </p>
       )}
 

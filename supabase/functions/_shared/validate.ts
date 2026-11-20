@@ -169,8 +169,16 @@ function placement(c: Checker, o: Obj, path: string, partial: boolean) {
   num("scale", { min: 0.01, max: 16 });
   num("width", { min: 1, max: 2048, int: true });
   num("height", { min: 1, max: 2048, int: true });
-  if (!partial || has("image")) out.image = c.url(o.image, `${path}.image`, false);
+  // A wearable worn behind the body (a cape, a backpack from the animator)
+  // may have only a back image. A per-character override can clear either
+  // side with an explicit null, so it doesn't inherit the base's.
+  if (has("image")) out.image = c.url(o.image, `${path}.image`, false);
+  else if (!partial) {
+    if (has("backImage")) out.image = null;
+    else out.image = c.url(o.image, `${path}.image`, false);
+  } else if (o.image === null) out.image = null;
   if (has("backImage")) out.backImage = c.url(o.backImage, `${path}.backImage`);
+  else if (partial && o.backImage === null) out.backImage = null;
   return out;
 }
 
@@ -289,6 +297,7 @@ export function validateWearable(input: unknown, characterIds: string[]) {
     display_url: c.url(input.display_url, "display_url"),
     image_url: c.url(input.image_url, "image_url"),
     visual: visual(c, input.visual, type, compatible),
+    studio: wearableStudioRef(c, input.studio),
   };
   c.done();
   return row;
@@ -358,6 +367,22 @@ function studioRef(c: Checker, v: unknown) {
     return null;
   }
   return { pack: v.pack, character: v.character, version: v.version as number };
+}
+
+// Which animator wardrobe version a wearable was imported from. The admin
+// function checks that this version is approved before saving (admin/studio.ts).
+function wearableStudioRef(c: Checker, v: unknown) {
+  if (v == null) return null;
+  const id = /^[a-z0-9][a-z0-9_-]{0,47}$/;
+  const slots = ["back", "outfit", "neck", "headwrap", "face", "hat", "front", "special"];
+  if (
+    !isObj(v) || typeof v.pack !== "string" || !id.test(v.pack) || typeof v.slot !== "string" || !slots.includes(v.slot) ||
+    typeof v.item !== "string" || !id.test(v.item) || !Number.isInteger(v.version) || (v.version as number) < 1
+  ) {
+    c.fail("studio", "must be { pack, slot, item, version }");
+    return null;
+  }
+  return { pack: v.pack, slot: v.slot, item: v.item, version: v.version as number };
 }
 
 // ---------------------------------------------------------------------------

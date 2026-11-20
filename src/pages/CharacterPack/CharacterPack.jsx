@@ -9,9 +9,10 @@ import NetworkBadge from "../../components/wallet/NetworkBadge";
 import { usePack } from "../../hooks/useCharacters";
 import { useCollection } from "../../hooks/useCollection";
 import { getRarity } from "../../services/marketplace/catalog";
-import { packBackdrop } from "../../data/packs";
+import { usePackScene } from "../../hooks/usePackScene";
 
 function CharacterPack() {
+  const sceneOf = usePackScene();
   const { packId } = useParams();
   const { pack, loading, error } = usePack(packId);
   const { ownsCharacter } = useCollection();
@@ -50,7 +51,7 @@ function CharacterPack() {
       </Link>
 
       <section className="pk-hero">
-        <img className="pk-hero-bg" src={packBackdrop(pack)} alt="" />
+        <img className="pk-hero-bg" src={sceneOf(pack)} alt="" />
         <span className="pk-hero-shade" aria-hidden="true" />
         <div className="pk-hero-copy">
           <span className="eyebrow">{pack.name}</span>

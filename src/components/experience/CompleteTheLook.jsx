@@ -20,7 +20,7 @@ const pick = (list) => list[Math.floor(Math.random() * list.length)];
 const coin = (odds) => Math.random() < odds;
 
 // One wardrobe slot: arrows cycle through every piece that fits (and "none").
-function SlotControl({ type, pieces, current, onStep, side }) {
+function SlotControl({ type, pieces, current, characterId, onStep, side }) {
   const label = getWearableTypeLabel(type);
   const index = current ? pieces.findIndex((w) => w.id === current.id) + 1 : 0;
 
@@ -37,7 +37,7 @@ function SlotControl({ type, pieces, current, onStep, side }) {
           aria-label={`Next ${label.toLowerCase()}${current ? `, wearing ${current.name}` : ""}`}
           onClick={() => onStep(1)}>
           {current ? (
-            <WearableIcon id={current.id} key={current.id} />
+            <WearableIcon id={current.id} key={current.id} characterId={characterId} />
           ) : (
             <span className="look-slot-empty" aria-hidden="true">+</span>
           )}
@@ -144,6 +144,7 @@ function CompleteTheLook({ unlocked, onRevealMore }) {
           side={where}
           pieces={piecesFor(type)}
           current={currentIn(type)}
+          characterId={character?.id}
           onStep={(dir) => step(type, dir)}
         />
       ));

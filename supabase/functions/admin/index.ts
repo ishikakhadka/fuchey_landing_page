@@ -26,7 +26,7 @@ import { setPackIds, validateCharacter, validateDrop, validateHomeSettings, vali
 import { nftAction } from "./nft.ts";
 import { allowedNetworks, type Network } from "../_shared/nft/config.ts";
 import { REGISTRY_ACTIONS, registryAction } from "./registry.ts";
-import { STUDIO_ACTIONS, studioAction } from "./studio.ts";
+import { checkWearableStudio, STUDIO_ACTIONS, studioAction } from "./studio.ts";
 
 const BUCKET = "catalog-art";
 
@@ -94,6 +94,7 @@ Deno.serve(
         const { data: chars } = await db.from("characters").select("id");
         const row = validateWearable(body.wearable, (chars ?? []).map((c) => c.id));
         await requirePublishedPack(row);
+        await checkWearableStudio(db, row);
         const { data, error } = await db.from("wearables").upsert(row).select().single();
         fail(error);
         return json({ wearable: data });

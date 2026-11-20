@@ -102,6 +102,21 @@ npx supabase functions deploy admin loadout inventory purchase-verify studio
 
 Run `db push` before deploying the functions or the site: the admin saves
 `characters.studio`, which only exists once the studio migration has run.
+The same goes for `wearables.studio` and the animator wardrobe tables
+(`20261120000000_studio_wearables.sql`): push it before deploying `admin`
+and `studio`.
+
+### Animator wardrobe
+
+The animator's **Publish wardrobe** sends one item with a fit per character
+(`studio_wearable_fits`: crop box, offset, canvas) and its cut-out layers.
+Admin → Animator → Wardrobe shows each fit drawn by the site's own renderer
+beside the animator's render, and the Wearable editor's **Import from
+animator** builds `visual` from an approved version with
+`functions/_shared/wardrobeFit.js`. `saveWearable` refuses a `studio` link to a
+version that isn't approved, or pictures that aren't that version's. Tests:
+`node --test supabase/tests/wardrobeFit.test.mjs` (no backend) and
+`supabase/tests/wardrobe.test.mjs` (local Supabase only).
 
 Set `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` in the site's build
 environment. **Never** put the service-role key in a `VITE_*` variable: it

@@ -22,6 +22,8 @@ import NftDetail from "./NftDetail";
 import { DropsAdmin, HomeAdmin } from "./ContentAdmin";
 import PacksAdmin from "./PacksAdmin";
 import StudioAdmin from "./StudioAdmin";
+import ListControls from "./ListControls";
+import { ALL, applyListView, emptyView, packOptions } from "./listView";
 import { useContent } from "../../context/ContentContext";
 import { newCharacter, newWearable } from "./drafts";
 import "./admin.css";
@@ -41,6 +43,8 @@ function Admin() {
   const [editing, setEditing] = useState(null); // { kind, item }
   const [openNft, setOpenNft] = useState(null); // registry id
   const [waiting, setWaiting] = useState(null); // animator characters waiting for review
+  // Search / pack / sort for each catalogue list; kept while editing, so "All wearables" returns to it.
+  const [views, setViews] = useState({ wearables: { ...emptyView, sort: "order" }, characters: { ...emptyView, sort: "order" } });
 
   const session = auth.wallet === address ? auth.session : null;
 
@@ -180,6 +184,12 @@ function Admin() {
   const charName = (id) => data.characters.find((c) => c.id === id)?.name ?? id;
   const items = tab === "wearables" ? data.wearables : data.characters;
   const nextSort = Math.max(0, ...items.map((i) => i.sortOrder ?? 0)) + 1;
+  const view = views[tab] ?? emptyView;
+  const shown = applyListView(items, view, {
+    pack: (i) => getPack(i.pack).id,
+    also: (i) => [i.id, i.title ?? ""],
+  });
+  const listPacks = packOptions(items, { pack: (i) => getPack(i.pack).id, label: (id) => getPack(id).name });
 
   return (
     <div className="container market-page admin-page">
@@ -231,8 +241,24 @@ function Admin() {
       ) : tab === "home" ? (
         <HomeAdmin session={session} characters={data.characters} onChange={content.reload} />
       ) : (
+        <>
+        <ListControls
+          view={view}
+          onChange={(v) => setViews((all) => ({ ...all, [tab]: v }))}
+          packs={listPacks}
+          placeholder={tab === "wearables" ? "Search wearables by name" : "Search characters by name"}
+          sorts={[["order", "Catalogue order"]]}
+          noun={`${shown.length} of ${items.length}`}
+        />
+        {!shown.length && (
+          <p className="admin-hint list-empty">
+            {items.length
+              ? `No ${tab === "wearables" ? "wearables" : "characters"} match${view.query ? ` “${view.query}”` : ""}${view.pack !== ALL ? ` in ${getPack(view.pack).name}` : ""}.`
+              : `No ${tab} yet.`}
+          </p>
+        )}
         <ul className="admin-list">
-          {items.map((item) => (
+          {shown.map((item) => (
             <li key={item.id}>
               <span className={`admin-list-art character-stage stage-${item.edition ?? "companion"}`}>
                 <ItemArt
@@ -266,6 +292,7 @@ function Admin() {
             </li>
           ))}
         </ul>
+        </>
       )}
     </div>
   );
