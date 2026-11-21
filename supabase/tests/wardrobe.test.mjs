@@ -222,3 +222,83 @@ test("a back-only wearable validates (no front image)", async () => {
   assert.equal(r.status, 200, JSON.stringify(r.body));
   assert.equal(r.body.wearable.visual.image, null);
 });
+
+// ---- colour variants (20261121000000_wardrobe_variants.sql) -------------------
+
+async function publishVariant(item, variant, color, isDefault = false) {
+  const front = png(20, 8, color);
+  const r = await call(
+    "studio",
+    {
+      action: "startWearablePublish",
+      pack: { id: PACK, name: "Test pack" },
+      wearable: { slot: "headwrap", item, name: `Test bandana · ${variant}`, group: { key: "test_bandana", label: "Test bandana", variant, isDefault } },
+      scale: 2,
+      fits: [{ character: CHAR_A, canvas: [224, 232], box: { x: 50, y: 20, w: 10, h: 4 } }],
+      files: [{ fit: 0, kind: "front", scale: 2, width: 20, height: 8, bytes: front.length, sha256: sha(front) }],
+    },
+    studioToken,
+  );
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  for (const u of r.body.uploads) {
+    stored.push(u.path);
+    assert.ok((await fetch(u.url, { method: "PUT", headers: { "Content-Type": "image/png", "x-upsert": "true" }, body: front })).ok);
+  }
+  if (!r.body.unchanged) assert.equal((await call("studio", { action: "finishWearablePublish", versionId: r.body.versionId }, studioToken)).status, 200);
+  return r.body;
+}
+
+test("variants keep their group; an unchanged re-publish doesn't stack a new version", async () => {
+  const red = await publishVariant("test_bandana_red", "Red", [200, 30, 30, 255], true);
+  const blue = await publishVariant("test_bandana_blue", "Blue", [30, 30, 200, 255]);
+  assert.equal(red.version, 1);
+  assert.equal(blue.version, 1);
+  const again = await publishVariant("test_bandana_blue", "Blue", [30, 30, 200, 255]);
+  assert.equal(again.unchanged, true, "same art and placement as the waiting version");
+  assert.equal(again.version, 1);
+  const rows = (await rest(`studio_wearables?pack_id=eq.${PACK}&group_key=eq.test_bandana&order=item_id`)).body;
+  assert.deepEqual(rows.map((r) => [r.item_id, r.group_label, r.variant_label, r.variant_default, r.latest_version]), [
+    ["test_bandana_blue", "Test bandana", "Blue", false, 1],
+    ["test_bandana_red", "Test bandana", "Red", true, 1],
+  ]);
+  // a changed colour is a real new version
+  const changed = await publishVariant("test_bandana_blue", "Blue", [30, 200, 200, 255]);
+  assert.equal(changed.version, 2);
+});
+
+test("each variant is approved on its own; the site group is created with the first variant", async () => {
+  const list = (await call("admin", { action: "studioWearableList" }, adminToken)).body.wearables.filter((w) => w.group_key === "test_bandana");
+  const red = list.find((w) => w.item_id === "test_bandana_red");
+  const blue = list.find((w) => w.item_id === "test_bandana_blue");
+  assert.equal((await call("admin", { action: "studioWearableReview", versionId: red.versions[0].id, decision: "approve" }, adminToken)).status, 200);
+  // blue stays unapproved: it can't become a website visual, so it can't reach the site through its group
+  assert.equal((await call("admin", { action: "studioWearableVisual", versionId: blue.versions[0].id }, adminToken)).status, 409);
+
+  const built = (await call("admin", { action: "studioWearableVisual", versionId: red.versions[0].id }, adminToken)).body;
+  const GROUP = `test-wd-${T}-bandana`;
+  const save = (extra) =>
+    call(
+      "admin",
+      {
+        action: "saveWearable",
+        wearable: {
+          id: `${WEAR}-red`, name: "Test bandana red", type: built.visual.layer, pack: "wild", rarity: "common",
+          compatible_characters: built.compatibleCharacters, visual: built.visual, studio: built.studio, published: false,
+          group_id: GROUP, variant_label: "Red", variant_order: 0, group: { id: GROUP, name: "Test bandana" }, ...extra,
+        },
+      },
+      adminToken,
+    );
+  const ok = await save();
+  assert.equal(ok.status, 200, JSON.stringify(ok.body));
+  assert.equal(ok.body.wearable.group_id, GROUP);
+  const group = (await rest(`wearable_groups?id=eq.${GROUP}`)).body[0];
+  assert.deepEqual([group.name, group.pack, group.type], ["Test bandana", "wild", "headwear"]);
+  // a variant must use its group's slot
+  const wrongSlot = await save({ id: `${WEAR}-odd`, type: "hat", visual: { ...built.visual, layer: "hat" } });
+  assert.equal(wrongSlot.status, 400);
+  // a variant needs its own label
+  assert.equal((await save({ variant_label: "" })).status, 400);
+  await rest(`wearables?id=like.${WEAR}*`, { method: "DELETE" });
+  await rest(`wearable_groups?id=eq.${GROUP}`, { method: "DELETE" });
+});

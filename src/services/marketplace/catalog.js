@@ -1,7 +1,7 @@
 import { RARITIES, WEARABLE_TYPES } from "../../data/taxonomy";
 import { NETWORK } from "../../config/network";
 import { select } from "../backend/client";
-import { rowToCharacter, rowToSale, rowToWearable } from "../backend/mappers";
+import { rowToCharacter, rowToGroup, rowToSale, rowToWearable } from "../backend/mappers";
 import { applyPackRows } from "../../data/packs";
 
 // Read access to the marketplace catalogue, from the Supabase database
@@ -13,12 +13,14 @@ import { applyPackRows } from "../../data/packs";
 // deployed / listed here. What can be bought is decided by `sale`, never by
 // the catalogue's own status field.
 export async function fetchCatalog() {
-  const [characters, wearables, listings, packRows] = await Promise.all([
+  const [characters, wearables, listings, packRows, groupRows] = await Promise.all([
     select("characters", { order: "sort_order.asc,id.asc" }),
     select("wearables", { order: "sort_order.asc,id.asc" }),
     select("listings", { network: `eq.${NETWORK.id}` }),
     // Published packs only (RLS); a backend without the table yet keeps the built-ins.
     select("packs", { order: "sort_order.asc,id.asc" }).catch(() => []),
+    // Colour-variant groups (Bandana, Mask); a backend without the table yet has none.
+    select("wearable_groups", { order: "sort_order.asc,id.asc" }).catch(() => []),
   ]);
   applyPackRows(packRows);
   const sales = new Map(listings.map((l) => [`${l.asset_kind}:${l.asset_id}`, rowToSale(l)]));
@@ -37,9 +39,12 @@ export async function fetchCatalog() {
     const art = display && !item.art.locked ? { ...item.art, displayImage: display } : item.art;
     return { ...item, art, listing, sale };
   };
+  // Each variant carries its group ({ id, name }), so the wardrobe can show one card per group.
+  const groups = new Map(groupRows.map((r) => [r.id, rowToGroup(r)]));
+  const withGroup = (w) => (w.groupId && groups.has(w.groupId) ? { ...w, group: groups.get(w.groupId) } : { ...w, groupId: null });
   return {
     characters: characters.map(rowToCharacter).map(withSale("character")),
-    wearables: wearables.map(rowToWearable).map(withSale("wearable")),
+    wearables: wearables.map(rowToWearable).map(withGroup).map(withSale("wearable")),
   };
 }
 

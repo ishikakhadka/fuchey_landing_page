@@ -1401,3 +1401,8 @@
   translate: none;
   border-radius: 14px;
 }
+
+/* Animator → Wardrobe: colour variants under their group */
+.wardrobe-group-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.wardrobe-variant { border-top: 1px solid var(--line); padding-top: 10px; margin-top: 10px; }
+.wardrobe-variant h4 { margin: 0 0 4px; font-size: 15px; }

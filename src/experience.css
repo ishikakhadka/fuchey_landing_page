@@ -441,7 +441,11 @@
   display: grid;
   justify-items: center;
   gap: 14px;
-  width: min(100%, 380px);
+  /* A definite width: the card sits in a shrink-to-fit wrapper, and once the
+     frost canvas is gone (revealed) nothing inside would hold it open, so the
+     card used to shrink to its text (most visibly for the 3D device). */
+  width: 380px;
+  max-width: 100%;
 }
 
 .scratch-card {

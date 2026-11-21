@@ -86,7 +86,7 @@ function WardrobeImport({ session, draft, isNew, onApply }) {
   const packShown = packId && !packMatches.some((p) => p.id === packId) ? [packList.find((p) => p.id === packId), ...packMatches].filter(Boolean) : packMatches;
 
   const inPack = useMemo(() => (list ?? []).filter((w) => w.pack_id === packId), [list, packId]);
-  const items = applyListView(inPack, { query, pack: "all", sort }, { pack: () => "all", also: (w) => [w.item_id, w.slot] });
+  const items = applyListView(inPack, { query, pack: "all", sort }, { pack: () => "all", also: (w) => [w.item_id, w.slot, w.group_label ?? "", w.variant_label ?? ""] });
   const chosen = inPack.find((w) => keyOf(w) === key) ?? null;
 
   const source = ref ? (list ?? []).find((w) => w.pack_id === ref.pack && w.slot === ref.slot && w.item_id === ref.item) : null;
@@ -122,6 +122,15 @@ function WardrobeImport({ session, draft, isNew, onApply }) {
         compatibleCharacters: built.compatibleCharacters,
         ...(draft.imageUrl || !built.icon ? {} : { imageUrl: built.icon }),
         studio: built.studio,
+        // A colour variant from the animator (pack.json "wardrobeGroups") joins its group on the site.
+        ...(w.group_key
+          ? {
+              groupId: siteId(`${pack?.id ?? w.pack_id}-${w.group_key}`),
+              groupName: w.group_label,
+              variantLabel: w.variant_label,
+              variantOrder: w.variant_default ? 0 : 10,
+            }
+          : {}),
       });
       setMessage(
         `Filled from ${w.name} version ${v.version}: placed on ${built.compatibleCharacters.join(", ")}.` +
@@ -205,11 +214,24 @@ function WardrobeImport({ session, draft, isNew, onApply }) {
                   <option value="">
                     {!packId ? "Choose a pack first" : !inPack.length ? "No wardrobes found in this pack" : !items.length ? "No wardrobes match your search" : "Choose a wardrobe item…"}
                   </option>
-                  {items.map((w) => (
+                  {/* single items, then each colour group's variants together under its label */}
+                  {items.filter((w) => !w.group_key).map((w) => (
                     <option key={w.id} value={keyOf(w)}>
                       {w.name} · version {w.approved_version}
                     </option>
                   ))}
+                  {[...new Set(items.filter((w) => w.group_key).map((w) => w.group_key))].map((gk) => {
+                    const members = items.filter((w) => w.group_key === gk);
+                    return (
+                      <optgroup key={gk} label={`${members[0].group_label} (${members.length} variant${members.length === 1 ? "" : "s"})`}>
+                        {members.map((w) => (
+                          <option key={w.id} value={keyOf(w)}>
+                            {w.variant_label}{w.variant_default ? " (default)" : ""} · version {w.approved_version}
+                          </option>
+                        ))}
+                      </optgroup>
+                    );
+                  })}
                 </select>
               </div>
             )}

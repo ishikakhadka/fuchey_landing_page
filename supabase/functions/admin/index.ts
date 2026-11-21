@@ -81,13 +81,14 @@ Deno.serve(
         return json({ wallet });
 
       case "list": {
-        const [c, w] = await Promise.all([
+        const [c, w, g] = await Promise.all([
           db.from("characters").select("*").order("sort_order"),
           db.from("wearables").select("*").order("sort_order"),
+          db.from("wearable_groups").select("*").order("sort_order"),
         ]);
         fail(c.error);
         fail(w.error);
-        return json({ characters: c.data, wearables: w.data });
+        return json({ characters: c.data, wearables: w.data, groups: g.data ?? [] });
       }
 
       case "saveWearable": {
@@ -95,6 +96,22 @@ Deno.serve(
         const row = validateWearable(body.wearable, (chars ?? []).map((c) => c.id));
         await requirePublishedPack(row);
         await checkWearableStudio(db, row);
+        // A colour variant: its group (the parent label) is created or renamed with it, and
+        // every variant of a group must sit in the same pack and wardrobe slot.
+        if (row.group_id) {
+          const g = body.wearable?.group;
+          const { data: group } = await db.from("wearable_groups").select("*").eq("id", row.group_id).maybeSingle();
+          if (group && (group.type !== row.type || group.pack !== row.pack)) {
+            throw new HttpError(400, `${group.name} is a ${group.type} group in ${group.pack}; this variant must use the same slot and pack.`);
+          }
+          if (!group || (g?.name && g.name.trim() !== group.name)) {
+            if (!g?.name) throw new HttpError(400, "Name the new group.");
+            const { error: gerr } = await db
+              .from("wearable_groups")
+              .upsert({ id: row.group_id, name: String(g.name).trim(), pack: row.pack, type: row.type });
+            fail(gerr);
+          }
+        }
         const { data, error } = await db.from("wearables").upsert(row).select().single();
         fail(error);
         return json({ wearable: data });

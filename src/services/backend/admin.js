@@ -1,5 +1,5 @@
 import { callFunction } from "./client";
-import { characterToRow, rowToCharacter, rowToWearable, wearableToRow } from "./mappers";
+import { characterToRow, rowToCharacter, rowToGroup, rowToWearable, wearableToRow } from "./mappers";
 import { applyPackRows } from "../../data/packs";
 
 // Admin dashboard API (supabase/functions/admin). Every call carries a wallet
@@ -9,18 +9,25 @@ import { applyPackRows } from "../../data/packs";
 export const adminSession = (session) => callFunction("admin", { action: "session" }, session);
 
 export async function adminList(session) {
-  const [{ characters, wearables }, packs] = await Promise.all([
+  const [{ characters, wearables, groups = [] }, packs] = await Promise.all([
     callFunction("admin", { action: "list" }, session),
     callFunction("admin", { action: "listPacks" }, session).then((r) => r.packs, () => []),
   ]);
   // Every pack, published or not, so the editors can pick any of them.
   applyPackRows(packs);
-  return { characters: characters.map(rowToCharacter), wearables: wearables.map(rowToWearable) };
+  // Colour-variant groups, and each variant with its group's name (the editor shows and edits it).
+  const byId = new Map(groups.map((g) => [g.id, rowToGroup(g)]));
+  return {
+    characters: characters.map(rowToCharacter),
+    wearables: wearables.map(rowToWearable).map((w) => (w.groupId ? { ...w, groupName: byId.get(w.groupId)?.name ?? "" } : w)),
+    groups: [...byId.values()],
+  };
 }
 
 export async function adminSaveWearable(session, wearable) {
   const { wearable: row } = await callFunction("admin", { action: "saveWearable", wearable: wearableToRow(wearable) }, session);
-  return rowToWearable(row);
+  const saved = rowToWearable(row);
+  return saved.groupId ? { ...saved, groupName: wearable.groupName ?? "" } : saved;
 }
 
 export async function adminSaveCharacter(session, character) {

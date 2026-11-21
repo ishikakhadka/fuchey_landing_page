@@ -298,9 +298,24 @@ export function validateWearable(input: unknown, characterIds: string[]) {
     image_url: c.url(input.image_url, "image_url"),
     visual: visual(c, input.visual, type, compatible),
     studio: wearableStudioRef(c, input.studio),
+    ...variantOf(c, input),
   };
   c.done();
   return row;
+}
+
+// A colour variant of a wardrobe group (20261121000000_wardrobe_variants.sql):
+// group_id + its own variant_label, or none of them. The group itself
+// ({ id, name } as `group`) is created or renamed by the admin function.
+function variantOf(c: Checker, o: Obj) {
+  const group = isObj(o.group) ? o.group : null;
+  const groupId = typeof o.group_id === "string" && o.group_id ? o.group_id : (group?.id as string | undefined) ?? null;
+  if (!groupId) return { group_id: null, variant_label: null, variant_order: 0 };
+  if (!/^[a-z0-9][a-z0-9-]{1,47}$/.test(groupId)) c.fail("group_id", "lowercase letters, numbers and dashes only");
+  if (group && (typeof group.name !== "string" || !group.name.trim() || group.name.length > 60)) c.fail("group.name", "1–60 characters");
+  const label = c.str(o, "variant_label", { min: 1, max: 40 });
+  const order = c.num(o, "variant_order", { min: -1000, max: 1000, int: true }) ?? 0;
+  return { group_id: groupId, variant_label: label, variant_order: order };
 }
 
 export function validateCharacter(input: unknown) {

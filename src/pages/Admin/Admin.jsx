@@ -128,7 +128,14 @@ function Admin() {
       const list = d[key].some((x) => x.id === item.id)
         ? d[key].map((x) => (x.id === item.id ? item : x))
         : [...d[key], item];
-      return { ...d, [key]: list };
+      // A wearable saved into a group: keep the groups list (and the group's name) current.
+      const groups = d.groups ?? [];
+      const nextGroups =
+        kind === "wearable" && item.groupId
+          ? [...groups.filter((g) => g.id !== item.groupId), { ...(groups.find((g) => g.id === item.groupId) ?? { pack: item.pack, type: item.type, sortOrder: 0 }), id: item.groupId, name: item.groupName || item.groupId }]
+          : groups;
+      const named = kind === "wearable" && item.groupId ? list.map((x) => (x.groupId === item.groupId ? { ...x, groupName: item.groupName } : x)) : list;
+      return { ...d, [key]: named, groups: nextGroups };
     });
     setEditing({ kind, item });
     catalog.reload();
@@ -147,6 +154,7 @@ function Admin() {
           initial={editing.item}
           characters={data.characters}
           wearables={data.wearables}
+          groups={data.groups ?? []}
           session={session}
           onSaved={onSaved("wearable")}
           onDeleted={onDeleted}
@@ -273,7 +281,7 @@ function Admin() {
                 <strong>{item.name}</strong>
                 <span className="admin-hint">
                   {tab === "wearables"
-                    ? `${getPack(item.pack).name} · ${typeLabel(item.type)} · fits ${item.compatibleCharacters.map(charName).join(", ") || "nobody"}`
+                    ? `${getPack(item.pack).name} · ${typeLabel(item.type)}${item.groupId ? ` · ${item.groupName || item.groupId}: ${item.variantLabel ?? ""}` : ""} · fits ${item.compatibleCharacters.map(charName).join(", ") || "nobody"}`
                     : `${getPack(item.pack).name} · ${item.editionLabel || item.edition} · ${isDressable(item) ? "dressable" : "placeholder"}`}
                 </span>
               </span>

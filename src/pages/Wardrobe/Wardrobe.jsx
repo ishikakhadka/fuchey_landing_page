@@ -36,6 +36,7 @@ import { fetchLoadout, saveLoadout } from "../../services/backend/loadouts";
 import { getSession } from "../../services/backend/session";
 import { packs } from "../../data/packs";
 import { usePackScene } from "../../hooks/usePackScene";
+import { groupVariants, shownVariant } from "../../utils/variants";
 import { detailPath } from "../../utils/routes";
 
 const TYPE_ICONS = {
@@ -190,6 +191,8 @@ function FittingRoomPage({ pack }) {
   // ({ [characterId]: { [slot]: wearableId } }), plus the item whose details show.
   const [looks, setLooks] = useState({});
   const [focusedId, setFocusedId] = useState(null);
+  // Colour variants: the variant last picked for each group, so its card keeps showing it.
+  const [pickedVariant, setPickedVariant] = useState({});
   const slots = (character && looks[character.id]) ?? {};
   const setSlots = (update) =>
     setLooks((all) => ({ ...all, [character.id]: update(all[character.id] ?? {}) }));
@@ -280,15 +283,33 @@ function FittingRoomPage({ pack }) {
 
   // Only show the types this rack actually has.
   const tabs = [
-    { id: null, label: "All", count: rail.length },
+    { id: null, label: "All", count: groupVariants(rail).length },
     ...types
-      .map((t) => ({ ...t, count: rail.filter((w) => w.type === t.id).length }))
+      .map((t) => ({ ...t, count: groupVariants(rail.filter((w) => w.type === t.id)).length }))
       .filter((t) => t.count || t.id === type),
   ];
 
   const visible = rail.filter(
     (w) => (!type || w.type === type) && (mineView || !ownedOnly || ownsWearable(w.id)),
   );
+
+  // One card per wearable, or per colour group (Bandana, Mask) with its variants.
+  const fitsNow = (w) => !character || fitsCharacter(w, character.id);
+  const cards = groupVariants(visible).map((card) => ({
+    ...card,
+    shown: shownVariant(card, { wornId: slots[card.variants[0].type], pickedId: card.group ? pickedVariant[card.group.id] : null, fits: fitsNow }),
+  }));
+  // Picking a colour shows it on the card and, when that group is being worn, swaps to it.
+  const pickVariant = (w) => {
+    setPickedVariant((p) => ({ ...p, [w.groupId]: w.id }));
+    setFocusedId(w.id);
+    if (!fitsNow(w)) return;
+    setSlots((s) => {
+      const wornNow = wearable(s[w.type]);
+      return wornNow?.groupId === w.groupId || !s[w.type] ? { ...s, [w.type]: w.id } : s;
+    });
+  };
+  const focusedCard = focused?.groupId ? groupVariants(racked).find((c) => c.group?.id === focused.groupId) : null;
 
   const update = (key, value) => {
     const next = new URLSearchParams(params);
@@ -408,12 +429,12 @@ function FittingRoomPage({ pack }) {
             </EmptyState>
           ) : (
             <div className="wr-tiles">
-              {visible.map((w) => {
-                const fits = !character || fitsCharacter(w, character.id);
+              {cards.map(({ key, group, variants, shown: w }) => {
+                const fits = fitsNow(w);
                 const on = slots[w.type] === w.id && fits;
                 return (
                   <button
-                    key={w.id}
+                    key={key}
                     type="button"
                     className={`wr-tile rarity-${w.rarity} ${on ? "is-on" : ""} ${fits ? "" : "is-off"}`}
                     aria-pressed={on}
@@ -428,7 +449,12 @@ function FittingRoomPage({ pack }) {
                     <span className="wr-tile-art">
                       <ItemArt art={w.art} alt="" itemId={w.id} item={w} forCharacter={character?.id} size="md" />
                     </span>
-                    <span className="wr-tile-name">{w.name}</span>
+                    <span className="wr-tile-name">{group ? group.name : w.name}</span>
+                    {group && (
+                      <span className="wr-tile-variants">
+                        {w.variantLabel} · {variants.length} colour{variants.length === 1 ? "" : "s"}
+                      </span>
+                    )}
                     <RarityBadge rarity={w.rarity} />
                     {on && (
                       <span className="wr-tile-equipped">
@@ -436,6 +462,30 @@ function FittingRoomPage({ pack }) {
                       </span>
                     )}
                     {!fits && <span className="wr-tile-nofit">Doesn’t fit {character.name}</span>}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {focusedCard && focusedCard.variants.length > 1 && (
+            <div className="wr-variants" role="group" aria-label={`${focusedCard.group.name} colour`}>
+              <span className="wr-variants-label">{focusedCard.group.name}</span>
+              {focusedCard.variants.map((v) => {
+                const fits = fitsNow(v);
+                const current = v.id === focused.id;
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    className={`wr-variant ${current ? "is-on" : ""} ${fits ? "" : "is-off"}`}
+                    aria-pressed={current}
+                    title={fits ? v.name : `Doesn’t fit ${character?.name}`}
+                    onClick={() => pickVariant(v)}>
+                    <span className="wr-variant-art">
+                      <ItemArt art={v.art} alt="" itemId={v.id} item={v} forCharacter={character?.id} size="sm" />
+                    </span>
+                    {v.variantLabel ?? v.name}
                   </button>
                 );
               })}

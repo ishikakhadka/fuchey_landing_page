@@ -2443,3 +2443,59 @@ main {
   aspect-ratio: 1;
   margin-bottom: 96px;
 }
+
+/* Colour variants: one card per group, colours picked below the rack */
+.wr-tile-variants {
+  font-size: 12px;
+  color: var(--muted, #9fb6c4);
+  text-align: center;
+}
+
+.wr-variants {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: rgba(3, 32, 46, 0.55);
+}
+
+.wr-variants-label {
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.wr-variant {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 4px;
+  border: 1px solid rgba(137, 173, 187, 0.25);
+  border-radius: 999px;
+  background: rgba(1, 7, 22, 0.45);
+  color: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.wr-variant.is-on {
+  border-color: var(--brand, #8ecae6);
+  box-shadow: 0 0 0 2px rgba(142, 202, 230, 0.25);
+}
+
+.wr-variant.is-off {
+  opacity: 0.45;
+}
+
+.wr-variant-art {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+}
+
+.wr-variant-art .item-art {
+  width: 30px;
+  height: 30px;
+}

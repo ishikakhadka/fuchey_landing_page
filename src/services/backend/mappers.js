@@ -107,11 +107,18 @@ export function rowToWearable(r) {
     displayUrl: r.display_url ?? null,
     visual: r.visual,
     studio: r.studio ?? null,
+    // A colour variant of a wardrobe group (Bandana → Red): the group's id, this variant's label and place.
+    groupId: r.group_id ?? null,
+    variantLabel: r.variant_label ?? null,
+    variantOrder: r.variant_order ?? 0,
     nft: r.nft ?? {},
     published: r.published,
     sortOrder: r.sort_order,
   };
 }
+
+// A wardrobe group row (the parent label of colour variants).
+export const rowToGroup = (r) => ({ id: r.id, name: r.name, pack: r.pack, type: r.type, sortOrder: r.sort_order ?? 0 });
 
 export function wearableToRow(w) {
   return {
@@ -129,6 +136,11 @@ export function wearableToRow(w) {
     nft: w.nft ?? {},
     visual: w.visual,
     studio: w.studio ?? null,
+    group_id: w.groupId || null,
+    variant_label: w.groupId ? w.variantLabel || null : null,
+    variant_order: w.groupId ? (w.variantOrder ?? 0) : 0,
+    // { id, name }: lets the admin create or rename the group in the same save
+    ...(w.groupId && w.groupName ? { group: { id: w.groupId, name: w.groupName } } : {}),
     published: Boolean(w.published),
     sort_order: w.sortOrder ?? 0,
   };

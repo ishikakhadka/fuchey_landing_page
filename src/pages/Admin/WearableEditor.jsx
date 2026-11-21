@@ -28,7 +28,7 @@ const drawable = (v) => v && (v.kind === "runs" || v.kind === "vector" ? v.front
 
 // Create / edit one wearable, with a live preview drawn by the same
 // CharacterRender the wardrobe uses.
-function WearableEditor({ initial, characters, wearables, session, onSaved, onDeleted, onClose }) {
+function WearableEditor({ initial, characters, wearables, groups = [], session, onSaved, onDeleted, onClose }) {
   const isNew = !initial.id;
   const [draft, setDraft] = useState(initial);
   // Last saved version; the NFT panel works from the saved asset only.
@@ -157,6 +157,45 @@ function WearableEditor({ initial, characters, wearables, session, onSaved, onDe
             />
             <Select label="Pack" value={draft.pack ?? "wild"} options={packs.map((p) => ({ id: p.id, label: p.name }))} onChange={(v) => set({ pack: v })} errors={errors} path="pack" hint="Where it shows in the Wardrobe." />
             <Select label="Rarity" value={draft.rarity} options={RARITY_OPTIONS} onChange={(v) => set({ rarity: v })} errors={errors} path="rarity" />
+          </Section>
+
+          <Section title="Colour variant">
+            <Select
+              label="Variant of"
+              value={draft.groupId ?? ""}
+              options={[
+                { id: "", label: "Nothing: a wearable on its own" },
+                ...groups.filter((g) => g.pack === draft.pack && g.type === draft.type).map((g) => ({ id: g.id, label: g.name })),
+                ...(draft.groupId && !groups.some((g) => g.id === draft.groupId) ? [{ id: draft.groupId, label: `${draft.groupName || draft.groupId} (new)` }] : []),
+              ]}
+              onChange={(v) => {
+                const g = groups.find((x) => x.id === v);
+                set({ groupId: v || null, groupName: g?.name ?? (v ? draft.groupName : ""), variantLabel: v ? draft.variantLabel : null });
+              }}
+              errors={errors}
+              path="group_id"
+              hint="Colours of one element (a Bandana, a Mask) show as one card with a colour picker. Only groups in this pack and slot are listed."
+            />
+            {draft.groupId && (
+              <>
+                <TextInput label="Group name" value={draft.groupName ?? ""} onChange={(v) => set({ groupName: v })} errors={errors} path="group.name" hint="Shared by every variant, e.g. Bandana." />
+                <TextInput label="This variant" value={draft.variantLabel ?? ""} onChange={(v) => set({ variantLabel: v })} errors={errors} path="variant_label" hint="Its colour or name, e.g. Red or Default." />
+                <NumberInput label="Variant order" value={draft.variantOrder ?? 0} onChange={(v) => set({ variantOrder: v ?? 0 })} step="1" errors={errors} path="variant_order" hint="Lowest first; the first variant is the one shown on the card." />
+              </>
+            )}
+            {!draft.groupId && (
+              <button
+                type="button"
+                className="ghost-button is-wide"
+                onClick={() => {
+                  const name = window.prompt("Name of the new group (e.g. Bandana)");
+                  if (!name?.trim()) return;
+                  const id = `${draft.pack}-${name}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48);
+                  set({ groupId: id, groupName: name.trim(), variantLabel: draft.variantLabel || "Default" });
+                }}>
+                New group from this wearable
+              </button>
+            )}
           </Section>
 
           <Section title="Listing">

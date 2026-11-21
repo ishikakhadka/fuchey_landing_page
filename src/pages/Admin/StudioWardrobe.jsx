@@ -160,8 +160,30 @@ function StudioWardrobe({ session, onCount }) {
     show === "all" ? true : show === "waiting" ? w.versions[0]?.status === "in_review" : w.approved_version,
   );
   const packName = (id) => data.wearables.find((w) => w.pack_id === id)?.pack_name ?? id;
-  const list = applyListView(byStatus, view, { pack: (w) => w.pack_id, also: (w) => [w.item_id, w.slot] });
+  const list = applyListView(byStatus, view, { pack: (w) => w.pack_id, also: (w) => [w.item_id, w.slot, w.group_label ?? "", w.variant_label ?? ""] });
   const changed = () => setReload((v) => v + 1);
+  const versionsFor = (w) =>
+    show === "all" ? w.versions : show === "approved" ? w.versions.filter((v) => v.status === "approved").slice(0, 1) : w.versions.slice(0, 1);
+  // Items in list order, with colour variants of one group gathered where the group first appears
+  // (default variant first, then by label).
+  const segments = (items) => {
+    const out = [];
+    const seen = new Set();
+    for (const w of items) {
+      if (!w.group_key) {
+        out.push({ items: [w] });
+        continue;
+      }
+      const k = `${w.pack_id}/${w.group_key}`;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      const members = items
+        .filter((x) => x.pack_id === w.pack_id && x.group_key === w.group_key)
+        .sort((a, b) => Number(b.variant_default) - Number(a.variant_default) || (a.variant_label ?? "").localeCompare(b.variant_label ?? ""));
+      out.push({ group: w.group_key, pack: w.pack_id, label: w.group_label, items: members });
+    }
+    return out;
+  };
 
   return (
     <div className="studio-admin">
@@ -196,21 +218,51 @@ function StudioWardrobe({ session, onCount }) {
                 : "Nothing here. Try another filter."}
         </p>
       )}
-      {list.map((w) => (
-        <section key={w.id} className="admin-section studio-character">
-          <header>
-            <h3>
-              {w.name} <small className="admin-hint">· {w.pack_name}</small>
-            </h3>
-            <span className="admin-hint mono">
-              {w.pack_id}/{w.slot}_{w.item_id}
-            </span>
-          </header>
-          {(show === "all" ? w.versions : show === "approved" ? w.versions.filter((v) => v.status === "approved").slice(0, 1) : w.versions.slice(0, 1)).map((v) => (
-            <WardrobeVersion key={v.id} item={w} version={v} session={session} linked={data.linked} imported={data.imported} onChanged={changed} />
-          ))}
-        </section>
-      ))}
+      {segments(list).map((seg) =>
+        seg.group ? (
+          // Colour variants of one element: one parent block, each variant still reviewed on its own.
+          <section key={`g-${seg.pack}-${seg.group}`} className="admin-section studio-character wardrobe-group">
+            <header>
+              <h3>
+                {seg.label} <small className="admin-hint">· {seg.items[0].pack_name} · {seg.items.length} variant{seg.items.length === 1 ? "" : "s"}</small>
+              </h3>
+              <span className="wardrobe-group-chips">
+                {seg.items.map((w) => (
+                  <span key={w.id} className={`admin-chip ${STATUS_CLASS[w.versions[0]?.status] ?? ""}`} title={STATUS_LABEL[w.versions[0]?.status] ?? ""}>
+                    {w.variant_label}
+                    {w.variant_default ? " (default)" : ""}: {STATUS_LABEL[w.versions[0]?.status] ?? "—"}
+                  </span>
+                ))}
+              </span>
+            </header>
+            {seg.items.map((w) => (
+              <div key={w.id} className="wardrobe-variant">
+                <h4>
+                  {w.variant_label}
+                  {w.variant_default ? " (default)" : ""} <small className="admin-hint mono">{w.slot}_{w.item_id}</small>
+                </h4>
+                {versionsFor(w).map((v) => (
+                  <WardrobeVersion key={v.id} item={w} version={v} session={session} linked={data.linked} imported={data.imported} onChanged={changed} />
+                ))}
+              </div>
+            ))}
+          </section>
+        ) : (
+          <section key={seg.items[0].id} className="admin-section studio-character">
+            <header>
+              <h3>
+                {seg.items[0].name} <small className="admin-hint">· {seg.items[0].pack_name}</small>
+              </h3>
+              <span className="admin-hint mono">
+                {seg.items[0].pack_id}/{seg.items[0].slot}_{seg.items[0].item_id}
+              </span>
+            </header>
+            {versionsFor(seg.items[0]).map((v) => (
+              <WardrobeVersion key={v.id} item={seg.items[0]} version={v} session={session} linked={data.linked} imported={data.imported} onChanged={changed} />
+            ))}
+          </section>
+        ),
+      )}
     </div>
   );
 }

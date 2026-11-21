@@ -15,6 +15,8 @@
 //   startWearablePublish / finishWearablePublish
 //       The same for a wardrobe item and how it sits on each character it fits
 //       (see startWearablePublish below and migrations/20261120000000_studio_wearables.sql).
+//       A colour variant sends wearable.group { key, label, variant, isDefault } (20261121000000_wardrobe_variants.sql).
+//       Re-sending the same art and placement as the newest waiting/approved version returns { unchanged: true }.
 //
 // The animator uploads the GIFs straight to storage with the signed links, so
 // large files never pass through this function.
@@ -271,6 +273,18 @@ async function startWearablePublish(db: Db, wallet: string, body: Obj) {
   const name = text(item.name, 80);
   if (!packId || !packName || !slot || !itemId || !name) throw new HttpError(400, "The item needs a pack, a slot, an item id and a name.");
 
+  // A colour variant of one wardrobe element (pack.json "wardrobeGroups"): { key, label, variant, isDefault }.
+  const g = isObj(item.group) ? item.group : null;
+  const group = {
+    group_key: g && typeof g.key === "string" && ID.test(g.key) ? g.key : null,
+    group_label: g ? text(g.label, 60) : null,
+    variant_label: g ? text(g.variant, 40) : null,
+    variant_default: g?.isDefault === true,
+  };
+  if (g && (!group.group_key || !group.group_label || !group.variant_label)) {
+    throw new HttpError(400, "A variant needs its group's key and label and its own variant label.");
+  }
+
   const artCheck = isObj(body.artCheck) ? body.artCheck : {};
   const errors = Number(artCheck.errors ?? 0);
   if (errors > 0) throw new HttpError(400, `The art check found ${errors} problem(s). Fix them before publishing.`);
@@ -329,18 +343,52 @@ async function startWearablePublish(db: Db, wallet: string, body: Obj) {
   });
   if (problems.length) throw new HttpError(400, "This item can’t be published.", problems);
 
-  // The item (created on its first publish, renamed if the animator renamed it), then its next version.
+  // The item (created on its first publish, renamed or regrouped if the animator changed that), then its next version.
   const { data: existing } = await db.from("studio_wearables").select("*").eq("pack_id", packId).eq("slot", slot).eq("item_id", itemId).maybeSingle();
   let row = existing;
   if (!row) {
-    const { data, error } = await db.from("studio_wearables").insert({ pack_id: packId, slot, item_id: itemId, pack_name: packName, name }).select().single();
+    const { data, error } = await db.from("studio_wearables").insert({ pack_id: packId, slot, item_id: itemId, pack_name: packName, name, ...group }).select().single();
     if (error) throw new HttpError(400, error.message);
     row = data;
   }
+
+  // The same art and placement as the newest version still waiting or approved: nothing new to review, so
+  // a repeated click (or a batch re-run) doesn't stack identical versions in the admin's queue.
+  const sig = (rows: { character: string; kind: string; scale: number; sha256: string }[]) =>
+    rows.map((r) => `${r.character}|${r.kind}|${r.scale}|${r.sha256}`).sort().join("\n");
+  // field by field: jsonb doesn't keep key order, so a stored box never stringifies like a fresh one
+  type Box = { x: number; y: number; w: number; h: number };
+  const placeSig = (rows: { character: string; box?: Box; offset?: number[] }[]) =>
+    rows.map((r) => `${r.character}|${r.box?.x},${r.box?.y},${r.box?.w},${r.box?.h}|${r.offset?.join(",")}`).sort().join("\n");
+  const { data: last } = await db
+    .from("studio_wearable_versions")
+    .select("id, version, status")
+    .eq("wearable", row.id)
+    .in("status", ["in_review", "approved"])
+    .order("version", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (last && last.version === row.latest_version) {
+    const [{ data: lastFits }, { data: lastFiles }] = await Promise.all([
+      db.from("studio_wearable_fits").select("id, character_id, placement").eq("version_id", last.id),
+      db.from("studio_wearable_files").select("fit_id, kind, scale, sha256").eq("version_id", last.id),
+    ]);
+    const charOf = (id: number | null) => (id == null ? "_item" : (lastFits ?? []).find((f) => f.id === id)?.character_id ?? "?");
+    const ok = fits as FitIn[];
+    const before = sig((lastFiles ?? []).map((f) => ({ character: charOf(f.fit_id), kind: f.kind, scale: f.scale, sha256: f.sha256 })));
+    const now = sig((files as WFile[]).map((f) => ({ character: f.fit === null ? "_item" : ok[f.fit].character, kind: f.kind, scale: f.scale, sha256: f.sha256 })));
+    const placedBefore = placeSig((lastFits ?? []).map((f) => ({ character: f.character_id, box: f.placement?.box, offset: f.placement?.offset })));
+    const placedNow = placeSig(ok.map((f) => ({ character: f.character, box: f.placement.box, offset: f.placement.offset })));
+    if (before === now && placedBefore === placedNow) {
+      await db.from("studio_wearables").update({ pack_name: packName, name, ...group }).eq("id", row.id);
+      return { unchanged: true, versionId: last.id, version: last.version, status: last.status, uploads: [], reused: 0 };
+    }
+  }
+
   const version = (row.latest_version ?? 0) + 1;
   const { error: uerr } = await db
     .from("studio_wearables")
-    .update({ pack_name: packName, name, latest_version: version })
+    .update({ pack_name: packName, name, latest_version: version, ...group })
     .eq("id", row.id)
     .eq("latest_version", row.latest_version); // someone else publishing at the same moment → the insert below fails
   if (uerr) throw new HttpError(400, uerr.message);
